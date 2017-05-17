@@ -81,22 +81,6 @@
 
 <body class="top-navigation">
 <div id="wrapper">
-    <script type="text/javascript">
-        var msgBox = function (message) {
-            $('#messageBox').find('[name=content]').html(message);
-            $('#messageBox').modal({
-                show: true
-            });
-        };
-        $(function () {
-            $('#logoutbtn').click(function () {
-                $('#logoutform').submit();
-            });
-            $('#messageBox').find('[name=close]').click(function () {
-                $('#messageBox').find('.close').click();
-            });
-        });
-    </script>
     <div id="page-wrapper" class="white-bg dashbard-1">
         <div class="row">
             <div class="col-lg-12 padding-1">
@@ -182,9 +166,9 @@
                                         <li role="separator" class="divider"></li>
                                         <li><a href="#">Separated link</a></li>
                                     </ul>
-                                    <button class="btn btn-default btn-xs" id="newActivity" type="button"><i
-                                            class="fa fa-plus"></i> Activity
-                                    </button>
+                                    <!--<button class="btn btn-default btn-xs" id="newActivity" type="button"><i-->
+                                            <!--class="fa fa-plus"></i> Activity-->
+                                    <!--</button>-->
                                     <button class="btn btn-default btn-xs" id="refresh" type="button"><i
                                             class="fa fa-refresh"></i> Refresh
                                     </button>
@@ -207,26 +191,6 @@
                             <div id="canvas" style="cursor: default;width: 100%;overflow: scroll;"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 메시지 Modal -->
-    <div class="modal fade" id="messageBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
-                            class="sr-only">Close</span></button>
-                    <h4 id="myModalLabel1" class="modal-title">알림</h4>
-                </div>
-                <div class="modal-body">
-                    <p style="text-align: center" name="content"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-white" data-dismiss="modal">확인</button>
                 </div>
             </div>
         </div>

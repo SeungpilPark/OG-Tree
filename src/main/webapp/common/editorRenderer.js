@@ -175,7 +175,9 @@ var EditorRenderer = function (container) {
              */
             lAc: {
                 'fill': 'RGB(246,246,246)',
-                'fill-opacity': '1'
+                'fill-opacity': '1',
+                stroke: '#555',
+                'stroke-width': 2
             },
             /**
              * 아더 - 아웃 Area Style
@@ -189,14 +191,18 @@ var EditorRenderer = function (container) {
              */
             rIn: {
                 'fill': 'RGB(255,255,255)',
-                'fill-opacity': '1'
+                'fill-opacity': '1',
+                stroke: '#555',
+                'stroke-width': 2
             },
             /**
              * 마이 - 액티비티 Area Style
              */
             rAc: {
                 'fill': 'RGB(255,255,255)',
-                'fill-opacity': '1'
+                'fill-opacity': '1',
+                stroke: '#555',
+                'stroke-width': 2
             },
             /**
              * 마이 - 아웃 Area Style
@@ -459,22 +465,11 @@ EditorRenderer.prototype = {
         var rInLabel = me._CONFIG.AREA.rIn.display ? me._CONFIG.AREA.rIn.label : undefined;
         var rAcLabel = me._CONFIG.AREA.rAc.display ? me._CONFIG.AREA.rAc.label : undefined;
         var rOutLabel = me._CONFIG.AREA.rOut.display ? me._CONFIG.AREA.rOut.label : undefined;
-        me.AREA.lAc = me.canvas.drawShape([0, 0], new OG.Area(lacLabel), [50, 50], {stroke: '#555', 'stroke-width': 2});
-        me.AREA.lOut = me.canvas.drawShape([0, 0], new OG.Area(lOutLabel), [50, 50], {
-            stroke: '#555',
-            'stroke-width': 2
-        });
-        me.AREA.rIn = me.canvas.drawShape([0, 0], new OG.Area(rInLabel), [50, 50], {stroke: '#555', 'stroke-width': 2});
-        me.AREA.rAc = me.canvas.drawShape([0, 0], new OG.Area(rAcLabel), [50, 50], {stroke: '#555', 'stroke-width': 2});
-        me.AREA.rOut = me.canvas.drawShape([0, 0], new OG.Area(rOutLabel), [50, 50], {
-            stroke: '#555',
-            'stroke-width': 2
-        });
-        me.canvas.setShapeStyle(me.AREA.lAc, me._CONFIG.AREA_STYLE.lAc);
-        me.canvas.setShapeStyle(me.AREA.lOut, me._CONFIG.AREA_STYLE.lOut);
-        me.canvas.setShapeStyle(me.AREA.rIn, me._CONFIG.AREA_STYLE.rIn);
-        me.canvas.setShapeStyle(me.AREA.rAc, me._CONFIG.AREA_STYLE.rAc);
-        me.canvas.setShapeStyle(me.AREA.rOut, me._CONFIG.AREA_STYLE.rOut);
+        me.AREA.lAc = me.canvas.drawShape([100, 100], new OG.Area(lacLabel), [50, 50], me._CONFIG.AREA_STYLE.lAc);
+        me.AREA.lOut = me.canvas.drawShape([100, 100], new OG.Area(lOutLabel), [50, 50], me._CONFIG.AREA_STYLE.lOut);
+        me.AREA.rIn = me.canvas.drawShape([100, 100], new OG.Area(rInLabel), [50, 50], me._CONFIG.AREA_STYLE.rIn);
+        me.AREA.rAc = me.canvas.drawShape([100, 100], new OG.Area(rAcLabel), [50, 50], me._CONFIG.AREA_STYLE.rAc);
+        me.AREA.rOut = me.canvas.drawShape([100, 100], new OG.Area(rOutLabel), [50, 50], me._CONFIG.AREA_STYLE.rOut);
     },
 
     /**
@@ -2771,9 +2766,8 @@ EditorRenderer.prototype = {
         //displayViews 중 각 영역의 최고 depth 를 바탕으로 Area 의 크기를 결정한다.
         // ==> 퍼포먼스를 위해 views 검색으로 바꾸도록 조정한다.
         var me = this;
-        var boundary, upper, low, left, right, width;
+        var boundary, upper, low, left, canvasWidth, width, height;
         var containerWidth = me._CONTAINER.width();
-        var containerHeight = me._CONFIG.CONTAINER_HEIGHT;
 
         //viewData 파라미터가 없으면 메모리의 viewData 를 참조한다.
         if (!viewData) {
@@ -2794,40 +2788,39 @@ EditorRenderer.prototype = {
         var totalHeight = viewData.totalHeight + me._CONFIG.AREA.BOTTOM_MARGIN;
 
         upper = 0;
-        low = totalHeight;
         left = 0;
-        right = me._CONFIG.AREA.lAc.display ? me._CONFIG.AREA.ACTIVITY_SIZE : 0;
-        me.fitToBoundary(me.AREA.lAc, [upper, low, left, right]);
+        width = me._CONFIG.AREA.lAc.display ? me._CONFIG.AREA.ACTIVITY_SIZE : 0;
+        height = totalHeight;
+        me.fitToBoundary(me.AREA.lAc, width, height, left, upper);
+        //me.fitToBoundary(me.AREA.lAc, [upper, low, left, right]);
 
-        boundary = me._RENDERER.getBoundary(me.AREA.lAc);
-        left = left + boundary.getWidth();
+        left = left + width;
         width = (containerWidth * me._CONFIG.AREA.LEFT_SIZE_RATE) - me._CONFIG.AREA.ACTIVITY_SIZE;
         width = width < otherOutAreaWidth ? otherOutAreaWidth : width;
         width = me._CONFIG.AREA.lOut.display ? width : 0;
-        right = left + width;
-        me.fitToBoundary(me.AREA.lOut, [upper, low, left, right]);
+        me.fitToBoundary(me.AREA.lOut, width, height, left, upper);
+        //me.fitToBoundary(me.AREA.lOut, [upper, low, left, right]);
 
-        boundary = me._RENDERER.getBoundary(me.AREA.lOut);
-        left = left + boundary.getWidth();
+        left = left + width;
         width = (containerWidth * me._CONFIG.AREA.LEFT_SIZE_RATE) - me._CONFIG.AREA.ACTIVITY_SIZE;
         width = width < myInAreaWidth ? myInAreaWidth : width;
         width = me._CONFIG.AREA.rIn.display ? width : 0;
-        right = left + width;
-        me.fitToBoundary(me.AREA.rIn, [upper, low, left, right]);
+        me.fitToBoundary(me.AREA.rIn, width, height, left, upper);
+        //me.fitToBoundary(me.AREA.rIn, [upper, low, left, right]);
 
-        boundary = me._RENDERER.getBoundary(me.AREA.rIn);
-        left = left + boundary.getWidth();
-        right = left + me._CONFIG.AREA.ACTIVITY_SIZE;
-        right = me._CONFIG.AREA.rAc.display ? right : left;
-        me.fitToBoundary(me.AREA.rAc, [upper, low, left, right]);
+        left = left + width;
+        width = me._CONFIG.AREA.rAc.display ? me._CONFIG.AREA.ACTIVITY_SIZE : 0;
+        me.fitToBoundary(me.AREA.rAc, width, height, left, upper);
+        //me.fitToBoundary(me.AREA.rAc, [upper, low, left, right]);
 
-        boundary = me._RENDERER.getBoundary(me.AREA.rAc);
-        left = left + boundary.getWidth();
+        left = left + width;
         width = containerWidth - ((containerWidth * me._CONFIG.AREA.LEFT_SIZE_RATE) * 2);
         width = width < myOutAreaWidth ? myOutAreaWidth : width;
         width = me._CONFIG.AREA.rOut.display ? width : 0;
-        right = left + width;
-        me.fitToBoundary(me.AREA.rOut, [upper, low, left, right]);
+        me.fitToBoundary(me.AREA.rOut, width, height, left, upper);
+        //me.fitToBoundary(me.AREA.rOut, [upper, low, left, right]);
+
+        canvasWidth = left + width;
 
         //센터 프로퍼티를 가진 Area 를 기준으로 재정렬한다.
         var areaList = [
@@ -2847,18 +2840,16 @@ EditorRenderer.prototype = {
             boundary = me._RENDERER.getBoundary(centerArea.area);
             var moveX = 0;
             var leftX;
-            var rightX;
             var centerX = boundary.getCentroid().x;
             if (centerX < containerWidth / 2) {
-                moveX = containerWidth / 2 - centerX;
+                moveX = Math.round(containerWidth / 2 - centerX);
                 for (var c = 0, lenc = areaList.length; c < lenc; c++) {
                     boundary = me._RENDERER.getBoundary(areaList[c].area);
                     leftX = boundary.getLeftCenter().x + moveX;
-                    rightX = boundary.getRightCenter().x + moveX;
-                    me.fitToBoundary(areaList[c].area, [upper, low, leftX, rightX]);
+                    me.fitToBoundary(areaList[c].area, boundary.getWidth(), boundary.getHeight(), leftX, boundary.getUpperLeft().y);
                 }
                 //캔버스 사이즈 조정
-                right = right + moveX;
+                canvasWidth = canvasWidth + moveX;
             }
         }
 
@@ -2876,26 +2867,26 @@ EditorRenderer.prototype = {
             var fRight = fBoundary.getRightCenter().x;
             //좌측방향 여백채움일 경우
             if (fitList[f].fit == 'left') {
-                me.fitToBoundary(fitList[f].area, [upper, low, 0, fRight]);
+                me.fitToBoundary(fitList[f].area, fRight, fBoundary.getHeight(), 0, fBoundary.getUpperLeft().y);
                 for (var g = 0; g < f; g++) {
-                    me.fitToBoundary(fitList[g].area, [upper, low, 0, 0]);
+                    me.fitToBoundary(fitList[g].area, 0, fBoundary.getHeight(), 0, 0);
                 }
             }
             //우측방향 여백채움일 경우
             if (fitList[f].fit == 'right') {
                 if (fRight < containerWidth) {
-                    me.fitToBoundary(fitList[f].area, [upper, low, fLeft, containerWidth - 20]);
-                    right = containerWidth - 20;
+                    me.fitToBoundary(fitList[f].area, (containerWidth - fLeft - 20), fBoundary.getHeight(), fLeft, fBoundary.getUpperLeft().y);
+                    canvasWidth = containerWidth - 20;
 
                     for (var g = f + 1; g < fitList.length; g++) {
-                        me.fitToBoundary(fitList[g].area, [upper, low, right, right]);
+                        me.fitToBoundary(fitList[g].area, 0, fBoundary.getHeight(), canvasWidth, fBoundary.getUpperLeft().y);
                     }
                 }
             }
         }
 
         //캔버스의 사이즈를 재조정한다.
-        me.canvas.setCanvasSize([right * me.getScale(), totalHeight * me.getScale()]);
+        me.canvas.setCanvasSize([canvasWidth * me.getScale(), totalHeight * me.getScale()]);
     }
     ,
     /**
@@ -2903,14 +2894,15 @@ EditorRenderer.prototype = {
      *
      * @param element OG-Tree Dom Element
      * @param offset[upper,low,left,right]
+     * @param width,height,left,top
      * @return {element} OG-Tree Dom Element
      */
-    fitToBoundary: function (element, offset) {
+    fitToBoundary: function (element, width, height, left, top) {
         var boundary = element.shape.geom.boundary,
-            newUpper = boundary.getUpperCenter().y - offset[0],
-            newLower = offset[1] - boundary.getLowerCenter().y,
-            newLeft = boundary.getLeftCenter().x - offset[2],
-            newRight = offset[3] - boundary.getRightCenter().x;
+            newUpper = boundary.getUpperCenter().y - top,
+            newLower = (top + height) - boundary.getLowerCenter().y,
+            newLeft = boundary.getLeftCenter().x - left,
+            newRight = (left + width) - boundary.getRightCenter().x;
         this._RENDERER.resize(element, [newUpper, newLower, newLeft, newRight]);
         return element;
     }

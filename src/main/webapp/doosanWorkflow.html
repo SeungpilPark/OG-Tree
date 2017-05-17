@@ -81,29 +81,13 @@
 
 <body class="top-navigation">
 <div id="wrapper">
-    <script type="text/javascript">
-        var msgBox = function (message) {
-            $('#messageBox').find('[name=content]').html(message);
-            $('#messageBox').modal({
-                show: true
-            });
-        };
-        $(function () {
-            $('#logoutbtn').click(function () {
-                $('#logoutform').submit();
-            });
-            $('#messageBox').find('[name=close]').click(function () {
-                $('#messageBox').find('.close').click();
-            });
-        });
-    </script>
     <div id="page-wrapper" class="white-bg dashbard-1">
         <div class="row">
             <div class="col-lg-12 padding-1">
                 <div class="ibox float-e-margins header-info">
                     <div class="ibox-title">
                         <div name="account-title-info">
-                            <span><h5>Doosan Workflow Monitor</h5></span>
+                            <span><h5>Doosan Workflow Chart</h5></span>
                         </div>
 
                         <div class="ibox-tools">
@@ -155,20 +139,20 @@
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
                         <div class="row">
-                            <div class="col-lg-5">
-                                <div class="sortBar" style="margin-left: 15px">
-                                    <button class="btn btn-default btn-xs" data-key="name" data-order="asc"
-                                            type="button"><i
-                                            class="fa fa-caret-square-o-down"></i> Name
-                                    </button>
-                                    <button class="btn btn-default btn-xs" data-key="modified_date"
-                                            data-order="asc"
-                                            type="button"><i
-                                            class="fa fa-caret-square-o-down"></i> Modified
-                                    </button>
-                                </div>
-                            </div>
                             <div class="col-lg-7">
+                                <!--<div class="sortBar" style="margin-left: 15px">-->
+                                    <!--<button class="btn btn-default btn-xs" data-key="name" data-order="asc"-->
+                                            <!--type="button"><i-->
+                                            <!--class="fa fa-caret-square-o-down"></i> Name-->
+                                    <!--</button>-->
+                                    <!--<button class="btn btn-default btn-xs" data-key="modified_date"-->
+                                            <!--data-order="asc"-->
+                                            <!--type="button"><i-->
+                                            <!--class="fa fa-caret-square-o-down"></i> Modified-->
+                                    <!--</button>-->
+                                <!--</div>-->
+                            </div>
+                            <div class="col-lg-5">
                                 <div class="toolbar" style="margin-left: 15px">
                                     <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
                                             data-toggle="dropdown"
@@ -182,9 +166,9 @@
                                         <li role="separator" class="divider"></li>
                                         <li><a href="#">Separated link</a></li>
                                     </ul>
-                                    <button class="btn btn-default btn-xs" id="newActivity" type="button"><i
-                                            class="fa fa-plus"></i> Activity
-                                    </button>
+                                    <!--<button class="btn btn-default btn-xs" id="newActivity" type="button"><i-->
+                                            <!--class="fa fa-plus"></i> Activity-->
+                                    <!--</button>-->
                                     <button class="btn btn-default btn-xs" id="refresh" type="button"><i
                                             class="fa fa-refresh"></i> Refresh
                                     </button>
@@ -197,9 +181,9 @@
                                     <button class="btn btn-default btn-xs" id="zoomOut" type="button"><i
                                             class="fa fa-search-minus"></i> Zoom | OUT
                                     </button>
-                                    <button class="btn btn-default btn-xs" id="labelSwitch" type="button"><i
-                                            class="fa fa-caret-square-o-down"></i> Label On|Off
-                                    </button>
+                                    <!--<button class="btn btn-default btn-xs" id="labelSwitch" type="button"><i-->
+                                            <!--class="fa fa-caret-square-o-down"></i> Label On|Off-->
+                                    <!--</button>-->
                                 </div>
                             </div>
                         </div>
@@ -207,26 +191,6 @@
                             <div id="canvas" style="cursor: default;width: 100%;overflow: scroll;"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 메시지 Modal -->
-    <div class="modal fade" id="messageBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
-                            class="sr-only">Close</span></button>
-                    <h4 id="myModalLabel1" class="modal-title">알림</h4>
-                </div>
-                <div class="modal-body">
-                    <p style="text-align: center" name="content"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-white" data-dismiss="modal">확인</button>
                 </div>
             </div>
         </div>
@@ -335,16 +299,16 @@
 <script type="text/javascript" src="lib/jqueryXML2JSON/jquery.xml2json.js"></script>
 <!--OpenGraph-->
 <script type="text/javascript" src="lib/opengraph/OpenGraph-0.1.2-SNAPSHOT.js"></script>
-<script type="text/javascript" src="doosan/shape/Area.js"></script>
-<script type="text/javascript" src="doosan/shape/Activity.js"></script>
-<script type="text/javascript" src="doosan/shape/Folder.js"></script>
-<script type="text/javascript" src="doosan/shape/Ed.js"></script>
-<script type="text/javascript" src="doosan/shape/Expander.js"></script>
-<script type="text/javascript" src="doosan/shape/MLabel.js"></script>
-<script type="text/javascript" src="doosan/shape/SLabel.js"></script>
-<script type="text/javascript" src="doosan/tree.js"></script>
-<script type="text/javascript" src="doosan/aras.js"></script>
-<script type="text/javascript" src="doosan/doosan.js"></script>
+<script type="text/javascript" src="common/shape/editor/Area.js"></script>
+<script type="text/javascript" src="common/shape/editor/Activity.js"></script>
+<script type="text/javascript" src="common/shape/editor/Folder.js"></script>
+<script type="text/javascript" src="common/shape/editor/Ed.js"></script>
+<script type="text/javascript" src="common/shape/editor/Expander.js"></script>
+<script type="text/javascript" src="common/shape/editor/MLabel.js"></script>
+<script type="text/javascript" src="common/shape/editor/SLabel.js"></script>
+<script type="text/javascript" src="common/dataController.js"></script>
+<script type="text/javascript" src="common/editorRenderer.js"></script>
+<script type="text/javascript" src="common/editorViewController.js"></script>
 <script type="text/javascript">
     var editorMode = false;
 </script>

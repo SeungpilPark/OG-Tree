@@ -62,7 +62,7 @@ EditorViewController.prototype = {
         }
         me.tree.init();
 
-        if (!parent.top.aras) {
+        if (parent.top.aras) {
             me.aras = new DataController(me.tree, me);
             me.aras.init();
 
