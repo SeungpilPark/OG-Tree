@@ -12,11 +12,9 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Doosan Inc | Editor</title>
-
-    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Doosan Inc | Editor</title>
 
     <!-- 타이틀 -->
     <meta name="title" content="Doosan Inc"/>
@@ -25,88 +23,64 @@
     <meta name="Location" content="South Korea"/>
     <meta name="Distribution" content="Global"/>
 
+    <!-- Summer Note -->
+    <link href="./resources/css/plugins/summernote/summernote.css" rel="stylesheet">
+    <link href="./resources/css/plugins/summernote/summernote-bs3.css" rel="stylesheet">
 
-    <!-- CSS Global Compulsory -->
-    <link rel="stylesheet" href="resources/assets/plugins/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="resources/assets/css/style.css">
+    <link href="./resources/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./resources/font-awesome/css/font-awesome.css" rel="stylesheet">
 
-    <!-- CSS Header and Footer -->
-    <link rel="stylesheet" href="resources/assets/css/headers/header-default.css">
-    <link rel="stylesheet" href="resources/assets/css/footers/footer-v1.css">
+    <link href="./resources/css/plugins/iCheck/custom.css" rel="stylesheet">
 
-    <!-- CSS Implementing Plugins -->
-    <link rel="stylesheet" href="resources/assets/plugins/animate.css">
-    <link rel="stylesheet" href="resources/assets/plugins/line-icons/line-icons.css">
-    <link rel="stylesheet" href="resources/assets/plugins/font-awesome/css/font-awesome.min.css">
+    <link href="./resources/css/plugins/chosen/bootstrap-chosen.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="resources/assets/plugins/scrollbar/css/jquery.mCustomScrollbar.css">
-    <link rel="stylesheet" href="resources/assets/plugins/sky-forms-pro/skyforms/css/sky-forms.css">
-    <link rel="stylesheet" href="resources/assets/plugins/sky-forms-pro/skyforms/custom/custom-sky-forms.css">
-    <!-- CSS Customization -->
-    <link rel="stylesheet" href="resources/assets/css/custom.css">
+    <!-- Toastr style -->
+    <link href="./resources/css/plugins/toastr/toastr.min.css" rel="stylesheet">
 
-    <!-- JS Global Compulsory -->
+    <!-- Gritter -->
+    <link href="./resources/js/plugins/gritter/jquery.gritter.css" rel="stylesheet">
+
+    <link href="./resources/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+
+    <!-- Jquery -->
     <script type="text/javascript" src="lib/jquery-1.11.1/jquery-1.11.1.min.js"></script>
-    <!--<script type="text/javascript" src="resources/assets/plugins/jquery/jquery-migrate.min.js"></script>-->
-    <script type="text/javascript" src="resources/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <!--<script src="./resources/js/jquery-2.1.1.js"></script>-->
 
     <!-- jquery-ui, jquery.contextmenu -->
     <link rel="stylesheet" type="text/css"
-          href="resources/assets/plugins/jquery-ui-1.11.0.custom/jquery-ui.css"/>
+          href="lib/jquery-ui-1.11.4.custom/jquery-ui.css"/>
     <script type="text/javascript"
-            src="resources/assets/plugins/jquery-ui-1.11.0.custom/jquery-ui.min.js"></script>
+            src="lib/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
 
     <script type="text/javascript" src="lib/jquery-contextMenu/jquery.contextMenu.js"></script>
     <link rel="stylesheet" type="text/css" href="lib/jquery-contextMenu/jquery.contextMenu.css"/>
 
-    <!-- CSS Theme -->
-    <link rel="stylesheet" href="resources/assets/css/theme-colors/dark-blue.css">
+    <!-- Data Table -->
+    <link href="/resources/css/plugins/dataTables/datatables.min.css" rel="stylesheet">
+    <link href="/resources/css/plugins/dataTables/select.dataTables.min.css" rel="stylesheet">
 
-    <!-- uengine CSS -->
-    <link rel="stylesheet" href="resources/assets/css/uengine.css">
-
-    <!-- data table -->
-    <link rel="stylesheet" href="resources/plugins/datatable/datatables.css">
-    <script type="text/javascript" src="resources/plugins/datatable/datatables.js"></script>
+    <!-- ajax 호출 UI 블락커 && 커스터마이징 -->
+    <script type="text/javascript" src="./resources/js/plugins/blockUI/blockUI.js"></script>
+    <script type="text/javascript" src="./resources/js/plugins/blockUI/blockUIcustom.js"></script>
 
     <!-- libs -->
     <script type="text/javascript" src="lib/jqueryXML2JSON/jquery.xml2json.js"></script>
 
-    <script type="text/javascript" src="lib/opengraph/OpenGraph-0.1.2-SNAPSHOT.js"></script>
-    <script type="text/javascript" src="doosan/shape/Area.js"></script>
-    <script type="text/javascript" src="doosan/shape/Activity.js"></script>
-    <script type="text/javascript" src="doosan/shape/Folder.js"></script>
-    <script type="text/javascript" src="doosan/shape/Ed.js"></script>
-    <script type="text/javascript" src="doosan/shape/Expander.js"></script>
-    <script type="text/javascript" src="doosan/shape/MLabel.js"></script>
-    <script type="text/javascript" src="doosan/shape/SLabel.js"></script>
-    <script type="text/javascript" src="doosan/tree.js"></script>
-    <script type="text/javascript" src="doosan/aras.js"></script>
-    <script type="text/javascript" src="doosan/doosan.js"></script>
+    <!--JS Tree-->
+    <link rel="stylesheet" href="lib/jstree/themes/default/style.css"/>
+    <script type="text/javascript" src="lib/jstree/jstree.js"></script>
 
+    <!-- IE scrollbar -->
+    <link href="./resources/css/ie-scrollbar.css" rel="stylesheet">
+
+    <link href="./resources/css/animate.css" rel="stylesheet">
+    <link href="./resources/css/style.css" rel="stylesheet">
+    <link href="./resources/css/custom.css" rel="stylesheet">
 
 </head>
 
-<div class="wrapper">
-
-    <!-- 메시지 Modal -->
-    <div class="modal fade" id="messageBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
-                    <h4 id="myModalLabel1" class="modal-title">알림</h4>
-                </div>
-                <div class="modal-body">
-                    <p style="text-align: center" name="content"></p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-u" type="button" name="close">확인</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<body class="top-navigation">
+<div id="wrapper">
     <script type="text/javascript">
         var msgBox = function (message) {
             $('#messageBox').find('[name=content]').html(message);
@@ -123,218 +97,256 @@
             });
         });
     </script>
-
-    <div class="breadcrumbs">
-        <div class="container">
-            <h4 class="pull-left">Doosan Workflow Monitor <i class="header-angle fa fa-angle-down"
-                                                             style="cursor: pointer"></i></h4>
-            <script>
-                $(function () {
-                    $('.header-angle').click(function () {
-                        var headerAngle = $(this);
-                        if (headerAngle.hasClass('fa-angle-down')) {
-                            headerAngle.removeClass('fa-angle-down');
-                            headerAngle.addClass('fa-angle-right');
-                            $('.header-info').hide();
-                        } else {
-                            headerAngle.addClass('fa-angle-down');
-                            headerAngle.removeClass('fa-angle-right');
-                            $('.header-info').show();
-                        }
-                    });
-                })
-            </script>
-        </div>
-    </div>
-
-    <!--=== Content Part ===-->
-    <div class="container" style="padding-top: 10px;padding-bottom: 30px;">
-        <!--<div class="row header-info">-->
-            <!--<div class="col-md-12">-->
-                <!--<h5>My Workflow</h5>-->
-            <!--</div>-->
-        <!--</div>-->
-        <div class="row header-info">
-            <div class="col-md-12">
-                <div class="tag-box tag-box-v2" style="padding: 5px;">
-                    <table class="table workflow-table my-table">
-                        <thead>
-                        <tr>
-                            <th>PROJECT CODE</th>
-                            <th>PROCESS ID</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td name="project_code"></td>
-                            <td name="process_id"></td>
-                            <td></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <table class="table workflow-table my-table">
-                        <thead>
-                        <tr>
-                            <th>PROJECT NAME</th>
-                            <th>PROCESS NAME</th>
-                            <th>SUB PROCESS NAME</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td name="pjt_name"></td>
-                            <td name="processname"></td>
-                            <td name="sub_processname"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div id="page-wrapper" class="white-bg dashbard-1">
         <div class="row">
-            <div class="row col-md-12">
-                <div class="col-md-5">
-                    <div class="sortBar" style="margin-left: 15px">
-                        <button class="btn btn-xs rounded btn-default" data-key="name" data-order="asc"
-                                type="button"><i
-                                class="fa fa-caret-square-o-down"></i> Name
-                        </button>
-                        <!--<button class="btn btn-xs rounded btn-default" data-key="first_start_date" data-order="asc"-->
-                                <!--type="button"><i-->
-                                <!--class="fa fa-caret-square-o-down"></i> Start-->
-                        <!--</button>-->
-                        <!--<button class="btn btn-xs rounded btn-default" data-key="final_end_date" data-order="asc"-->
-                                <!--type="button"><i-->
-                                <!--class="fa fa-caret-square-o-down"></i> End-->
-                        <!--</button>-->
-                        <button class="btn btn-xs rounded btn-default" data-key="modified_date" data-order="asc"
-                                type="button"><i
-                                class="fa fa-caret-square-o-down"></i> Modified
-                        </button>
+            <div class="col-lg-12 padding-1">
+                <div class="ibox float-e-margins header-info">
+                    <div class="ibox-title">
+                        <div name="account-title-info">
+                            <span><h5>Doosan Workflow Monitor</h5></span>
+                        </div>
+
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <table class="table workflow-table my-table">
+                                    <thead>
+                                    <tr>
+                                        <th>PROJECT CODE</th>
+                                        <th>PROCESS ID</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td name="project_code"></td>
+                                        <td name="process_id"></td>
+                                        <td></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <table class="table workflow-table my-table">
+                                    <thead>
+                                    <tr>
+                                        <th>PROJECT NAME</th>
+                                        <th>PROCESS NAME</th>
+                                        <th>SUB PROCESS NAME</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td name="pjt_name"></td>
+                                        <td name="processname"></td>
+                                        <td name="sub_processname"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-7">
-                    <div class="toolbar" style="margin-left: 15px">
-                        <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
-                                data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                            State Color <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu state-color">
-                            <li><a href="Javascript:void(0)">Action</a></li>
-                            <li><a href="#">Another action</a></li>
-                            <li><a href="#">Something else here</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="#">Separated link</a></li>
-                        </ul>
-                        <button class="btn btn-xs rounded btn-default" id="refresh" type="button"><i
-                                class="fa fa-refresh"></i> Refresh
-                        </button>
-                        <button class="btn btn-xs rounded btn-default" id="zoomIn" type="button"><i
-                                class="fa fa-search-plus"></i> Zoom | IN
-                        </button>
-                        <button class="btn btn-xs rounded btn-default" id="zoomFit" type="button"><i
-                                class="fa fa-arrows-h"></i> Zoom | FIT
-                        </button>
-                        <button class="btn btn-xs rounded btn-default" id="zoomOut" type="button"><i
-                                class="fa fa-search-minus"></i> Zoom | OUT
-                        </button>
-                        <button class="btn btn-xs rounded btn-default" id="labelSwitch" type="button"><i
-                                class="fa fa-caret-square-o-down"></i> Label On|Off
-                        </button>
+
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <div class="sortBar" style="margin-left: 15px">
+                                    <button class="btn btn-default btn-xs" data-key="name" data-order="asc"
+                                            type="button"><i
+                                            class="fa fa-caret-square-o-down"></i> Name
+                                    </button>
+                                    <button class="btn btn-default btn-xs" data-key="modified_date"
+                                            data-order="asc"
+                                            type="button"><i
+                                            class="fa fa-caret-square-o-down"></i> Modified
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="toolbar" style="margin-left: 15px">
+                                    <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false">
+                                        State Color <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu state-color">
+                                        <li><a href="Javascript:void(0)">Action</a></li>
+                                        <li><a href="#">Another action</a></li>
+                                        <li><a href="#">Something else here</a></li>
+                                        <li role="separator" class="divider"></li>
+                                        <li><a href="#">Separated link</a></li>
+                                    </ul>
+                                    <button class="btn btn-default btn-xs" id="newActivity" type="button"><i
+                                            class="fa fa-plus"></i> Activity
+                                    </button>
+                                    <button class="btn btn-default btn-xs" id="refresh" type="button"><i
+                                            class="fa fa-refresh"></i> Refresh
+                                    </button>
+                                    <button class="btn btn-default btn-xs" id="zoomIn" type="button"><i
+                                            class="fa fa-search-plus"></i> Zoom | IN
+                                    </button>
+                                    <button class="btn btn-default btn-xs" id="zoomFit" type="button"><i
+                                            class="fa fa-arrows-h"></i> Zoom | FIT
+                                    </button>
+                                    <button class="btn btn-default btn-xs" id="zoomOut" type="button"><i
+                                            class="fa fa-search-minus"></i> Zoom | OUT
+                                    </button>
+                                    <button class="btn btn-default btn-xs" id="labelSwitch" type="button"><i
+                                            class="fa fa-caret-square-o-down"></i> Label On|Off
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="canvas" style="cursor: default;width: 100%;overflow: scroll;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-12">
-                <div id="canvas" style="cursor: default;width: 100%;overflow: scroll;"/>
+        </div>
+    </div>
+
+    <!-- 메시지 Modal -->
+    <div class="modal fade" id="messageBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 id="myModalLabel1" class="modal-title">알림</h4>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align: center" name="content"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">확인</button>
+                </div>
             </div>
         </div>
     </div>
-    <!--/container-->
-    <!-- End Content Part -->
 
-</div>
-<!--/wrapper-->
+    <div class="modal fade" id="listRelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">List Relations</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="listRelGrid" class="table table-hover" width="100%"></table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="modal fade" id="listRelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
-                <h4 class="modal-title">List Relations</h4>
+    <div class="modal fade" id="pickEdModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Pick Ed List</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <label class="sr-only" for="pickEdNumber">Ed number</label>
+                            <input type="text" class="custom-form-control" id="pickEdNumber" placeholder="Ed number">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="pickEdName">Ed name</label>
+                            <input type="text" class="custom-form-control" id="pickEdName" placeholder="Ed name">
+                        </div>
+
+                        <a href="Javascript:void(0)" class="btn-u btn-u-default" style="margin-top: 2px"
+                           name="search">Load</a>
+                    </form>
+
+                    <table id="pickEdGrid" class="display" width="100%"></table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" name="action">Pick</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <table id="listRelGrid" class="display" width="100%"></table>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-u" type="button" name="close">Close</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Delete Confirm</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" name="action">Delete</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="pickEdModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
-                <h4 class="modal-title">Pick Ed List</h4>
-            </div>
-            <div class="modal-body">
-                <table id="pickEdGrid" class="display" width="100%"></table>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-u" type="button" name="action">Pick</button>
-                <button class="btn-u" type="button" name="close">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Mainly scripts -->
+<script src="./resources/js/bootstrap.min.js"></script>
+<script src="./resources/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="./resources/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="./resources/js/plugins/dataTables/datatables.min.js"></script>
+<script src="./resources/js/plugins/dataTables/dataTables.select.min.js"></script>
+<script src="./resources/js/uengine-datatables.js"></script>
 
-<!-- ajax 호출 UI 블락커 && 커스터마이징 -->
-<script type="text/javascript" src="resources/plugins/blockUI/blockUI.js"></script>
-<script type="text/javascript" src="resources/js/blockUIcustom.js"></script>
+<!-- Flot -->
+<script src="./resources/js/plugins/flot/jquery.flot.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.tooltip.min.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.spline.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.resize.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.pie.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.symbol.js"></script>
+<script src="./resources/js/plugins/flot/jquery.flot.time.js"></script>
 
 
-<!-- Jquery Validator -->
-<script type="text/javascript" src="resources/plugins/validator/jquery.validate.js"></script>
-<script type="text/javascript" src="resources/plugins/validator/additional-methods.js"></script>
+<!-- Custom and plugin javascript -->
+<script src="./resources/js/inspinia.js"></script>
+<script src="./resources/js/plugins/pace/pace.min.js"></script>
+<!-- Toastr -->
+<script src="./resources/js/plugins/toastr/toastr.min.js"></script>
 
-<!-- JS Implementing Plugins -->
-<script type="text/javascript" src="resources/assets/plugins/back-to-top.js"></script>
-<script type="text/javascript" src="resources/assets/plugins/sky-forms-pro/skyforms/js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="resources/assets/plugins/sky-forms-pro/skyforms/js/jquery.validate.min.js"></script>
-<script type="text/javascript"
-        src="resources/assets/plugins/sky-forms-pro/skyforms/js/jquery.maskedinput.min.js"></script>
-<script type="text/javascript"
-        src="resources/assets/plugins/scrollbar/js/jquery.mCustomScrollbar.concat.min.js"></script>
 
-<!-- JS Customization -->
-<script type="text/javascript" src="resources/assets/js/custom.js"></script>
-
-<!-- JS Page Level -->
-<script type="text/javascript" src="resources/assets/js/app.js"></script>
-<script type="text/javascript" src="resources/assets/js/forms/reg.js"></script>
-<script type="text/javascript" src="resources/assets/js/forms/checkout.js"></script>
+<!-- libs -->
+<script type="text/javascript" src="lib/jqueryXML2JSON/jquery.xml2json.js"></script>
+<!--OpenGraph-->
+<script type="text/javascript" src="lib/opengraph/OpenGraph-0.1.2-SNAPSHOT.js"></script>
+<script type="text/javascript" src="common/shape/editor/Area.js"></script>
+<script type="text/javascript" src="common/shape/editor/Activity.js"></script>
+<script type="text/javascript" src="common/shape/editor/Folder.js"></script>
+<script type="text/javascript" src="common/shape/editor/Ed.js"></script>
+<script type="text/javascript" src="common/shape/editor/Expander.js"></script>
+<script type="text/javascript" src="common/shape/editor/MLabel.js"></script>
+<script type="text/javascript" src="common/shape/editor/SLabel.js"></script>
+<script type="text/javascript" src="common/dataController.js"></script>
+<script type="text/javascript" src="common/editorRenderer.js"></script>
+<script type="text/javascript" src="common/editorViewController.js"></script>
 <script type="text/javascript">
     var editorMode = false;
-    jQuery(document).ready(function () {
-        App.init();
-    });
 </script>
-
-
-<!--[if lt IE 9]>
-<script src="resources/assets/plugins/respond.js"></script>
-<script src="resources/assets/plugins/html5shiv.js"></script>
-<script src="resources/assets/plugins/placeholder-IE-fixes.js"></script>
-<script src="resources/assets/plugins/sky-forms-pro/skyforms/js/sky-forms-ie8.js"></script>
-<![endif]-->
-
-<!--[if lt IE 10]>
-<script src="resources/assets/plugins/sky-forms-pro/skyforms/js/jquery.placeholder.min.js"></script>
-<![endif]-->
+</body>
 </html>

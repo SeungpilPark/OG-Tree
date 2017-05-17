@@ -1,0 +1,198 @@
+.padding-1 {
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.padding-no{
+    padding: 0px;
+}
+
+.tab-content{
+    padding-top: 5px;
+}
+
+.margin-top-5{
+    margin-top: 5px;
+}
+
+.div-center {
+    margin: 0 auto;
+}
+
+.col-centered {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.disable_div {
+    display: none;
+}
+
+div.tooltip-inner {
+    max-width: 500px;
+}
+
+.toolbar {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.tag-box {
+    margin-bottom: 10px;
+}
+
+.custom-form-control {
+    display: block;
+    width: 100%;
+    height: 24px;
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+}
+
+.context-menu-item.icon {
+    min-height: 18px;
+    background-repeat: no-repeat;
+    background-position: 4px 2px;
+    background-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 5px;
+}
+
+/*dataTable custom class*/
+/*table.dataTable td {*/
+    /*border-top: 1px solid #bfbfbf;*/
+/*}*/
+
+/*jstree-dnd custom class - 드래그 시 아이콘 생성을 막는다.*/
+#jstree-dnd .jstree-icon,
+#jstree-dnd .jstree-copy {
+    text-decoration: none;
+    margin: 0 2px 0 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: none;
+}
+
+.ogCanvas {
+    position: absolute;
+    top: 0px;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    border: solid 1px #eee;
+    overflow: scroll;
+}
+
+.icon_shape{
+    width: 30px;height: 30px;
+}
+
+/*Jquery UI*/
+.ui-widget-header {
+    background: #1ab394;
+    border: none;
+    line-height: 1;
+    color: white;
+}
+
+.sliderNavigator.ui-draggable.ui-draggable-handle div{
+    border: 2px solid #1ab394;
+}
+
+.box-custom-content{
+    border-color: #e7eaec;
+    border-right: 1px solid #e7eaec;
+}
+
+.hierarchy-content{
+    display: none;
+}
+.route-content{
+    display: none;
+}
+
+
+
+div.tooltip-inner {
+    max-width: 500px;
+}
+
+.job-status {
+    display: none;
+}
+
+.state-bar {
+    width: 50px;
+    height: 5px;
+    float: left;
+    margin-top: 7px;
+    margin-right: 5px;
+    border: 1px solid darkgrey;
+}
+
+.workflow-table {
+    font-size: 10px;
+    margin-bottom: 0px;
+}
+
+.toolbar {
+    margin-bottom: 10px;
+}
+
+.tag-box {
+    margin-bottom: 10px;
+}
+
+.custom-form-control{
+    display: block;
+    width: 100%;
+    height: 24px;
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+}
+
+.context-menu-item.icon {
+    min-height: 18px;
+    background-repeat: no-repeat;
+    background-position: 4px 2px;
+    background-size: 16px;
+}
+
+.context-menu-item.icon-create-ed {
+    background-image: url('../../common/icons/create-ed.svg');
+    background-size: 18px;
+}
+
+.context-menu-item.icon-create-folder {
+    background-image: url('../../common/icons/create-folder.svg');
+    background-size: 14px;
+}
+
+.context-menu-item.icon-delete-item {
+    background-image: url('../../common/icons/delete-item.svg');
+    background-size: 12px;
+}
+
+.context-menu-item.icon-pick-ed {
+    background-image: url('../../common/icons/pick-ed.svg');
+    background-size: 18px;
+}
+.form-group{
+    margin-bottom: 5px;
+}
+
