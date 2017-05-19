@@ -158,7 +158,9 @@ DataController.prototype = {
         this.body = '';
 
         //아라츠 팝업창 상태에 따라 에디터/모니터 화면을 리사이즈 한다.
+        var parentIframe;
         var resizeView = function () {
+            console.log('resizeView!');
             if (window && window.parent && window.parent.document) {
                 var parentDoc;
                 try {
@@ -168,7 +170,7 @@ DataController.prototype = {
                 }
                 if (parentDoc && parentDoc.length) {
                     var iframes;
-                    var parentIframe;
+                    parentIframe = null;
                     var innerMode = me.getHtmlParameter('mode');
                     if (innerMode) {
                         iframes = parentDoc.find('iframe');
@@ -259,6 +261,17 @@ DataController.prototype = {
                 $(window.parent.document).find('.dijitReset').click(function () {
                     resizeView();
                 })
+            }
+
+            if (parentIframe) {
+                var checkFrameHeight = function () {
+                    var height = parentIframe.height();
+                    if (me.tree._CONFIG.CONTAINER_HEIGHT != (height - 50)) {
+                        resizeView();
+                    }
+                };
+
+                setInterval(checkFrameHeight, 1000);
             }
         }
 
