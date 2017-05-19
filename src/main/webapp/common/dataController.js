@@ -266,6 +266,7 @@ DataController.prototype = {
         resizeView();
 
         var checkFrameHeight = function () {
+            var innerMode = me.getHtmlParameter('mode');
             if (window.parent.document && innerMode && parentIframe) {
                 var height = parentIframe.height();
                 if (me.tree._CONFIG.CONTAINER_HEIGHT != (height - 50)) {
