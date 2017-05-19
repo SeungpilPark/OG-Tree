@@ -262,20 +262,19 @@ DataController.prototype = {
                     resizeView();
                 })
             }
-
-            if (parentIframe) {
-                var checkFrameHeight = function () {
-                    var height = parentIframe.height();
-                    if (me.tree._CONFIG.CONTAINER_HEIGHT != (height - 50)) {
-                        resizeView();
-                    }
-                };
-
-                setInterval(checkFrameHeight, 1000);
-            }
         }
-
         resizeView();
+
+        var checkFrameHeight = function () {
+            if (window.parent.document && innerMode && parentIframe) {
+                var height = parentIframe.height();
+                if (me.tree._CONFIG.CONTAINER_HEIGHT != (height - 50)) {
+                    resizeView();
+                }
+            }
+        };
+
+        setInterval(checkFrameHeight, 1000);
     },
     /**
      * key value 오브젝트로부터 xml 바디 스트링을 만든다
