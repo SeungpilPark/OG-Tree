@@ -3,10 +3,10 @@
  *
  * @class
  *
- * @param {Tree} tree 오픈그래프 트리 라이브러리
+ * @param tree 오픈그래프 트리 라이브러리
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var DataController = function (tree, viewController) {
+var DataController = function (tree, chartRenderer, viewController) {
 
     /**
      * Doosan view controller
@@ -14,10 +14,15 @@ var DataController = function (tree, viewController) {
      */
     this.viewController = viewController;
     /**
-     * OG-Tree 객체
+     * Renderer 객체
      * @type {Tree} OG-Tree
      */
     this.tree = tree;
+
+    /**
+     * 차트 렌더러
+     */
+    this.chartRenderer = chartRenderer;
 
     /**
      * 부모페이지의 aras 객체

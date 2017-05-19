@@ -63,7 +63,7 @@ EditorViewController.prototype = {
         me.tree.init();
 
         if (parent.top.aras) {
-            me.aras = new DataController(me.tree, me);
+            me.aras = new DataController(me.tree, null, me);
             me.aras.init();
 
             //스탠다드 모드에서는 PICK ED 와 CREATE ED 를 설정하도록 한다.

@@ -99,38 +99,42 @@
                     <div class="ibox-content">
                         <div class="row">
                             <div class="col-lg-12">
-                                <table class="table workflow-table my-table">
-                                    <thead>
-                                    <tr>
-                                        <th>PROJECT CODE</th>
-                                        <th>PROCESS ID</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td name="project_code">sdfsdf</td>
-                                        <td name="process_id">sdfsdf</td>
-                                        <td></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <table class="table workflow-table my-table">
-                                    <thead>
-                                    <tr>
-                                        <th>PROJECT NAME</th>
-                                        <th>PROCESS NAME</th>
-                                        <th>SUB PROCESS NAME</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td name="pjt_name">sdfsdf</td>
-                                        <td name="processname">sdfsdf</td>
-                                        <td name="sub_processname">sdfsdf</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                <div class="m-b-md">
+                                    <h2>PE Center 견적 설계 Workflow Chart </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <dl class="dl-horizontal">
+
+                                    <dt>Created by:</dt> <dd>김철호</dd>
+                                    <dt>Project Code:</dt> <dd>  162</dd>
+                                    <dt>Process Name:</dt> <dd><a href="#" class="text-navy"> Zender Company</a> </dd>
+                                    <dt>Process Name(Sub):</dt> <dd>  v1.4.2</dd>
+                                    <dt>Process ID:</dt> <dd> 	Zender Company </dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-7" id="cluster_info">
+                                <dl class="dl-horizontal">
+                                    <dt>Type:</dt> <dd><span class="label label-primary">Standard</span></dd>
+                                    <br>
+                                    <dt>Last Updated:</dt> <dd>16.08.2016 12:15:57</dd>
+                                    <dt>Created:</dt> <dd> 	10.07.2016 23:36:57 </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <dl class="dl-horizontal">
+                                    <dt>Completed:</dt>
+                                    <dd>
+                                        <div class="progress progress-striped active m-b-sm" style="height: 10px">
+                                            <div style="width: 60%;" class="progress-bar"></div>
+                                        </div>
+                                        <small>Project completed in <strong>60%</strong>.</small>
+                                    </dd>
+                                </dl>
                             </div>
                         </div>
                     </div>
@@ -139,20 +143,10 @@
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
                         <div class="row">
-                            <div class="col-lg-7">
-                                <!--<div class="sortBar" style="margin-left: 15px">-->
-                                    <!--<button class="btn btn-default btn-xs" data-key="name" data-order="asc"-->
-                                            <!--type="button"><i-->
-                                            <!--class="fa fa-caret-square-o-down"></i> Name-->
-                                    <!--</button>-->
-                                    <!--<button class="btn btn-default btn-xs" data-key="modified_date"-->
-                                            <!--data-order="asc"-->
-                                            <!--type="button"><i-->
-                                            <!--class="fa fa-caret-square-o-down"></i> Modified-->
-                                    <!--</button>-->
-                                <!--</div>-->
+                            <div class="col-lg-6">
+
                             </div>
-                            <div class="col-lg-5">
+                            <div class="col-lg-6">
                                 <div class="toolbar" style="margin-left: 15px">
                                     <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
                                             data-toggle="dropdown"
@@ -166,9 +160,10 @@
                                         <li role="separator" class="divider"></li>
                                         <li><a href="#">Separated link</a></li>
                                     </ul>
-                                    <!--<button class="btn btn-default btn-xs" id="newActivity" type="button"><i-->
-                                            <!--class="fa fa-plus"></i> Activity-->
-                                    <!--</button>-->
+                                    <button class="btn btn-default btn-xs" data-key="name" data-order="asc"
+                                            type="button"><i
+                                            class="fa fa-save"></i> Save
+                                    </button>
                                     <button class="btn btn-default btn-xs" id="refresh" type="button"><i
                                             class="fa fa-refresh"></i> Refresh
                                     </button>
@@ -307,8 +302,8 @@
 <script type="text/javascript" src="common/shape/editor/MLabel.js"></script>
 <script type="text/javascript" src="common/shape/editor/SLabel.js"></script>
 <script type="text/javascript" src="common/dataController.js"></script>
-<script type="text/javascript" src="common/editorRenderer.js"></script>
-<script type="text/javascript" src="common/editorViewController.js"></script>
+<script type="text/javascript" src="common/chartRenderer.js"></script>
+<script type="text/javascript" src="common/chartViewController.js"></script>
 <script type="text/javascript">
     var editorMode = false;
 </script>
