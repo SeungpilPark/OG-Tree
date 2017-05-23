@@ -1930,11 +1930,40 @@ DataController.prototype = {
             mapData = null;
         }
 
+        var headers, rows, activities;
+        var keyActivityList = me.getKeyActivityList();
+        var engFuncCodeList = me.getEngFuncCodeList();
+        var objActivityList = me.getObjActivityList();
+        if (keyActivityList.node == null && keyActivityList.nodeList == null) {
+            headers = [
+                {
+                    "_REL_PROJECT": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "KEYED_NAME": "HBD",
+                    "_END_DATE": "04-17-17"
+                },
+                {
+                    "_REL_PROJECT": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "KEYED_NAME": "ITB",
+                    "_END_DATE": "04-17-17"
+                },
+                {
+                    "_REL_PROJECT": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "KEYED_NAME": "P&ID",
+                    "_END_DATE": "04-23-17"
+                }
+            ]
+        } else {
+            headers = me.convertMethodResultToJsonArray(keyActivityList);
+        }
+
+        rows = me.convertMethodResultToJsonArray(engFuncCodeList);
+        activities = me.convertMethodResultToJsonArray(objActivityList);
+
         return {
             chartData: {
-                headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
-                rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
-                activities: me.convertMethodResultToJsonArray(me.getObjActivityList())
+                headers: headers,
+                rows: rows,
+                activities: activities
             },
             chartMap: mapData
         };
