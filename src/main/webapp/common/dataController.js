@@ -286,8 +286,6 @@ DataController.prototype = {
         this.projectId = parent.top.thisItem.getProperty('_rel_project');
         this.mapdata = parent.top.thisItem.getProperty('_map_data');
         this.body = '';
-
-        this.project_id = parent.top.thisItem.getProperty('project_id');
     },
     /**
      * key value 오브젝트로부터 xml 바디 스트링을 만든다
@@ -1879,17 +1877,66 @@ DataController.prototype = {
         }
     },
 
-    getKeyActivityList: function (project_id) {
+    getKeyActivityList: function () {
         var me = this, params = {
-            project_id: wf_id,
-            std_yn: me.stdYN,
-            inout: inout.toUpperCase()
+            project_id: parent.top.thisItem.getProperty('id')
         };
-        return me.applyMethod('DHI_WF_EDITOR_STRUCTURE', me.createBody(params));
+        return me.applyMethod('DHI_PROJECT_GetKeyActivityList', me.createBody(params));
+    },
+    convertMethodResultToJsonArray: function (result) {
+        var nodeList = [];
+        var tempData = [];
+        if (!result) {
+            return tempData;
+        }
+        if (result.getItemCount() == 0) {
+            nodeList.push(result.node);
+        } else {
+            nodeList = result.nodeList;
+        }
+        for (var i = 0; i < nodeList.length; i++) {
+            var xmlNode = nodeList[i];
+            var xmlNodeToString = '';
+            var xmlNodeStringToJSON;
+            if (OG.Util.isIE()) {
+                xmlNodeToString = '<node>' + xmlNode.xml + '</node>';
+                xmlNodeStringToJSON = me.iExmL2jsobj($.parseXML(xmlNodeToString));
+            } else {
+                xmlNodeToString = '<node>' + $(xmlNode).html() + '</node>';
+                xmlNodeStringToJSON = $.xml2json(xmlNodeToString);
+            }
+            tempData.push(xmlNodeStringToJSON);
+        }
+        return tempData;
+    },
+    getEngFuncCodeList: function () {
+        var me = this, params = {
+            project_id: parent.top.thisItem.getProperty('id')
+        };
+        return me.applyMethod('DHI_PROJECT_GetEngFuncCodeList', me.createBody(params));
+    },
+    getObjActivityList: function () {
+        var me = this, params = {
+            project_id: parent.top.thisItem.getProperty('id')
+        };
+        return me.applyMethod('DHI_PROJECT_GetObjActivityList', me.createBody(params));
     },
 
     getChartData: function () {
-        console.log(parent.top.thisItem.node);
+        var me = this;
+        var mapData = parent.top.thisItem.getProperty('_map_data');
+        if (!mapData || typeof mapData != 'object') {
+            mapData = null;
+        }
+
+        return {
+            chartData: {
+                headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
+                rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
+                activities: me.convertMethodResultToJsonArray(me.getObjActivityList())
+            },
+            chartMap: mapData
+        };
     }
 }
 ;

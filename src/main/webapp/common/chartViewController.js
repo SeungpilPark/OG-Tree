@@ -78,8 +78,9 @@ ChartViewController.prototype = {
         });
 
         if (parent.top.aras) {
+            var data = me.aras.getChartData();
+            me.renderer.render(data.chartData, data.chartMap);
 
-            me.aras.getChartData();
         } else {
             me.getSampleData(function (chartData, chartMap) {
                 me.renderer.render(chartData, chartMap);
