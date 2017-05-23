@@ -325,6 +325,7 @@ ChartRenderer.prototype = {
      * @param existJson
      */
     render: function (chartData, existJson) {
+        console.log('debug');
         var me = this;
         var dataTable;
         var existTableData;
