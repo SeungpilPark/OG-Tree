@@ -5,14 +5,21 @@
  * @requires OG.*
  *
  * @param {String} container Dom Element Id
+ * @param {ChartViewController} viewController
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var ChartRenderer = function (container) {
+var ChartRenderer = function (container, viewController) {
+    this.viewController = viewController;
     this._CONFIG = {
         /**
          * 캔버스 높이
          */
-        CONTAINER_HEIGHT: 600
+        CONTAINER_HEIGHT: 600,
+
+        ACTIVITY_WIDTH: 80,
+        ACTIVITY_HEIGHT: 38,
+        ARRANGEMENT: 'horizontal',
+        ARRANGEMENT_MARGIN: 10
     };
 
     this._CONTAINER = $('#' + container);
@@ -50,6 +57,7 @@ var ChartRenderer = function (container) {
 
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
+    this.existJson = null;
 };
 ChartRenderer.prototype = {
 
@@ -58,7 +66,6 @@ ChartRenderer.prototype = {
      */
     init: function () {
         var me = this;
-        me.render();
         me.bindEvent();
     },
     /**
@@ -106,30 +113,53 @@ ChartRenderer.prototype = {
     //========================================================================//
     //=============================Data apis==================================//
     //========================================================================//
-
-
-    //========================================================================//
-    //===========================Render apis==================================//
-    //========================================================================//
     /**
-     * 스토리지의 데이터를 기반으로 화면에 렌더링한다.
+     * Aras 데이터를 테이블 데이터로 변환한다.
+     * @param chartData
      */
-    render: function () {
-        var dataTable = new OG.DataTable();
-        dataTable.MOVABLE = false;
-        var renderer = function (value) {
+    convertData: function (chartData) {
+
+    },
+
+    getColumnByField: function (columns, field) {
+        for (var i = 0, leni = columns.length; i < leni; i++) {
+            if (columns[i].data == field) {
+                return columns[i];
+            }
+        }
+    },
+
+    getColorFromState: function (state) {
+        var me = this;
+        var selectedColor;
+        var chartJson = me.viewController.getChartStateJson();
+        if (chartJson) {
+            for (var i = 0; i < chartJson.length; i++) {
+                var name = chartJson[i]['name'];
+                var color = chartJson[i]['color'];
+                if (state == name) {
+                    selectedColor = color;
+                }
+            }
+        }
+        return selectedColor;
+    },
+
+    getDataTableRenderer: function () {
+        var me = this;
+        var tableRenderer = function (value) {
             var result = {
                 contents: [],
                 contentsPosition: {
                     /**
                      * 컨텐츠 배열
                      */
-                    arrangement: 'horizontal', //수평 || vertical 수직
+                    arrangement: me._CONFIG.ARRANGEMENT, //수평 || vertical 수직
 
                     /**
                      * 컨텐츠 배열 마진 (number,px,%)
                      */
-                    arrangementMargin: '10',
+                    arrangementMargin: me._CONFIG.ARRANGEMENT_MARGIN + '',
                     /**
                      * 좌측으로 부터 위치값. (number,px,%)
                      */
@@ -155,7 +185,7 @@ ChartRenderer.prototype = {
                      */
                     'vertical-align': 'middle'
                 }
-            }
+            };
             if (!value) {
                 return result;
             }
@@ -165,85 +195,167 @@ ChartRenderer.prototype = {
 
             for (var i = 0; i < value.length; i++) {
                 var contentData = value[i];
-                if (contentData.type == 'text') {
-                    result.contents.push({
-                        shape: new OG.TextShape(value.value),
-                        width: '80px',
-                        height: '78px',
-                        style: {
-                            'fill': '#f8f8f8',
-                            'fill-opacity': 1,
-                            'font-size': 9
-                        }
-                    });
-                }
-
-                if (contentData.type == 'activity') {
-                    result.contents.push({
-                        /**
-                         * 도형 shape
-                         */
-                        shape: new OG.A_Task(contentData.value),
-                        /**
-                         * 도형 가로 (number,px,%)
-                         */
-                        width: '80px',
-                        /**
-                         * 도형 세로 (number,px,%)
-                         */
-                        height: '38px',
-                        /**
-                         * 도형 스타일
-                         */
-                        style: {
-                            'fill': '#fff',
-                            'fill-opacity': 1,
-                            'font-size': 9
-                        }
-                    })
-                }
-
-                if (contentData.type == 'doubleActivity') {
-                    result.contents.push({
-                        shape: new OG.A_Task(value.value),
-                        width: '80px',
-                        height: '78px',
-                        style: {
-                            'fill': '#f8f8f8',
-                            'fill-opacity': 1,
-                            'font-size': 9
-                        }
-                    });
-                }
+                var shape = new OG.A_Task(contentData['CUR_WFA_NAME']);
+                var color = me.getColorFromState(contentData['CUR_STATE']);
+                color = color ? color : '#fff';
+                shape.data = JSON.parse(JSON.stringify(contentData));
+                shape.LABEL_EDITABLE = false;
+                result.contents.push({
+                    shape: shape,
+                    width: me._CONFIG.ACTIVITY_WIDTH + 'px',
+                    height: me._CONFIG.ACTIVITY_HEIGHT + 'px',
+                    style: {
+                        'fill': color,
+                        'fill-opacity': 1,
+                        'font-size': 9
+                    }
+                })
             }
             return result;
         };
+        return tableRenderer;
+    },
+
+    /**
+     * 팀에 해당하는 data row 를 반환한다.
+     * @param team
+     * @param rows
+     * @return {*}
+     */
+    getDataRowByTeam: function (team, rows) {
+        var rowByTeam;
+        $.each(rows, function (r, row) {
+            if (row.team == team) {
+                rowByTeam = row;
+            }
+        });
+        return rowByTeam;
+    },
+
+    /**
+     * 액티비티에 해당하는 데이터 정보를 반환한다.
+     * @param activity
+     * @param rows
+     * @return {null}
+     */
+    getExistActivityFromRowsData: function (activity, rows) {
+        if (!activity || !rows || !rows.length) {
+            return null;
+        }
+        var selected;
+        $.each(rows, function (i, row) {
+            var activityId = activity['TOT_WFA'];
+            for (var column in row) {
+                if (activityId == row[column]['TOT_WFA']) {
+                    selected = {
+                        data: row[column],
+                        column: column,
+                        dataIndex: i
+                    }
+                }
+            }
+        });
+        return selected;
+    },
+
+    /**
+     * 액티비티 아이디로 엘리먼트를 찾는다.
+     * @param activityId
+     * @return {*}
+     */
+    getElementByActivityId: function (activityId) {
+        var me = this;
+        var allShapes = me.canvas.getAllShapes();
+        var selected;
+        $.each(allShapes, function (i, element) {
+            if (element.shape.data && element.shape.data['TOT_WFA'] == activityId) {
+                selected = element;
+            }
+        });
+        return selected;
+    },
+
+    /**
+     * 화면의 Edge 를 연결 해제하고, 재연결 정보를 저장한다.
+     */
+    keepEdges: function () {
+        var me = this;
+        var allEdges = me.canvas.getAllEdges();
+        var edge, fromShape, toShape, fromXY, toXY, connections = [], connection;
+        $.each(allEdges, function (i, edge) {
+            var fromTerminal = $(edge).attr("_from");
+            var toTerminal = $(edge).attr("_to");
+            var direction;
+            connection = {
+                edgeId: edge.id
+            };
+
+            if (fromTerminal) {
+                fromShape = me.canvas.getRenderer()._getShapeFromTerminal(fromTerminal);
+                fromXY = me.canvas.getRenderer()._getPositionFromTerminal(fromTerminal);
+                if (fromShape && fromShape.shape.data) {
+                    me.canvas.getRenderer().disconnectOneWay(edge, 'from');
+                    connection.from = fromTerminal;
+                    connection.fromActivity = fromShape.shape.data['TOT_WFA'];
+                }
+            }
+
+            if (toTerminal) {
+                toShape = me.canvas.getRenderer()._getShapeFromTerminal(toTerminal);
+                toXY = me.canvas.getRenderer()._getPositionFromTerminal(toTerminal);
+                if (toShape && toShape.shape.data) {
+                    me.canvas.getRenderer().disconnectOneWay(edge, 'to');
+                    connection.to = toTerminal;
+                    connection.toActivity = toShape.shape.data['TOT_WFA'];
+                }
+            }
+
+            connections.push(connection);
+        });
+        return connections;
+    },
+
+    //========================================================================//
+    //===========================Render apis==================================//
+    //========================================================================//
+    /**
+     * 데이터를 기반으로 화면에 렌더링한다.
+     * @param chartData
+     * @param existJson
+     */
+    render: function (chartData, existJson) {
+        var me = this;
+        var dataTable;
+        var existTableData;
+
+        me.existJson = null;
+        me.canvas.clear();
+
+        //기존 json 정보가 있을 경우 로드 한 후, 데이터 테이블을 얻어온다.
+        if (existJson) {
+            me.existJson = existJson;
+            me.canvas.loadJSON(existJson);
+            var element = me.canvas.getElementsByShapeId('OG.shape.component.DataTable');
+            if (element && element.length) {
+                dataTable = element[0].shape;
+                existTableData = dataTable.data.tableData;
+
+                //Edge 들의 연결을 모두 해제하고, from,to 의 액티비티 연결정보를 저장하고있는다.
+                me.connections = me.keepEdges();
+            }
+        } else {
+            dataTable = new OG.DataTable();
+        }
+
+        dataTable.MOVABLE = false;
 
         //옵션데이터
         var options = {
-            /**
-             * 셀 콘텐트 axis 무브
-             */
-            axis: 'none',
-            /**
-             * 페이지당 row 수
-             */
-            pageLength: 25,
-            /**
-             * 시작 페이지
-             */
+            axis: 'X',
+            pageLength: 100,
             currentPage: 1,
-            /**
-             * 디폴트 칼럼 높이
-             */
             columnHeight: 30,
-            /**
-             * 디폴트 칼럼 가로폭
-             */
             columnWidth: 140,
-            /**
-             * 디폴트 칼럼 스타일
-             */
             columnStyle: {
                 'font-color': '#fff',
                 'fill': '#abaaad',
@@ -254,19 +366,11 @@ ChartRenderer.prototype = {
                     'stroke-width': '4'
                 }
             },
-
             rowDividingLine: {
                 'stroke': '#abaaad',
                 'stroke-width': '1'
             },
-
-            /**
-             * 디폴트 cell 높이
-             */
-            cellHeight: 40,
-            /**
-             * 디폴트 셀 스타일
-             */
+            cellHeight: 50,
             cellStyle: {
                 'fill': '#fff',
                 'fill-opacity': 0,
@@ -276,30 +380,12 @@ ChartRenderer.prototype = {
                     'stroke-width': '1'
                 }
             },
-            /**
-             * 칼럼 정의
-             */
             columns: [
                 {
-                    /**
-                     * 데이터 필드 이름
-                     */
-                    data: 'activity',
-                    /**
-                     * 칼럼 타이틀
-                     */
+                    data: 'team',
                     title: '주요 Activity\n일정(D day)',
-                    /**
-                     * 디폴트 컨텐츠
-                     */
                     defaultContent: '',
-                    /**
-                     * 칼럼 너비
-                     */
                     columnWidth: 100,
-                    /**
-                     * 칼럼 스타일
-                     */
                     columnStyle: {
                         'border-left': {
                             'stroke': '#abaaad',
@@ -310,9 +396,6 @@ ChartRenderer.prototype = {
                             'stroke-width': '3'
                         }
                     },
-                    /**
-                     * 칼럼에 소속된 셀 스타일
-                     */
                     cellStyle: {
                         'border-right': {
                             'stroke': '#616063',
@@ -323,313 +406,131 @@ ChartRenderer.prototype = {
                             'stroke-width': '1'
                         }
                     }
-                },
-                {
-                    data: '90',
-                    title: '견적 착수\n90',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '85',
-                    title: 'IRS\n85',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '80',
-                    title: 'Ref.PJT 선정',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '75',
-                    title: 'HBD\n75',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '70',
-                    title: 'WBD\n70',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '65',
-                    title: 'P&ID\n65',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '60',
-                    title: 'P&ID\n60',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '55',
-                    title: 'P&ID\n55',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '50',
-                    title: 'P&ID\n50',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '100',
-                    title: 'P&ID\n100',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '101',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '102',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '103',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '104',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '105',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '106',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '107',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '108',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-                {
-                    data: '40',
-                    title: 'Plot Plan\n40',
-                    defaultContent: '',
-                    renderer: renderer,
-                    columnStyle: {
-                        'border-right': {
-                            'stroke': '#abaaad',
-                            'stroke-width': '1'
-                        }
-                    }
                 }
             ]
         };
 
+        var headers = chartData.headers;
+        var rows = chartData.rows;
+        var activities = chartData['activities'];
 
-        var data = [
-            {
-                activity: 'FUNCTION'
-            },
-            {
-                activity: '견적 TFT / EM',
-                '90': [
-                    {type: 'activity', value: 'ITB 배포'},
-                    {type: 'activity', value: 'ITB 배포2'}
-                ],
-                '75': [
-                    {type: 'activity', value: 'Reference PJT 선정'}
-                ]
-            },
-            {
-                activity: '성능',
-                '75': [
-                    {type: 'activity', value: 'Plant Configuration'}
-                ],
-                '70': [
-                    {type: 'activity', value: 'Performance Guideline'}
-                ],
-                '65': [
-                    {type: 'activity', value: 'Plant HBD\n(보안문서)'}
-                ]
-            },
-            {
-                activity: '프로세스',
-                '60': [
-                    {type: 'doubleActivity', value: 'Utility\nConsumption\n취합'}
-                ],
-                '50': [
-                    {type: 'doubleActivity', value: 'P&ID\nCalculation'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '플랜트(보조기기)',
-                '55': [
-                    {type: 'activity', value: 'WBD'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '플랜트(주기기)\nor STG,BLR BG',
-                '75': [
-                    {type: 'activity', value: 'MPS'}
-                ],
-                '70': [
-                    {type: 'activity', value: 'GT data / STG\nHBD'}
-                ],
-                '65': [
-                    {type: 'activity', value: 'BLR / HRSG\nPerformance\nData'}
-                ],
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '배관'
-            },
-            {
-                activity: '배치',
-                '40': [
-                    {type: 'activity', value: 'Plot\nplan'}
-                ]
-            },
-            {
-                activity: '운반',
-                '85': [
-                    {type: 'largeActivity', value: 'IRS\n&\nBIGS'}
-                ],
-                '80': [
-                    {type: 'largeActivity', value: 'Devajtion\n&\nClarification'}
-                ],
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '50': [
-                    {type: 'activity', value: 'CHS & LHS\nFlowdagram'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '수처리',
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '55': [
-                    {type: 'activity', value: 'Conceptual\nDesign\nCalculation'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: 'HVAC',
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: 'Fire Fighting',
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '전력',
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '계측',
-                '60': [
-                    {type: 'activity', value: 'Utility\nConsumption'}
-                ],
-                '45': [
-                    {type: 'activity', value: 'Pre-requisite\ndata'}
-                ]
-            },
-            {
-                activity: '건축',
-                '40': [
-                    {type: 'activity', value: 'Building list'}
-                ]
-            },
-            {
-                activity: '토목',
-                '90': [
-                    {type: 'report', value: 'SI Report\nPhotography\nStudy'}
-                ],
-                '50': [
-                    {type: 'horizontalActivity', value: 'Coal Jetty Design\n Coal Storage Yard Design'}
-                ]
-            },
-            {
-                activity: ''
+        for (var i = 0; i < headers.length; i++) {
+            var title = headers[i]['KEYED_NAME'] + '\n' + headers[i]['_END_DATE'];
+            var column = {
+                data: headers[i]['KEYED_NAME'],
+                title: title,
+                defaultContent: '',
+                renderer: me.getDataTableRenderer()
+            };
+            if (headers.length - 1 == i) {
+                column['columnStyle'] = {
+                    'border-right': {
+                        'stroke': '#abaaad',
+                        'stroke-width': '1'
+                    }
+                }
             }
-        ];
-        dataTable.setOptions(options);
-        dataTable.setData(data);
+            options.columns.push(column);
+        }
 
-        this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
+        var rowData = [];
+        for (var i = 0; i < rows.length; i++) {
+            var row = {};
+            //제일 앞 칼럼은 팀이름 데이터
+            row['team'] = rows[i]['_ENG_FUNC_CODE'];
+            rowData.push(row);
+        }
+
+        $.each(activities, function (a, activity) {
+            var rowByTeam = me.getDataRowByTeam(activity['CUR_ENG_FUNC_CODE'], rowData);
+
+            var column;
+
+            //기존 데이터가 있다면, 기존 액티비티가 들어있는 칼럼을 찾는다.
+            if (existTableData) {
+                var existActivityInfo = me.getExistActivityFromRowsData(activity, existTableData);
+                if (existActivityInfo) {
+                    column = existActivityInfo.column;
+                }
+            }
+
+            //기존 데이터의 칼럼을 찾지 못했다면, 신규 액티비티이며, 칼럼은 옵션칼럼 의 1번 인덱스로 잡는다.
+            if (!column) {
+                column = options.columns[1].data;
+            }
+
+            //기존 데이터의 남아있는 액티비티 도형은 데이터테이블 컴포넌트에서 자동 삭제된다.
+
+
+            //해당 팀의 칼럼에 액티비티를 추가한다.
+            if (!rowByTeam[column]) {
+                rowByTeam[column] = []
+            }
+            rowByTeam[column].push(activity);
+        });
+
+        //기존 데이터가 없다면, 각 셀 데이터의 컨텐트 개수에 따라 옵션의 칼럼 너비를 조정해주도록 한다.
+        if (!existTableData && me._CONFIG.ARRANGEMENT == 'horizontal') {
+            $.each(rowData, function (r, row) {
+                for (var column in row) {
+
+                    var columnOption = me.getColumnByField(options.columns, column);
+                    var columnWidth = columnOption.columnWidth ? columnOption.columnWidth : options.columnWidth;
+                    //셀 데이터가 어레이 타입일 경우 총 셀 너비 계산.
+                    if (typeof row[column] == 'object') {
+                        var length = row[column].length;
+                        var totalWidth = (me._CONFIG.ACTIVITY_WIDTH + me._CONFIG.ARRANGEMENT_MARGIN) * length;
+                        if (totalWidth > columnWidth) {
+                            columnOption.columnWidth = totalWidth + 30
+                        }
+                    }
+                }
+            })
+        }
+
+
+        dataTable.setOptions(options);
+        dataTable.setData(rowData);
+        if (!existJson) {
+            this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
+        }
         dataTable.draw();
 
+        //연결 정보를 이어나간다.
+        if (existJson && me.connections && me.connections.length) {
+            $.each(me.connections, function (i, connection) {
+                var edgeId = connection.edgeId;
+                var fromTerminal = connection.from;
+                var fromActivity = connection.fromActivity;
+                var toTerminal = connection.to;
+                var toActivity = connection.toActivity;
 
-        //최초 로딩 시간 단축을 위해, draw 후 또 draw 를 방지하자.
+                var edge = me.canvas.getElementById(edgeId);
+                if (!edge) {
+                    return;
+                }
 
-        //데이터 로딩
-        //프로젝트가 없다면 신규 datatable shape.
-        //있다면 datatable shape 만 얻어옴.
-        //shape data 비교 => data update 후 draw
-        //Edge 들 shape, style 얻어옴.
-        //Edge 들 draw.
+                var fromShape, toShape;
+                if (fromActivity) {
+                    fromShape = me.getElementByActivityId(fromActivity);
+                }
+                if (toActivity) {
+                    toShape = me.getElementByActivityId(toActivity);
+                }
+                //둘 중 하나라도 없다면 삭제한다.
+                if (!fromShape || !toShape) {
+                    me.canvas.removeShape(edge);
+                    return;
+                }
 
+                var beforeFromId = fromTerminal.substring(0, fromTerminal.indexOf(OG.Constants.TERMINAL));
+                var fromReplace = fromTerminal.replace(beforeFromId, fromShape.id);
 
-        //refresh 일 경우.
-        //데이터 로딩
-        //Edge 삭제
-        //shape data 비교 => data update 후 draw
-        //Edge 들 shape,style 얻어옴.
-        //Edge 들 draw.
+                var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
+                var toReplace = toTerminal.replace(beforeToId, toShape.id);
+                me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
+            })
+        }
     }
 
     //========================================================================//

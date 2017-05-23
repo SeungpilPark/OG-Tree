@@ -99,6 +99,21 @@ var DataController = function (tree, chartRenderer, viewController) {
     });
     this.stateJson = stateJson;
 
+    /**
+     * 챠트 스테이트 정의가 저장되어 있는 파일을 불러온다.
+     */
+    var chartStateJson;
+    $.ajax({
+        type: 'GET',
+        url: 'common/chartState.json',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            chartStateJson = data;
+        }
+    });
+    this.chartStateJson = chartStateJson;
+
 };
 DataController.prototype = {
     /**
@@ -141,26 +156,13 @@ DataController.prototype = {
         return result;
     },
     /**
-     * 아라스 객체를 얻기 위한 init 메소드. 최초 한번 실행한다.
      * 부모 페이지로부터 워크플로우 아이템을 받아와서 적용하고, 부모페이지의 리사이즈 이벤트에 반응해 페이지를 레이아웃을 재구성한다.
      */
-    init: function () {
+    initResize: function () {
         var me = this;
-        this.aras = parent.top.aras;
-        this.thisItem = parent.top.thisItem;
-        if (!this.aras || !this.thisItem) {
-            toastr.error('Failed to load workflow.');
-            return;
-        }
-        this.wfId = parent.top.thisItem.getID();
-        this.stdYN = parent.top.thisItem.getType() == 'DHI_WF_WFT' ? 'Y' : 'N';
-        this.projectId = parent.top.thisItem.getProperty('_rel_project');
-        this.body = '';
-
         //아라츠 팝업창 상태에 따라 에디터/모니터 화면을 리사이즈 한다.
         var parentIframe;
         var resizeView = function () {
-            console.log('resizeView!');
             if (window && window.parent && window.parent.document) {
                 var parentDoc;
                 try {
@@ -267,6 +269,25 @@ DataController.prototype = {
         };
 
         setInterval(checkFrameHeight, 1000);
+    },
+
+    /**
+     * 아라스 객체를 얻기 위한 init 메소드. 최초 한번 실행한다.
+     */
+    init: function () {
+        this.aras = parent.top.aras;
+        this.thisItem = parent.top.thisItem;
+        if (!this.aras || !this.thisItem) {
+            toastr.error('Failed to load workflow.');
+            return;
+        }
+        this.wfId = parent.top.thisItem.getID();
+        this.stdYN = parent.top.thisItem.getType() == 'DHI_WF_WFT' ? 'Y' : 'N';
+        this.projectId = parent.top.thisItem.getProperty('_rel_project');
+        this.mapdata = parent.top.thisItem.getProperty('_map_data');
+        this.body = '';
+
+        this.project_id = parent.top.thisItem.getProperty('project_id');
     },
     /**
      * key value 오브젝트로부터 xml 바디 스트링을 만든다
@@ -1856,6 +1877,19 @@ DataController.prototype = {
                 }
             }
         }
+    },
+
+    getKeyActivityList: function (project_id) {
+        var me = this, params = {
+            project_id: wf_id,
+            std_yn: me.stdYN,
+            inout: inout.toUpperCase()
+        };
+        return me.applyMethod('DHI_WF_EDITOR_STRUCTURE', me.createBody(params));
+    },
+
+    getChartData: function () {
+        console.log(parent.top.thisItem);
     }
 }
 ;

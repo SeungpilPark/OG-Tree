@@ -1,0 +1,37 @@
+[
+  {
+    "name": "In Planning",
+    "color": "#fff",
+    "stroke": "none"
+  },
+  {
+    "name": "Plan Review",
+    "color": "#428bca",
+    "stroke": "none"
+  },
+  {
+    "name": "Waiting",
+    "color": "#d0aff2",
+    "stroke": "none"
+  },
+  {
+    "name": "Active",
+    "color": "#b4eabd",
+    "stroke": "none"
+  },
+  {
+    "name": "Close",
+    "color": "#7e7e7e",
+    "stroke": "none"
+  },
+  {
+    "name": "Delay",
+    "color": "#d9534f",
+    "stroke": "none"
+  },
+  {
+    "name": "Use Ref ED",
+    "color": "#ffff00",
+    "stroke": "none"
+  }
+]

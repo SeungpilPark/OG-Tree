@@ -23,22 +23,30 @@ var ChartViewController = function () {
      * @type {string}
      */
     this.mode = 'sample'; //random,sample
+
+
+    this.chartStateJson = null;
 };
 ChartViewController.prototype = {
+    getChartStateJson: function () {
+        return this.chartStateJson;
+    },
     /**
      * Html 페이지가 처음 로딩되었을 때 차크 렌더러를 활성화하고, 데이터를 불러온다.
      */
     init: function () {
         var me = this;
-        me.renderer = new ChartRenderer('canvas');
+        me.renderer = new ChartRenderer('canvas', me);
         me.renderer.init();
 
         if (parent.top.aras) {
             me.aras = new DataController(null, me.renderer, me);
             me.aras.init();
 
-        } else {
-            me.renderSampleData();
+            var headerItem = me.aras.getWorkflowHeader(me.aras.wfId);
+            if (headerItem.getItemCount() == 1) {
+                me.renderHeaders(headerItem);
+            }
         }
 
         me.renderStateBox();
@@ -65,6 +73,18 @@ ChartViewController.prototype = {
             me.renderer.setScale(1);
         });
 
+        $('#print').click(function () {
+            console.log(JSON.stringify(me.renderer.canvas.toJSON()));
+        });
+
+        if (parent.top.aras) {
+
+            me.aras.getChartData();
+        } else {
+            me.getSampleData(function (chartData, chartMap) {
+                me.renderer.render(chartData, chartMap);
+            });
+        }
     },
     /**
      * common/state.json 에 저장된 스테이터스 데이터를 불러와 스테이터스 박스를 구성한다.
@@ -72,17 +92,16 @@ ChartViewController.prototype = {
     renderStateBox: function () {
         var me = this;
         var stdYN = 'N';
-        var stateJson;
         if (me.aras && me.aras.stdYN) {
             stdYN = me.aras.stdYN;
         }
         $.ajax({
             type: 'GET',
-            url: 'common/state.json',
+            url: 'common/chartState.json',
             dataType: 'json',
             async: false,
             success: function (data) {
-                stateJson = data;
+                me.chartStateJson = data;
             }
         });
         var stateColorBox = $('.state-color');
@@ -96,64 +115,43 @@ ChartViewController.prototype = {
                 bar.find('.state-bar').css('background-color', color);
             }
         };
-        var renderSeparator = function () {
-            stateColorBox.append('<li role="separator" class="divider"></li>');
-        };
-        var renderTitle = function (title) {
-            stateColorBox.append('<li><a href="Javascript:void(0)">---' + title + '---</a></li>');
-        };
-        if (stateJson) {
+        if (me.chartStateJson) {
             stateColorBox.html('');
-            var stateList = [];
-            if (stdYN == 'Y') {
-                stateList = stateJson['Standard'];
-                for (var i = 0; i < stateList.length; i++) {
-                    renderState(stateList[i]['name'], stateList[i]['color'], stateList[i]['stroke']);
-                }
-            } else {
-                renderTitle('Activity');
-                stateList = stateJson['Project']['Activity'];
-                for (var i = 0; i < stateList.length; i++) {
-                    renderState(stateList[i]['name'], stateList[i]['color'], stateList[i]['stroke']);
-                }
-                renderSeparator();
-
-                renderTitle('Folder');
-                stateList = stateJson['Project']['Folder'];
-                for (var i = 0; i < stateList.length; i++) {
-                    renderState(stateList[i]['name'], stateList[i]['color'], stateList[i]['stroke']);
-                }
-                renderSeparator();
-
-                renderTitle('EDB');
-                stateList = stateJson['Project']['EDB'];
-                for (var i = 0; i < stateList.length; i++) {
-                    renderState(stateList[i]['name'], stateList[i]['color'], stateList[i]['stroke']);
-                }
-                renderSeparator();
+            for (var i = 0; i < me.chartStateJson.length; i++) {
+                renderState(me.chartStateJson[i]['name'], me.chartStateJson[i]['color'], me.chartStateJson[i]['stroke']);
             }
         }
     },
     /**
+     * Html 페이지의 헤더 부분에 프로젝트 정보를 표기한다.
+     * @param headerItem
+     * @param myOther
+     */
+    renderHeaders: function (headerItem) {
+        console.log('headerItem', headerItem);
+
+        var targetTable = $('#targetTable');
+        var project_code = headerItem.getProperty('project_code', '');
+        var process_id = headerItem.getProperty('process_id', '');
+        var pjt_name = headerItem.getProperty('pjt_name', '');
+        var processname = headerItem.getProperty('processname', '');
+        var sub_processname = headerItem.getProperty('sub_processname', '');
+        targetTable.find('[name=project_code]').html(project_code);
+        targetTable.find('[name=process_id]').html(process_id);
+        targetTable.find('[name=pjt_name]').html(pjt_name);
+        targetTable.find('[name=processname]').html(processname);
+        targetTable.find('[name=sub_processname]').html(sub_processname);
+    },
+    /**
      * Dev 모드일시 개발용 샘플 데이터를 오픈그래프 트리에 반영한다.
      */
-    renderSampleData: function () {
-        var me = this;
-        //me.renderer.updateData(null, true);
-        // $.getJSON("common/sampleData/myData.json", function (myData) {
-        //
-        //     //me.tree._INCOLLAPSE = [];
-        //     me.tree.removeDataByFilter({position: me.tree.Constants.POSITION.MY});
-        //     me.tree.removeDataByFilter({position: me.tree.Constants.POSITION.MY_IN});
-        //     me.tree.removeDataByFilter({position: me.tree.Constants.POSITION.MY_OUT});
-        //     me.tree.updateData(myData, true);
-        //
-        //     $.getJSON("common/sampleData/otherData.json", function (otherData) {
-        //         me.tree.removeDataByFilter({position: me.tree.Constants.POSITION.OTHER});
-        //         me.tree.removeDataByFilter({position: me.tree.Constants.POSITION.OTHER_OUT});
-        //         me.tree.updateData(otherData);
-        //     });
-        // });
+    getSampleData: function (callback) {
+        $.getJSON("common/sampleData/chartData.json", function (chartData) {
+            //callback(chartData);
+            $.getJSON("common/sampleData/chartMap.json", function (chartMap) {
+                callback(chartData, chartMap);
+            });
+        });
     }
 }
 ;
