@@ -1889,7 +1889,7 @@ DataController.prototype = {
     },
 
     getChartData: function () {
-        console.log(parent.top.thisItem);
+        console.log(parent.top.thisItem.node);
     }
 }
 ;
