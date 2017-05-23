@@ -80,7 +80,8 @@ ChartViewController.prototype = {
         $('#save').click(function () {
             var mapData = JSON.stringify(me.renderer.canvas.toJSON());
             if (mapData) {
-                me.aras.saveMapData(mapData);
+                var saved = me.aras.saveMapData(mapData);
+                console.log('saved' , saved);
             }
         });
 

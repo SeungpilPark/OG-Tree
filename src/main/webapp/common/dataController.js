@@ -1933,10 +1933,14 @@ DataController.prototype = {
     getChartData: function () {
         var me = this;
         var mapData = parent.top.thisItem.getProperty('_map_data');
-        if (!mapData || typeof mapData != 'object') {
+        if (!mapData) {
             mapData = null;
-        }else{
-            mapData = JSON.parse(mapData);
+        } else {
+            try {
+                mapData = JSON.parse(mapData);
+            } catch (e) {
+                mapData = null;
+            }
         }
 
         var headers, rows, activities;
