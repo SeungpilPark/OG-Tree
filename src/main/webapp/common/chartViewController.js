@@ -81,10 +81,25 @@ ChartViewController.prototype = {
             var mapData = JSON.stringify(me.renderer.canvas.toJSON());
             if (mapData) {
                 var saved = me.aras.saveMapData(mapData);
-                console.log('saved' , saved);
+                toastr.success('Workflow Saved');
+            } else {
+                toastr.error('Failed to save');
             }
         });
 
+        $('#refresh').click(function () {
+            try{
+                me.startRender();
+                toastr.success('Refreshed.');
+            }catch (e){
+                toastr.error('Refresh failed.');
+            }
+        });
+
+        me.startRender();
+    },
+    startRender: function () {
+        var me = this;
         if (parent.top.aras) {
             var data = me.aras.getChartData();
             me.renderer.render(data.chartData, data.chartMap);
