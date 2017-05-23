@@ -59,6 +59,7 @@ var ChartRenderer = function (container, viewController) {
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
     this.existJson = null;
+    this.existActivitySize = {};
 };
 ChartRenderer.prototype = {
 
@@ -203,8 +204,8 @@ ChartRenderer.prototype = {
                 shape.LABEL_EDITABLE = false;
                 result.contents.push({
                     shape: shape,
-                    width: me._CONFIG.ACTIVITY_WIDTH + 'px',
-                    height: me._CONFIG.ACTIVITY_HEIGHT + 'px',
+                    width: contentData.width ? contentData.width + 'px' : me._CONFIG.ACTIVITY_WIDTH + 'px',
+                    height: contentData.height ? contentData.height + 'px' : me._CONFIG.ACTIVITY_HEIGHT + 'px',
                     style: {
                         'fill': color,
                         'fill-opacity': 1,
@@ -344,6 +345,21 @@ ChartRenderer.prototype = {
 
                 //Edge 들의 연결을 모두 해제하고, from,to 의 액티비티 연결정보를 저장하고있는다.
                 me.connections = me.keepEdges();
+
+                //기존 A_Task 를 모두 삭제한다.
+                me.existActivitySize = {};
+                var existActivities = me.canvas.getElementsByShapeId('OG.shape.bpmn.A_Task');
+                $.each(existActivities, function (i, activity) {
+                    if (activity.shape.data && activity.shape.data['tot_wfa']) {
+                        var id = activity.shape.data['tot_wfa'];
+                        me.existActivitySize[id] = {
+                            width: me.canvas.getBoundary(activity).getWidth(),
+                            height: me.canvas.getBoundary(activity).getHeight()
+                        }
+                    }
+                    me.canvas.removeShape(activity);
+                });
+
             }
         } else {
             dataTable = new OG.DataTable();
@@ -461,13 +477,18 @@ ChartRenderer.prototype = {
                 column = options.columns[1].data;
             }
 
-            //기존 데이터의 남아있는 액티비티 도형은 데이터테이블 컴포넌트에서 자동 삭제된다.
-
-
             //해당 팀의 칼럼에 액티비티를 추가한다.
             if (!rowByTeam[column]) {
                 rowByTeam[column] = []
             }
+
+            //existActivitySize 에서 해당 액티비티의 삭제 전 사이즈를 구한다.
+            var beforeSize = me.existActivitySize[activity['tot_wfa']];
+            if (beforeSize) {
+                activity['width'] = beforeSize['width'];
+                activity['height'] = beforeSize['height'];
+            }
+
             rowByTeam[column].push(activity);
         });
 
@@ -531,7 +552,8 @@ ChartRenderer.prototype = {
                 var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
                 var toReplace = toTerminal.replace(beforeToId, toShape.id);
                 me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
-            })
+            });
+            me.connections = [];
         }
     }
 

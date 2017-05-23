@@ -1877,13 +1877,6 @@ DataController.prototype = {
             }
         }
     },
-
-    getKeyActivityList: function () {
-        var me = this, params = {
-            project_id: parent.top.thisItem.getProperty('id')
-        };
-        return me.applyMethod('DHI_PROJECT_GetKeyActivityList', me.createBody(params));
-    },
     convertMethodResultToJsonArray: function (result) {
         var me = this;
         var nodeList = [];
@@ -1911,11 +1904,17 @@ DataController.prototype = {
         }
         return tempData;
     },
+    getKeyActivityList: function () {
+        var me = this, params = {
+            project_id: parent.top.thisItem.getProperty('id')
+        };
+        return me.applyMethod('DHI_Project_GetKeyActivityList', me.createBody(params));
+    },
     getEngFuncCodeList: function () {
         var me = this, params = {
             project_id: parent.top.thisItem.getProperty('id')
         };
-        return me.applyMethod('DHI_PROJECT_GetEngFuncCodeList', me.createBody(params));
+        return me.applyMethod('DHI_Project_GetEngFuncCodeList', me.createBody(params));
     },
     getObjActivityList: function () {
         var me = this, params = {
