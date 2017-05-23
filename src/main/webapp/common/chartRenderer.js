@@ -53,6 +53,7 @@ var ChartRenderer = function (container, viewController) {
     this.canvas._CONFIG.DEFAULT_STYLE.EDGE["edge-type"] = "plain";
     this.canvas._CONFIG.GUIDE_CONTROL_LINE_NUM = 1;
     this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
+    this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
     //ENABLE_HOTKEY
 
     this._RENDERER = this.canvas._RENDERER;
