@@ -118,20 +118,72 @@ ChartRenderer.prototype = {
         var dataTable = new OG.DataTable();
         dataTable.MOVABLE = false;
         var renderer = function (value) {
-            if (value && value.text) {
-                return value.text;
+            var result = {
+                contents: [],
+                contentsPosition: {
+                    /**
+                     * 컨텐츠 배열
+                     */
+                    arrangement: 'horizontal', //수평 || vertical 수직
+
+                    /**
+                     * 컨텐츠 배열 마진 (number,px,%)
+                     */
+                    arrangementMargin: '10',
+                    /**
+                     * 좌측으로 부터 위치값. (number,px,%)
+                     */
+                    left: '0',
+                    /**
+                     * 상단으로 부터 위치값. (number,px,%)
+                     */
+                    top: '0',
+                    /**
+                     * 우측으로 부터 위치값. (number,px,%)
+                     */
+                    right: '0',
+                    /**
+                     * 하단으로 부터 위치값. (number,px,%)
+                     */
+                    bottom: '0',
+                    /**
+                     * 가로 정렬 (left,center,right).
+                     */
+                    align: 'center',
+                    /**
+                     * 세로 정렬 (top,middle,bottom)
+                     */
+                    'vertical-align': 'middle'
+                }
             }
-            if (!value || !value.type || !value.value) {
-                return value;
+            if (!value) {
+                return result;
+            }
+            if (value && typeof value != 'object') {
+                return result;
             }
 
-            if (value.type == 'activity') {
-                return {
-                    /**
-                     * 도형 shape
-                     */
-                    shape: new OG.A_Task(value.value),
-                    'shape-position': {
+            for (var i = 0; i < value.length; i++) {
+                var contentData = value[i];
+                if (contentData.type == 'text') {
+                    result.contents.push({
+                        shape: new OG.TextShape(value.value),
+                        width: '80px',
+                        height: '78px',
+                        style: {
+                            'fill': '#f8f8f8',
+                            'fill-opacity': 1,
+                            'font-size': 9
+                        }
+                    });
+                }
+
+                if (contentData.type == 'activity') {
+                    result.contents.push({
+                        /**
+                         * 도형 shape
+                         */
+                        shape: new OG.A_Task(contentData.value),
                         /**
                          * 도형 가로 (number,px,%)
                          */
@@ -141,117 +193,38 @@ ChartRenderer.prototype = {
                          */
                         height: '38px',
                         /**
-                         * 좌측으로 부터 위치값. (number,px,%)
+                         * 도형 스타일
                          */
-                        left: '0',
-                        /**
-                         * 상단으로 부터 위치값. (number,px,%)
-                         */
-                        top: '0',
-                        /**
-                         * 우측으로 부터 위치값. (number,px,%)
-                         */
-                        right: '0',
-                        /**
-                         * 하단으로 부터 위치값. (number,px,%)
-                         */
-                        bottom: '0',
-                        /**
-                         * 가로 정렬 (left,center,right).
-                         */
-                        align: 'center',
-                        /**
-                         * 세로 정렬 (top,middle,bottom)
-                         */
-                        'vertical-align': 'middle'
-                    },
-                    /**
-                     * 도형 스타일
-                     */
-                    'shape-style': {
-                        'fill': '#fff',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
+                        style: {
+                            'fill': '#fff',
+                            'fill-opacity': 1,
+                            'font-size': 9
+                        }
+                    })
                 }
-            }
 
-            if (value.type == 'doubleActivity') {
-                return {
-                    shape: new OG.A_Task(value.value),
-                    'shape-position': {
+                if (contentData.type == 'doubleActivity') {
+                    result.contents.push({
+                        shape: new OG.A_Task(value.value),
                         width: '80px',
                         height: '78px',
-                        top: '1px',
-                        align: 'center'
-                    },
-                    'shape-style': {
-                        'fill': '#f8f8f8',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
+                        style: {
+                            'fill': '#f8f8f8',
+                            'fill-opacity': 1,
+                            'font-size': 9
+                        }
+                    });
                 }
             }
-            if (value.type == 'horizontalActivity') {
-                return {
-                    shape: new OG.A_Task(value.value),
-                    'shape-position': {
-                        width: '160px',
-                        height: '38px',
-                        align: 'center',
-                        'vertical-align': 'middle'
-                    },
-                    'shape-style': {
-                        'fill': '#f8f8f8',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
-                }
-            }
-            if (value.type == 'largeActivity') {
-                return {
-                    shape: new OG.A_Task(value.value),
-                    'shape-position': {
-                        width: '80px',
-                        height: '600px',
-                        align: 'center',
-                        'vertical-align': 'middle'
-                    },
-                    'shape-style': {
-                        'fill': '#f8f8f8',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
-                }
-            }
-            if (value.type == 'report') {
-                return {
-                    shape: new OG.A_Task(value.value),
-                    'shape-position': {
-                        width: '100px',
-                        height: '68px',
-                        align: 'center',
-                        'vertical-align': 'middle'
-                    },
-                    'shape-style': {
-                        'fill': '#f8f8f8',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
-                }
-            }
+            return result;
         };
 
         //옵션데이터
         var options = {
             /**
-             * 셀 에디팅
-             */
-            cellEditable: true,
-            /**
              * 셀 콘텐트 axis 무브
              */
-            axis: 'X',
+            axis: 'none',
             /**
              * 페이지당 row 수
              */
@@ -275,17 +248,18 @@ ChartRenderer.prototype = {
                 'font-color': '#fff',
                 'fill': '#abaaad',
                 'fill-opacity': 1,
-                'border': {
-                    'stroke': '#abaaad',
-                    'stroke-width': '1',
-                    'arrow-end': 'none',
-                    'arrow-start': 'none'
-                },
+                'stroke': 'none',
                 'border-bottom': {
                     'stroke': '#616063',
                     'stroke-width': '4'
                 }
             },
+
+            rowDividingLine: {
+                'stroke': '#abaaad',
+                'stroke-width': '1'
+            },
+
             /**
              * 디폴트 cell 높이
              */
@@ -295,23 +269,10 @@ ChartRenderer.prototype = {
              */
             cellStyle: {
                 'fill': '#fff',
-                'fill-opacity': 1,
-                'border': {
-                    'stroke': 'none',
-                    'stroke-width': '1',
-                    'arrow-end': 'none',
-                    'arrow-start': 'none'
-                },
-                'border-top': {
-                    'stroke': '#abaaad',
-                    'stroke-width': '1'
-                },
-                'border-bottom': {
-                    'stroke': '#abaaad',
-                    'stroke-width': '1'
-                },
+                'fill-opacity': 0,
+                'font-size': 8,
                 'border-right': {
-                    'stroke': '#e9e8ec',
+                    'stroke': '#ebeaed',
                     'stroke-width': '1'
                 }
             },
@@ -340,6 +301,10 @@ ChartRenderer.prototype = {
                      * 칼럼 스타일
                      */
                     columnStyle: {
+                        'border-left': {
+                            'stroke': '#abaaad',
+                            'stroke-width': '1'
+                        },
                         'border-right': {
                             'stroke': '#616063',
                             'stroke-width': '3'
@@ -414,70 +379,70 @@ ChartRenderer.prototype = {
                     renderer: renderer
                 },
                 {
-                    data: '45',
+                    data: '100',
+                    title: 'P&ID\n100',
+                    defaultContent: '',
+                    renderer: renderer
+                },
+                {
+                    data: '101',
                     title: 'P&ID\n45',
                     defaultContent: '',
                     renderer: renderer
                 },
                 {
-                    data: '44',
+                    data: '102',
                     title: 'P&ID\n45',
                     defaultContent: '',
                     renderer: renderer
                 },
                 {
-                    data: '43',
+                    data: '103',
                     title: 'P&ID\n45',
                     defaultContent: '',
                     renderer: renderer
                 },
                 {
-                    data: '42',
+                    data: '104',
                     title: 'P&ID\n45',
                     defaultContent: '',
                     renderer: renderer
-                },{
-                    data: '41',
+                },
+                {
+                    data: '105',
                     title: 'P&ID\n45',
                     defaultContent: '',
                     renderer: renderer
-                },{
+                },
+                {
+                    data: '106',
+                    title: 'P&ID\n45',
+                    defaultContent: '',
+                    renderer: renderer
+                },
+                {
+                    data: '107',
+                    title: 'P&ID\n45',
+                    defaultContent: '',
+                    renderer: renderer
+                },
+                {
+                    data: '108',
+                    title: 'P&ID\n45',
+                    defaultContent: '',
+                    renderer: renderer
+                },
+                {
                     data: '40',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },{
-                    data: '39',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },{
-                    data: '38',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },{
-                    data: '37',
-                    title: 'P&ID\n45',
-                    defaultContent: '',
-                    renderer: renderer
-                },
-
-
-
-
-
-                {
-                    data: '30',
                     title: 'Plot Plan\n40',
                     defaultContent: '',
-                    cellStyle: {
+                    renderer: renderer,
+                    columnStyle: {
                         'border-right': {
                             'stroke': '#abaaad',
                             'stroke-width': '1'
                         }
-                    },
-                    renderer: renderer
+                    }
                 }
             ]
         };
@@ -489,83 +454,154 @@ ChartRenderer.prototype = {
             },
             {
                 activity: '견적 TFT / EM',
-                '90': {type: 'activity', value: 'ITB 배포'},
-                '75': {type: 'activity', value: 'Reference PJT 선정'}
+                '90': [
+                    {type: 'activity', value: 'ITB 배포'},
+                    {type: 'activity', value: 'ITB 배포2'}
+                ],
+                '75': [
+                    {type: 'activity', value: 'Reference PJT 선정'}
+                ]
             },
             {
                 activity: '성능',
-                '75': {type: 'activity', value: 'Plant Configuration'},
-                '70': {type: 'activity', value: 'Performance Guideline'},
-                '65': {type: 'activity', value: 'Plant HBD\n(보안문서)'}
+                '75': [
+                    {type: 'activity', value: 'Plant Configuration'}
+                ],
+                '70': [
+                    {type: 'activity', value: 'Performance Guideline'}
+                ],
+                '65': [
+                    {type: 'activity', value: 'Plant HBD\n(보안문서)'}
+                ]
             },
             {
                 activity: '프로세스',
-                '60': {type: 'activity', value: 'Utility\nConsumption\n취합'},
-                '50': {type: 'activity', value: 'P&ID\nCalculation'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'doubleActivity', value: 'Utility\nConsumption\n취합'}
+                ],
+                '50': [
+                    {type: 'doubleActivity', value: 'P&ID\nCalculation'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '플랜트(보조기기)',
-                '55': {type: 'activity', value: 'WBD'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '55': [
+                    {type: 'activity', value: 'WBD'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '플랜트(주기기)\nor STG,BLR BG',
-                '75': {type: 'activity', value: 'MPS'},
-                '70': {type: 'activity', value: 'GT data / STG\nHBD'},
-                '65': {type: 'activity', value: 'BLR / HRSG\nPerformance\nData'},
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '75': [
+                    {type: 'activity', value: 'MPS'}
+                ],
+                '70': [
+                    {type: 'activity', value: 'GT data / STG\nHBD'}
+                ],
+                '65': [
+                    {type: 'activity', value: 'BLR / HRSG\nPerformance\nData'}
+                ],
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '배관'
             },
             {
                 activity: '배치',
-                '40': {type: 'activity', value: 'Plot\nplan'}
+                '40': [
+                    {type: 'activity', value: 'Plot\nplan'}
+                ]
             },
             {
                 activity: '운반',
-                '85': {type: 'activity', value: 'IRS\n&\nBIGS'},
-                '80': {type: 'activity', value: 'Devajtion\n&\nClarification'},
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '50': {type: 'activity', value: 'CHS & LHS\nFlowdagram'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '85': [
+                    {type: 'largeActivity', value: 'IRS\n&\nBIGS'}
+                ],
+                '80': [
+                    {type: 'largeActivity', value: 'Devajtion\n&\nClarification'}
+                ],
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '50': [
+                    {type: 'activity', value: 'CHS & LHS\nFlowdagram'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '수처리',
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '55': {type: 'activity', value: 'Conceptual\nDesign\nCalculation'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '55': [
+                    {type: 'activity', value: 'Conceptual\nDesign\nCalculation'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: 'HVAC',
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: 'Fire Fighting',
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '전력',
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '계측',
-                '60': {type: 'activity', value: 'Utility\nConsumption'},
-                '45': {type: 'activity', value: 'Pre-requisite\ndata'}
+                '60': [
+                    {type: 'activity', value: 'Utility\nConsumption'}
+                ],
+                '45': [
+                    {type: 'activity', value: 'Pre-requisite\ndata'}
+                ]
             },
             {
                 activity: '건축',
-                '40': {type: 'activity', value: 'Building list'}
+                '40': [
+                    {type: 'activity', value: 'Building list'}
+                ]
             },
             {
                 activity: '토목',
-                '90': {type: 'activity', value: 'SI Report\nPhotography\nStudy'},
-                '50': {type: 'activity', value: 'Coal Jetty Design\n Coal Storage Yard Design'}
+                '90': [
+                    {type: 'report', value: 'SI Report\nPhotography\nStudy'}
+                ],
+                '50': [
+                    {type: 'horizontalActivity', value: 'Coal Jetty Design\n Coal Storage Yard Design'}
+                ]
             },
             {
                 activity: ''

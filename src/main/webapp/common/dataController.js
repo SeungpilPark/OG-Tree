@@ -254,15 +254,6 @@ DataController.prototype = {
             resizeView();
         });
 
-        //이너 모드일 경우엔 dijitReset 이 클릭된 경우에도 리사이즈 한다.
-        // var innerMode = me.getHtmlParameter('mode');
-        // if (window.parent.document && innerMode) {
-        //     if ($(window.parent.document).find('.dijitReset').length) {
-        //         $(window.parent.document).find('.dijitReset').click(function () {
-        //             resizeView();
-        //         })
-        //     }
-        // }
         resizeView();
 
         var checkFrameHeight = function () {
