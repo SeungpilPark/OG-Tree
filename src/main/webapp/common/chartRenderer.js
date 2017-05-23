@@ -357,7 +357,7 @@ ChartRenderer.prototype = {
                             height: me.canvas.getBoundary(activity).getHeight()
                         }
                     }
-                    me.canvas.removeShape(activity);
+                    //me.canvas.removeShape(activity);
                 });
 
             }
