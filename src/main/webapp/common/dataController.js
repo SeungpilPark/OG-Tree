@@ -1922,12 +1922,21 @@ DataController.prototype = {
         };
         return me.applyMethod('DHI_PROJECT_GetObjActivityList', me.createBody(params));
     },
+    saveMapData: function (mapDataJson) {
+        var me = this, params = {
+            pjtid: parent.top.thisItem.getProperty('id'),
+            mapdata: mapDataJson
+        };
+        return me.applyMethod('DHI_Project_updateMapData', me.createBody(params));
+    },
 
     getChartData: function () {
         var me = this;
         var mapData = parent.top.thisItem.getProperty('_map_data');
         if (!mapData || typeof mapData != 'object') {
             mapData = null;
+        }else{
+            mapData = JSON.parse(mapData);
         }
 
         var headers, rows, activities;

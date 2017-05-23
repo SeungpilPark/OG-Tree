@@ -77,6 +77,13 @@ ChartViewController.prototype = {
             console.log(JSON.stringify(me.renderer.canvas.toJSON()));
         });
 
+        $('#save').click(function () {
+            var mapData = JSON.stringify(me.renderer.canvas.toJSON());
+            if (mapData) {
+                me.aras.saveMapData(mapData);
+            }
+        });
+
         if (parent.top.aras) {
             var data = me.aras.getChartData();
             me.renderer.render(data.chartData, data.chartMap);
