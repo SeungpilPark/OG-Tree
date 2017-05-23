@@ -1931,8 +1931,8 @@ DataController.prototype = {
 
         return {
             chartData: {
-                headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
-                rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
+                //headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
+                //rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
                 activities: me.convertMethodResultToJsonArray(me.getObjActivityList())
             },
             chartMap: mapData
