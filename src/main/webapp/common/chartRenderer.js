@@ -195,8 +195,8 @@ ChartRenderer.prototype = {
 
             for (var i = 0; i < value.length; i++) {
                 var contentData = value[i];
-                var shape = new OG.A_Task(contentData['CUR_WFA_NAME']);
-                var color = me.getColorFromState(contentData['CUR_STATE']);
+                var shape = new OG.A_Task(contentData['cur_wfa_name']);
+                var color = me.getColorFromState(contentData['cur_state']);
                 color = color ? color : '#fff';
                 shape.data = JSON.parse(JSON.stringify(contentData));
                 shape.LABEL_EDITABLE = false;
@@ -244,9 +244,9 @@ ChartRenderer.prototype = {
         }
         var selected;
         $.each(rows, function (i, row) {
-            var activityId = activity['TOT_WFA'];
+            var activityId = activity['tot_wfa'];
             for (var column in row) {
-                if (activityId == row[column]['TOT_WFA']) {
+                if (activityId == row[column]['tot_wfa']) {
                     selected = {
                         data: row[column],
                         column: column,
@@ -268,7 +268,7 @@ ChartRenderer.prototype = {
         var allShapes = me.canvas.getAllShapes();
         var selected;
         $.each(allShapes, function (i, element) {
-            if (element.shape.data && element.shape.data['TOT_WFA'] == activityId) {
+            if (element.shape.data && element.shape.data['tot_wfa'] == activityId) {
                 selected = element;
             }
         });
@@ -296,7 +296,7 @@ ChartRenderer.prototype = {
                 if (fromShape && fromShape.shape.data) {
                     me.canvas.getRenderer().disconnectOneWay(edge, 'from');
                     connection.from = fromTerminal;
-                    connection.fromActivity = fromShape.shape.data['TOT_WFA'];
+                    connection.fromActivity = fromShape.shape.data['tot_wfa'];
                 }
             }
 
@@ -306,7 +306,7 @@ ChartRenderer.prototype = {
                 if (toShape && toShape.shape.data) {
                     me.canvas.getRenderer().disconnectOneWay(edge, 'to');
                     connection.to = toTerminal;
-                    connection.toActivity = toShape.shape.data['TOT_WFA'];
+                    connection.toActivity = toShape.shape.data['tot_wfa'];
                 }
             }
 
@@ -415,9 +415,9 @@ ChartRenderer.prototype = {
         var activities = chartData['activities'];
 
         for (var i = 0; i < headers.length; i++) {
-            var title = headers[i]['KEYED_NAME'] + '\n' + headers[i]['_END_DATE'];
+            var title = headers[i]['keyed_name'] + '\n' + headers[i]['_end_date'];
             var column = {
-                data: headers[i]['KEYED_NAME'],
+                data: headers[i]['keyed_name'],
                 title: title,
                 defaultContent: '',
                 renderer: me.getDataTableRenderer()
@@ -437,12 +437,12 @@ ChartRenderer.prototype = {
         for (var i = 0; i < rows.length; i++) {
             var row = {};
             //제일 앞 칼럼은 팀이름 데이터
-            row['team'] = rows[i]['_ENG_FUNC_CODE'];
+            row['team'] = rows[i]['_eng_func_code'];
             rowData.push(row);
         }
 
         $.each(activities, function (a, activity) {
-            var rowByTeam = me.getDataRowByTeam(activity['CUR_ENG_FUNC_CODE'], rowData);
+            var rowByTeam = me.getDataRowByTeam(activity['cur_eng_func_code'], rowData);
 
             var column;
 
