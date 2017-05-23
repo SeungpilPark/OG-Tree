@@ -286,6 +286,7 @@ DataController.prototype = {
         this.projectId = parent.top.thisItem.getProperty('_rel_project');
         this.mapdata = parent.top.thisItem.getProperty('_map_data');
         this.body = '';
+        this.projectName = parent.top.thisItem.getProperty('name');
     },
     /**
      * key value 오브젝트로부터 xml 바디 스트링을 만든다

@@ -43,10 +43,11 @@ ChartViewController.prototype = {
             me.aras = new DataController(null, me.renderer, me);
             me.aras.init();
 
-            var headerItem = me.aras.getWorkflowHeader(me.aras.wfId);
-            if (headerItem.getItemCount() == 1) {
-                me.renderHeaders(headerItem);
-            }
+            // var headerItem = me.aras.getWorkflowHeader(me.aras.wfId);
+            // if (headerItem.getItemCount() == 1) {
+            //     me.renderHeaders(headerItem);
+            // }
+            me.renderHeaders(me.aras.projectName);
         }
 
         me.renderStateBox();
@@ -155,16 +156,18 @@ ChartViewController.prototype = {
         console.log('headerItem', headerItem);
 
         var targetTable = $('#targetTable');
-        var project_code = headerItem.getProperty('project_code', '');
-        var process_id = headerItem.getProperty('process_id', '');
-        var pjt_name = headerItem.getProperty('pjt_name', '');
-        var processname = headerItem.getProperty('processname', '');
-        var sub_processname = headerItem.getProperty('sub_processname', '');
-        targetTable.find('[name=project_code]').html(project_code);
-        targetTable.find('[name=process_id]').html(process_id);
-        targetTable.find('[name=pjt_name]').html(pjt_name);
-        targetTable.find('[name=processname]').html(processname);
-        targetTable.find('[name=sub_processname]').html(sub_processname);
+        // var project_code = headerItem.getProperty('project_code', '');
+        // var process_id = headerItem.getProperty('process_id', '');
+        // var pjt_name = headerItem.getProperty('pjt_name', '');
+        // var processname = headerItem.getProperty('processname', '');
+        // var sub_processname = headerItem.getProperty('sub_processname', '');
+        // targetTable.find('[name=project_code]').html(project_code);
+        // targetTable.find('[name=process_id]').html(process_id);
+        // targetTable.find('[name=pjt_name]').html(pjt_name);
+        // targetTable.find('[name=processname]').html(processname);
+        // targetTable.find('[name=sub_processname]').html(sub_processname);
+
+        targetTable.find('[name=pjt_name]').html(headerItem);
     },
     /**
      * Dev 모드일시 개발용 샘플 데이터를 오픈그래프 트리에 반영한다.
