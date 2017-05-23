@@ -18092,7 +18092,7 @@ OG.shape.component.DataTable.prototype.draw = function (isResize) {
         me.bindCellEvent();
     }
 
-    //me.currentElement.data = me.data;
+    me.currentElement.data = me.data;
 }
 
 /**

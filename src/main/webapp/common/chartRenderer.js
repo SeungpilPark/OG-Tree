@@ -248,12 +248,17 @@ ChartRenderer.prototype = {
         $.each(rows, function (i, row) {
             var activityId = activity['tot_wfa'];
             for (var column in row) {
-                if (activityId == row[column]['tot_wfa']) {
-                    selected = {
-                        data: row[column],
-                        column: column,
-                        dataIndex: i
-                    }
+                var values = row[column];
+                if(typeof values == 'object'){
+                    $.each(values, function(v, value){
+                        if (activityId == value['tot_wfa']) {
+                            selected = {
+                                data: value,
+                                column: column,
+                                dataIndex: i
+                            }
+                        }
+                    })
                 }
             }
         });
@@ -357,7 +362,7 @@ ChartRenderer.prototype = {
                             height: me.canvas.getBoundary(activity).getHeight()
                         }
                     }
-                    //me.canvas.removeShape(activity);
+                    me.canvas.removeShape(activity);
                 });
 
             }
