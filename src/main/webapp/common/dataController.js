@@ -1884,6 +1884,7 @@ DataController.prototype = {
         return me.applyMethod('DHI_PROJECT_GetKeyActivityList', me.createBody(params));
     },
     convertMethodResultToJsonArray: function (result) {
+        var me = this;
         var nodeList = [];
         var tempData = [];
         if (!result) {
@@ -1931,8 +1932,8 @@ DataController.prototype = {
 
         return {
             chartData: {
-                //headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
-                //rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
+                headers: me.convertMethodResultToJsonArray(me.getKeyActivityList()),
+                rows: me.convertMethodResultToJsonArray(me.getEngFuncCodeList()),
                 activities: me.convertMethodResultToJsonArray(me.getObjActivityList())
             },
             chartMap: mapData
