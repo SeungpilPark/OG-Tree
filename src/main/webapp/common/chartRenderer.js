@@ -20,7 +20,7 @@ var ChartRenderer = function (container, viewController) {
         ACTIVITY_WIDTH: 80,
         ACTIVITY_HEIGHT: 38,
         ARRANGEMENT: 'horizontal',
-        ARRANGEMENT_MARGIN: 10
+        ARRANGEMENT_MARGIN: 24
     };
 
     this._CONTAINER = $('#' + container);
@@ -438,7 +438,7 @@ ChartRenderer.prototype = {
                 'stroke': '#abaaad',
                 'stroke-width': '1'
             },
-            cellHeight: 50,
+            cellHeight: 66,
             cellStyle: {
                 'fill': '#fff',
                 'fill-opacity': 0,
@@ -973,6 +973,7 @@ ChartRenderer.prototype = {
             this.GROUP_COLLAPSIBLE = false;
             this.DELETABLE = false;
             this.LABEL_EDITABLE = false;
+            this.RESIZABLE = false;
         };
         OG.shape.bpmn.A_Task.prototype = new OG.shape.GroupShape();
         OG.shape.bpmn.A_Task.superclass = OG.shape.GroupShape;

@@ -160,10 +160,10 @@ ChartViewController.prototype = {
      */
     getSampleData: function (callback) {
         $.getJSON("common/sampleData/chartData.json", function (chartData) {
-            //callback(chartData);
-            $.getJSON("common/sampleData/chartMap.json", function (chartMap) {
-                callback(chartData, chartMap);
-            });
+            callback(chartData);
+            // $.getJSON("common/sampleData/chartMap.json", function (chartMap) {
+            //     callback(chartData, chartMap);
+            // });
         });
     }
 }
