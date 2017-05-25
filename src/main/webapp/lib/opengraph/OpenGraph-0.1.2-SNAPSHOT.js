@@ -17441,19 +17441,14 @@ OG.shape.component.DataTable.prototype.setData = function (data) {
  */
 OG.shape.component.DataTable.prototype.removeOutRangeCells = function (columns, dataToDraw) {
     var me = this
-    var columnToRemove = [];
-
     //칼럼 삭제
     var columnViews = me.data.viewData.columns;
+    var columnList = [];
+    for (var l = 0, lenl = columns.length; l < lenl; l++) {
+        columnList.push(columns[l].data);
+    }
     for (var column in columnViews) {
-        var isExist = false;
-        for (var i = 0, leni = columns.length; i < leni; i++) {
-            if (columns[i].data == column) {
-                isExist = true;
-            }
-        }
-        if (!isExist) {
-            columnToRemove.push(column);
+        if (columnList.indexOf(column) == -1) {
             delete columnViews[column];
         }
     }
@@ -17474,8 +17469,8 @@ OG.shape.component.DataTable.prototype.removeOutRangeCells = function (columns, 
                 cellToRemove = true;
             }
 
-            //데이터 영역 안의 row 중 columnToRemove 에 속한 셀은 삭제한다.
-            else if (columnToRemove.indexOf(key) != -1) {
+            //데이터 영역 안의 row 중 columnList 에 없는 것은 삭제한다.
+            else if (columnList.indexOf(key) == -1) {
                 cellToRemove = true;
             }
 
