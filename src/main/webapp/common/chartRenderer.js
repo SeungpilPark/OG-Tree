@@ -768,6 +768,8 @@ ChartRenderer.prototype = {
                     if (me.getColumnByField(options.columns, column)) {
                         isExist = true;
                         contentIndex = existActivityInfo.contentIndex;
+                    }else{
+                        column = null;
                     }
                 }
             }
