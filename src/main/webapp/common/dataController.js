@@ -1957,18 +1957,18 @@ DataController.prototype = {
         if (keyActivityList.node == null && keyActivityList.nodeList == null) {
             headers = [
                 {
-                    "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "keyed_name": "HBD",
+                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "label": "HBD",
                     "_end_date": "4/17/2017 1:00:00 PM"
                 },
                 {
-                    "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "keyed_name": "ITB",
+                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "label": "ITB",
                     "_end_date": "4/17/2017 1:00:00 PM"
                 },
                 {
-                    "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "keyed_name": "P&ID",
+                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
+                    "label": "P&ID",
                     "_end_date": "4/17/2017 1:00:00 PM"
                 }
             ]

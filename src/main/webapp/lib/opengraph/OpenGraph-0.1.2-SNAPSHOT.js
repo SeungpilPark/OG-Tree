@@ -18218,14 +18218,16 @@ OG.shape.component.DataTable.prototype.getCellStyle = function (type, column, ro
     if (type == 'column') {
         //높이 얻기
         viewHeight = me.data.viewData.columnHeight;
-        if (!viewHeight) {
+
+        //viewHeight 없거나 X 리사이즈만 허용이라면
+        if (!viewHeight || me.options.resizeAxis == 'X') {
             me.data.viewData.columnHeight = me.options.columnHeight;
             viewHeight = me.options.columnHeight;
         }
 
         //가로 얻기
         var viewColumn = me.data.viewData.columns[column.data];
-        if (!viewColumn) {
+        if (!viewColumn || me.options.resizeAxis == 'Y') {
             viewWidth = column.columnWidth ? column.columnWidth : me.options.columnWidth;
         } else {
             viewWidth = viewColumn.width
@@ -18263,7 +18265,7 @@ OG.shape.component.DataTable.prototype.getCellStyle = function (type, column, ro
 
         //높이 얻기
         viewHeight = me.data.viewData.rows[rowIndex]['rowHeight'];
-        if (!viewHeight) {
+        if (!viewHeight || me.options.resizeAxis == 'X') {
             me.data.viewData.rows[rowIndex]['rowHeight'] = me.options.cellHeight;
             viewHeight = me.options.cellHeight;
         }
