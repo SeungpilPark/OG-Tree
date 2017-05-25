@@ -722,9 +722,9 @@ ChartRenderer.prototype = {
                 convertDate = headers[i]['_end_date'];
             }
 
-            var title = headers[i]['keyed_name'] + '\n' + convertDate;
+            var title = headers[i]['label'] + '\n' + convertDate;
             var column = {
-                data: headers[i]['keyed_name'],
+                data: headers[i]['label'],
                 title: title,
                 defaultContent: '',
                 renderer: me.getDataTableRenderer()
