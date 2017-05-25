@@ -789,8 +789,8 @@ ChartRenderer.prototype = {
             //existActivitySize 에서 해당 액티비티의 삭제 전 사이즈를 구한다.
             var beforeSize = me.existActivitySize[activity['tot_wfa']];
             if (beforeSize) {
-                activity['width'] = beforeSize['width'];
-                activity['height'] = beforeSize['height'];
+                //activity['width'] = beforeSize['width'];
+                //activity['height'] = beforeSize['height'];
             }
 
             rowByTeam[column].push(activity);
