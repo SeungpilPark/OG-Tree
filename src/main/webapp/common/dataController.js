@@ -1884,7 +1884,7 @@ DataController.prototype = {
         if (!result) {
             return tempData;
         }
-        if (result.getItemCount() == 0) {
+        if (result.getItemCount() == 1) {
             nodeList.push(result.node);
         } else {
             nodeList = result.nodeList;
@@ -1903,6 +1903,13 @@ DataController.prototype = {
             tempData.push(xmlNodeStringToJSON);
         }
         return tempData;
+    },
+    getProjectMapData: function () {
+        var inn = this.aras.newIOMInnovator();
+        var item = inn.newItem('Project', "get");
+        item.setProperty('id', parent.top.thisItem.getProperty('id'));
+        item = item.apply();
+        return item.getProperty('_map_data', '');
     },
     getKeyActivityList: function () {
         var me = this, params = {
@@ -1932,7 +1939,7 @@ DataController.prototype = {
 
     getChartData: function () {
         var me = this;
-        var mapData = parent.top.thisItem.getProperty('_map_data');
+        var mapData = me.getProjectMapData();
         if (!mapData) {
             mapData = null;
         } else {
@@ -1969,8 +1976,17 @@ DataController.prototype = {
             headers = me.convertMethodResultToJsonArray(keyActivityList);
         }
 
-        rows = me.convertMethodResultToJsonArray(engFuncCodeList);
-        activities = me.convertMethodResultToJsonArray(objActivityList);
+        if (engFuncCodeList.node == null && engFuncCodeList.nodeList == null) {
+            rows = []
+        } else {
+            rows = me.convertMethodResultToJsonArray(engFuncCodeList);
+        }
+
+        if (objActivityList.node == null && objActivityList.nodeList == null) {
+            activities = []
+        } else {
+            activities = me.convertMethodResultToJsonArray(objActivityList);
+        }
 
         return {
             chartData: {

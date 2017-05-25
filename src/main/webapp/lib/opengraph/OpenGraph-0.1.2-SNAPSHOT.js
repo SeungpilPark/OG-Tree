@@ -17044,29 +17044,10 @@ OG.shape.elec.SwitchTransformer.prototype.createShape = function () {
 
 OG.shape.component.DataTable = function () {
 
-    //셀은 의미로만 가지고있고, 실제 그리지는 않는다.
-    //테이블을 클릭했을 때만 셀을 생성한다.
-    //값을 그리는 것은 텍스트 엘리먼트 삽입.
-    //컨텐트를 넣는 것은 멀티플로 가능.
-    //칼럼 스타일,  칼럼 셀 스타일
-    //칼럼 셀 스타일 보더 우.  보더 상.
-    //가로 라인, 세로라인을 한줄로 처리한다.
-    //칼럼 셀 스타일이 가지고 있는 프로퍼티 : 좌, 우 선
-    //row 세퍼레이터 스타일 (row 분기선)
-    //그 외 칼럼은 OG.cell 사용.
-
-    //애초에 , 렌더러는 text 와 컨텐트를 같이 리턴하도록 한다.
-    //렌더러는 멀티 컨텐트들의 vertical 과 horizontal 배치 결정 가능.
-    //멀티 컨텐트들을 가상의 그룹으로 묶어 바운더리를 삼는다.
-    //이후 vertical-align, align, top, bottom 으로 그룹 바운더리 위치 결정. => 하위 요소들 위치결정.
-
-    //컨텐트 엘리먼트 이동(테이블 드랍) 시에 컨텐트 리스트에서 빠지도록...
-    //컨텐트 리스트에서 빠지면 해당 셀은 다시 draw 하도록....
-    //셀 카피. 셀 컷앤 페이스트.
-
-    //한 셀에 컨텐트를 여러개 담을 수 있게.
-    //셀에 컨텐트 배열은 horizontal,vertical 배열.
-    //셀에 컨텐트가 한개 이상일 때는 width,height 만 사용하며, 같이 배치될 content 들을 계산하여 draw.
+    //리사이즈 후 셀 가이드 다시 그리기. ok
+    //오른쪽으로 리사이즈 드래그 시 화면 사이즈 조정. ok
+    //콘텐트 매핑시 소팅 기능. ok
+    //행 추가 api. ok
 
     OG.shape.component.DataTable.superclass.call(this);
 
@@ -17169,19 +17150,6 @@ OG.shape.component.DataTable = function () {
                     }
                 })
             }
-
-            if (contentData.type == 'doubleActivity') {
-                result.contents.push({
-                    shape: new OG.A_Task(value.value),
-                    width: '80px',
-                    height: '78px',
-                    style: {
-                        'fill': '#f8f8f8',
-                        'fill-opacity': 1,
-                        'font-size': 9
-                    }
-                });
-            }
         }
         return result;
     }
@@ -17221,6 +17189,7 @@ OG.shape.component.DataTable = function () {
                 'stroke-width': '4'
             }
         },
+        columnEditable: false,
 
         rowDividingLine: {
             'stroke': '#abaaad',
@@ -17289,13 +17258,15 @@ OG.shape.component.DataTable = function () {
                         'stroke': '#abaaad',
                         'stroke-width': '1'
                     }
-                }
+                },
+                columnEditable: false
             },
             {
                 data: '90_',
                 title: '견적 착수\n90',
                 defaultContent: '',
-                renderer: renderer
+                renderer: renderer,
+                columnEditable: true
             },
             {
                 data: '85_',
@@ -17375,6 +17346,24 @@ OG.shape.component.DataTable = function () {
 
     //최초 draw 여부
     this.firstRender = false;
+
+    //어레이 move 추가.
+    Array.prototype.move = function (old_index, new_index) {
+        while (old_index < 0) {
+            old_index += this.length;
+        }
+        while (new_index < 0) {
+            new_index += this.length;
+        }
+        if (new_index >= this.length) {
+            var k = new_index - this.length;
+            while ((k--) + 1) {
+                this.push(undefined);
+            }
+        }
+        this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+        return this; // for testing purposes
+    };
 };
 OG.shape.component.DataTable.prototype = new OG.shape.GroupShape();
 OG.shape.component.DataTable.superclass = OG.shape.GroupShape;
@@ -17607,6 +17596,7 @@ OG.shape.component.DataTable.prototype.emptyCell = function (cellView, preventRe
  */
 OG.shape.component.DataTable.prototype.addCellContent = function (cellView, contentElement, value) {
     var me = this;
+    var boundary = me.currentCanvas.getBoundary(contentElement);
     if (contentElement && contentElement.nodeType == 1 && me.currentCanvas.getRenderer().isShape(contentElement)) {
         var data = me.getCellInformation(cellView);
         if (!data.contents) {
@@ -17614,40 +17604,87 @@ OG.shape.component.DataTable.prototype.addCellContent = function (cellView, cont
             me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'] = [];
         }
 
+        if (!data.contentsPosition) {
+            data.contentsPosition = {}
+        }
+        if (!data.contentsPosition['arrangement']) {
+            data.contentsPosition['arrangement'] = 'horizontal';
+        }
+        //신규 컨텐트의 센터와 기존 컨텐트의 센터들 사이간의 위치 인덱스를 구한다.
         var isExist = false;
-        $.each(data.contents, function (i, contentElementId) {
-            if (contentElementId == contentElement.id) {
+        var beforeIndex = 0;
+        var newIndex = 0;
+        $.each(data.contentElements, function (i, existContent) {
+            if (existContent.id == contentElement.id) {
                 isExist = true;
+                beforeIndex = i;
+            }
+            //가로 방향 정렬일경우 x 포지션 비교
+            if (data.contentsPosition['arrangement'] == 'horizontal') {
+                var x = me.currentCanvas.getBoundary(existContent).getCentroid().x;
+                if (x < boundary.getCentroid().x) {
+                    newIndex = i + 1;
+                }
+            }
+            //세로 방향 정렬일경우 y 포지션 비교
+            else {
+                var y = me.currentCanvas.getBoundary(existContent).getCentroid().y;
+                if (y < boundary.getCentroid().y) {
+                    newIndex = i + 1;
+                }
             }
         })
-        //동일한 아이디일 경우 교체하지 않는다.
-        if (isExist) {
-            return;
+
+        //신규 컨텐트를 추가하는 경우
+        if (!isExist) {
+            //다른 셀에서 contentElement 를 사용한다면 연결을 해제한다.
+            var removeValue = me.removeCellContent(contentElement, true);
+            //주어진 value 가 없고, 이전 사용중인 셀이 있다면 이전 사용중인 셀에서 가져온 value 로 대체한다.
+            if (!value && removeValue) {
+                value = removeValue;
+            }
+            //그래도 value 가 없다면 contentElement 의 데이터로 대체한다.
+            if (!value) {
+                value = contentElement.shape.data ? contentElement.shape.data : {};
+            }
+
+            //뷰테이블 추가
+            me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'].splice(newIndex, 0, contentElement.id);
+
+            //해당 value 를 인덱스에 추가한다.
+            if (!me.data.viewData.rows[data.rowIndex].cells[data.column]['value']) {
+                me.data.viewData.rows[data.rowIndex].cells[data.column]['value'] = [];
+                me.data.tableData[data.rowDataIndex][data.column] = [];
+            }
+            if (typeof me.data.viewData.rows[data.rowIndex].cells[data.column]['value'] == 'object') {
+                me.data.viewData.rows[data.rowIndex].cells[data.column]['value'].splice(newIndex, 0, value);
+                me.data.tableData[data.rowDataIndex][data.column].splice(newIndex, 0, value);
+            }
+            me.drawCell(cellView, true);
         }
-        //다른 셀에서 contentElement 를 사용한다면 연결을 해제한다.
-        var removeValue = me.removeCellContent(contentElement, true);
-        //주어진 value 가 없고, 이전 사용중인 셀이 있다면 이전 사용중인 셀에서 가져온 value 로 대체한다.
-        if (!value && removeValue) {
-            value = removeValue;
-        }
-        //그래도 value 가 없다면 contentElement 의 데이터로 대체한다.
-        if (!value) {
-            value = contentElement.shape.data ? contentElement.shape.data : {};
+        //같은 셀 내부에서 컨텐트를 이동하는 경우
+        else {
+            //위치가 같은 경우 순서를 조작하지 않음.
+            if (beforeIndex == newIndex) {
+                me.redrawCell(cellView);
+            }
+            else {
+                //뒤로 순서가 이동하는 경우, 자신의 기존 인덱스를 고려하여 newIndex 에서 1 후퇴.
+                if (newIndex > beforeIndex) {
+                    newIndex = newIndex - 1;
+                }
+                me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'].move(beforeIndex, newIndex);
+                me.data.viewData.rows[data.rowIndex].cells[data.column]['value'].move(beforeIndex, newIndex);
+                me.data.tableData[data.rowDataIndex][data.column].move(beforeIndex, newIndex);
+                me.redrawCell(me.refreshCellView(cellView));
+            }
         }
 
-        //뷰테이블 추가
-        me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'].push(contentElement.id);
 
-        //해당 value 를 인덱스에 추가한다.
-        if (!me.data.viewData.rows[data.rowIndex].cells[data.column]['value']) {
-            me.data.viewData.rows[data.rowIndex].cells[data.column]['value'] = [];
-            me.data.tableData[data.rowDataIndex][data.column] = [];
-        }
-        if (typeof me.data.viewData.rows[data.rowIndex].cells[data.column]['value'] == 'object') {
-            me.data.viewData.rows[data.rowIndex].cells[data.column]['value'].push(value);
-            me.data.tableData[data.rowDataIndex][data.column].push(value);
-        }
-        me.drawCell(cellView, true);
+        //여기서, 콘텐트 엘리먼트의 포지션과, 셀 뷰에 소속된 콘텐트들의 포지션들과 비교해서, 소팅을 해야한다.
+        //포지션은 각 콘텐트들의 센터를 비교함.
+        //새 엘리먼트의 인덱스를 구함.
+        //뷰 테이블과 value 의 인덱스를 수정함.
     }
 };
 
@@ -17811,7 +17848,7 @@ OG.shape.component.DataTable.prototype.getCellInformation = function (cellView) 
     } else {
         view = me.data.viewData.rows[cellView.rowIndex].cells[cellView.column];
     }
-    if(!view){
+    if (!view) {
         return null;
     }
     var info = JSON.parse(JSON.stringify(view));
@@ -17829,6 +17866,20 @@ OG.shape.component.DataTable.prototype.getCellInformation = function (cellView) 
     info.tableElement = me.currentElement;
     info.columnOption = me.getColumnByField(info.column);
     return info;
+}
+
+OG.shape.component.DataTable.prototype.refreshCellView = function (cellView) {
+    var me = this;
+    var view;
+    if (cellView.type == 'column') {
+        view = me.data.viewData.columns[cellView.column];
+    } else {
+        view = me.data.viewData.rows[cellView.rowIndex].cells[cellView.column];
+    }
+    if (!view) {
+        return null;
+    }
+    return JSON.parse(JSON.stringify(view));
 }
 
 
@@ -17922,6 +17973,7 @@ OG.shape.component.DataTable.prototype.draw = function (isResize) {
         me.data.viewData.columns[column.data]['tableId'] = me.currentElement.id;
         me.data.viewData.columns[column.data]['column'] = column.data;
         me.data.viewData.columns[column.data]['text'] = column.title;
+        me.data.viewData.columns[column.data]['cellIndex'] = i;
 
         //칼럼 subShape 를 추가한다.
         me.data.viewData.grid.push({
@@ -18101,46 +18153,67 @@ OG.shape.component.DataTable.prototype.draw = function (isResize) {
 OG.shape.component.DataTable.prototype.bindCellEvent = function () {
     var me = this, offset, cellView;
     $(me.currentElement).click(function (event) {
-        //기존 등록된 임시 셀을 모두 삭제토록.
-        var childs = me.currentCanvas.getChilds(me.currentElement);
-        for (var i = 0, leni = childs.length; i < leni; i++) {
-            if (childs[i].shape instanceof OG.Cell) {
-                me.currentCanvas.removeShape(childs[i]);
-            }
-        }
-
         offset = me.currentCanvas._HANDLER._getOffset(event);
         cellView = me.getCellViewFromOffset([offset.x, offset.y]);
+        me.createCellGuid(cellView);
+    });
+}
 
-        var shape = new OG.Cell();
-
-        //셀의 cellEditable 을 설정한다.
-        if (!shape.data) {
-            shape.data = {};
+OG.shape.component.DataTable.prototype.createCellGuid = function (cellView) {
+    var me = this;
+    //기존 등록된 임시 셀을 모두 삭제토록.
+    var childs = me.currentCanvas.getChilds(me.currentElement);
+    for (var i = 0, leni = childs.length; i < leni; i++) {
+        if (childs[i].shape instanceof OG.Cell) {
+            me.currentCanvas.removeShape(childs[i]);
         }
-        shape.data.dataTable = JSON.parse(JSON.stringify(cellView));
+    }
 
-        var cellElement = me.currentCanvas.drawShape(
-            [cellView.offset[0], cellView.offset[1]],
-            shape,
-            [cellView.width, cellView.height],
-            {
-                'fill': '#fff',
-                'fill-opacity': '0'
-            },
-            null,
-            me.currentElement.id
-        )
-        me.fitToBoundary(cellElement, cellView.width, cellView.height, cellView.offset[0], cellView.offset[1]);
+    if (!cellView) {
+        return;
+    }
 
-        //생성한 셀을 테이블 그리드 상단으로 이동시킨다.
+    //columnEditable
+    var shape;
+    if (cellView.type == 'column') {
+        var columnOption = me.getColumnByField(cellView.column);
+        var columnEditable = columnOption.columnEditable ? columnOption.columnEditable : me.options.columnEditable;
+        shape = new OG.Cell(cellView.text);
+        shape.LABEL_EDITABLE = columnEditable;
+    } else {
+        shape = new OG.Cell();
+        shape.LABEL_EDITABLE = false;
+    }
+
+    //셀의 cellEditable 을 설정한다.
+    if (!shape.data) {
+        shape.data = {};
+    }
+    shape.data.dataTable = JSON.parse(JSON.stringify(cellView));
+
+    var cellElement = me.currentCanvas.drawShape(
+        [cellView.offset[0], cellView.offset[1]],
+        shape,
+        [cellView.width, cellView.height],
+        // {
+        //     'fill': '#fff',
+        //     'fill-opacity': '0'
+        // },
+        cellView.style,
+        null,
+        me.currentElement.id
+    )
+    me.fitToBoundary(cellElement, cellView.width, cellView.height, cellView.offset[0], cellView.offset[1]);
+
+    //칼럼이 아닌경우는 셀 컨텐트를 방해하지 않기 위해 뒤쪽으로 이동시킨다.
+    if (cellView.type != 'column') {
         var firstChild = OG.Util.isIE() ? me.currentElement.childNodes[1] : me.currentElement.children[1];
         if (firstChild.id != cellElement.id) {
             me.currentElement.insertBefore(cellElement, OG.Util.isIE() ? me.currentElement.childNodes[1] : me.currentElement.children[1]);
         }
+    }
 
-        $(cellElement).click();
-    });
+    $(cellElement).click();
 }
 
 OG.shape.component.DataTable.prototype.getCellStyle = function (type, column, rowIndex, rowDataIndex) {
@@ -18642,96 +18715,6 @@ OG.shape.component.DataTable.prototype.drawCell = function (cellView, ignoreRend
 }
 
 /**
- * 칼럼을 그린다.
- * @param column
- * @param columnIndex
- * @param startPosition [startX, startY]
- * @return element
- */
-OG.shape.component.DataTable.prototype.drawColumn = function (column, columnIndex, startPosition) {
-    var me = this;
-    var columnViews = me.data.viewData.columns;
-    var cellStyle = me.getCellStyle('column', column);
-    var cellSize = cellStyle.size;
-    var style = cellStyle.style;
-    var field = column.data;
-    var columnElement = null;
-    var startX, startY;
-
-    //존재하는 칼럼 찾기
-    if (columnViews[field]) {
-        var cellId = columnViews[field]['cellId'];
-        if (cellId) {
-            columnElement = me.currentCanvas.getElementById(cellId);
-        }
-    }
-
-    //기존 칼럼이 없다면 새로 생성한다.
-    if (!columnElement) {
-        //기존 도형이 없고 시작포지션이 지정되지 않으면 그릴 수 없음.
-        if (!startPosition) {
-            throw new Error('missing startPosition to draw column');
-        }
-        startX = startPosition[0];
-        startY = startPosition[1];
-        columnElement = me.currentCanvas.drawShape(
-            [startX, startY],
-            new OG.Cell(column.title),
-            cellSize,
-            style,
-            null,
-            me.currentElement.id
-        )
-    }
-
-
-    var existBoundary = me.currentCanvas.getBoundary(columnElement);
-    var upperLeft = existBoundary.getUpperLeft();
-
-    //시작포지션이 지정되지 않으면 기존 도형을 기준으로 삼는다.
-    if (!startPosition) {
-        startX = upperLeft.x;
-        startY = upperLeft.y;
-    } else {
-        startX = startPosition[0];
-        startY = startPosition[1];
-    }
-
-    //셀을 크기조정 및 이동시킨다.
-    if (existBoundary.getWidth() != cellSize[0] || existBoundary.getHeight() != cellSize[1]) {
-        me.currentCanvas.resizeBox(columnElement, cellSize, true);
-    }
-    var moveX = startX - upperLeft.x;
-    var moveY = startY - upperLeft.y;
-    if (moveX != 0 || moveY != 0) {
-        me.currentCanvas.move(columnElement, [moveX, moveY]);
-    }
-
-    //셀에 데이터 넣기
-    if (!columnElement.shape.data) {
-        columnElement.shape.data = {};
-    }
-    columnElement.shape.data.dataTable = {
-        type: 'column',
-        column: column.data,
-        cellIndex: columnIndex,
-        cellId: columnElement.id,
-        tableId: me.currentElement.id
-    }
-
-    //뷰 데이터에 저장
-    columnViews[field] = {
-        width: cellSize[0],
-        height: cellSize[1],
-        cellId: columnElement.id
-    }
-
-    //뒤로 이동
-    me.currentElement.insertBefore(columnElement, OG.Util.isIE() ? me.currentElement.childNodes[1] : me.currentElement.children[1]);
-    return columnElement;
-}
-
-/**
  * tableData 중 현재 페이지에 그려질 범위를 반환한다.
  * @returns {{pageLength: *, currentPage: *, data: Array}}
  */
@@ -18767,16 +18750,16 @@ OG.shape.component.DataTable.prototype.onCellResize = function (cell, offset) {
     //소속한 row 의 height 조정
     var me = this;
     var boundary = me.currentCanvas.getBoundary(cell);
-    var dataTable = cell.shape.data.dataTable;
-    var column = dataTable.column;
-    var cellIndex = dataTable.cellIndex;
-    var rowIndex = dataTable.rowIndex;
+    var cellView = cell.shape.data.dataTable;
+    var column = cellView.column;
+    var cellIndex = cellView.cellIndex;
+    var rowIndex = cellView.rowIndex;
 
-    if (dataTable.type == 'column') {
+    if (cellView.type == 'column') {
         //뷰 데이터의 columnHeight 를 변경한다.
         me.data.viewData.columnHeight = boundary.getHeight();
     }
-    else if (dataTable.type == 'cell') {
+    else if (cellView.type == 'cell') {
         //뷰 데이터의 rowHeight 를 변경한다.
         me.data.viewData.rows[rowIndex].rowHeight = boundary.getHeight();
     }
@@ -18803,24 +18786,22 @@ OG.shape.component.DataTable.prototype.onCellResize = function (cell, offset) {
 
     }
     me.draw(true);
+    var refreshCellView = me.refreshCellView(cellView);
+    me.createCellGuid(refreshCellView);
 }
 
-
+//컨텍스트 메뉴에 셀
 OG.shape.component.DataTable.prototype.createContextMenu = function () {
     var me = this;
-    this.contextMenu = {
-        'delete': true,
-        'format': true,
-        'text': true,
-        'bringToFront': true,
-        'sendToBack': true,
-        'property': {
-            name: '정보보기', callback: function () {
-                $(me.currentCanvas.getRootElement()).trigger('showProperty', [me.currentElement]);
-            }
-        }
-    };
-    return this.contextMenu;
+    // this.contextMenu = {
+    //     'property': {
+    //         name: '정보보기', callback: function () {
+    //             $(me.currentCanvas.getRootElement()).trigger('showProperty', [me.currentElement]);
+    //         }
+    //     }
+    // };
+    // return this.contextMenu;
+    return {};
 };
 
 /**
@@ -18870,6 +18851,12 @@ OG.shape.component.DataTable.prototype.onAddToGroup = function (groupElement, el
             return;
         }
     }
+}
+
+OG.shape.component.DataTable.prototype.addColumn = function (columnOption, index) {
+    var me = this;
+    me.options.columns.splice(index, 0, columnOption);
+    me.draw(true);
 }
 
 OG.shape.component.Cell = function (label) {
@@ -18978,10 +18965,24 @@ OG.shape.component.Cell.prototype.onResize = function (offset) {
     }
 }
 
-
 OG.shape.component.Cell.prototype.onPasteShape = function (copied, pasted) {
 
 }
+
+OG.shape.component.Cell.prototype.onDrawLabel = function (text) {
+    var me = this;
+    if (me.data && me.data.dataTable && me.data.dataTable.type == 'column') {
+        var cellView = me.data.dataTable;
+        var tableId = cellView.tableId;
+        var table = me.currentCanvas.getElementById(tableId);
+        if (table) {
+            var existColumn = table.shape.getColumnByField(cellView.column);
+            existColumn.title = text;
+            table.shape.draw(true);
+        }
+    }
+}
+
 
 
 /**
@@ -29366,6 +29367,7 @@ OG.handler.EventHandler.prototype = {
                 for (var _handleName in guide) {
                     var handles = ['ul', 'uc', 'ur', 'rc', 'lwr', 'lwc', 'lwl', 'lc'];
                     var indexOfHandle = handles.indexOf(_handleName);
+                    var canvasSize;
                     if (indexOfHandle === -1) {
                         continue;
                     }
@@ -29463,6 +29465,18 @@ OG.handler.EventHandler.prototype = {
                                 height: newHeight
                             });
                             renderer.removeAllConnectGuide();
+
+                            canvasSize = renderer.getCanvasSize();
+                            if (canvasSize[0] < newRp + me._CONFIG.RESIZE_CANVAS_MARGIN || canvasSize[1] < newLwp + me._CONFIG.RESIZE_CANVAS_MARGIN) {
+                                if (canvasSize[0] < newRp + me._CONFIG.RESIZE_CANVAS_MARGIN) {
+                                    canvasSize[0] = newRp + me._CONFIG.RESIZE_CANVAS_MARGIN;
+                                }
+                                if (canvasSize[1] < newLwp + me._CONFIG.RESIZE_CANVAS_MARGIN) {
+                                    canvasSize[1] = newLwp + me._CONFIG.RESIZE_CANVAS_MARGIN;
+                                }
+                                renderer.setCanvasSize(canvasSize);
+                            }
+
                         },
                         stop: function (event) {
                             $(root).data(OG.Constants.GUIDE_SUFFIX.ONRESIZE, false);
@@ -31366,12 +31380,16 @@ OG.handler.EventHandler.prototype = {
                     var customMenu = eventShape.customContextMenu;
                     if (!customMenu) {
                         if (eventShape.createContextMenu) {
+                            var eventOffset = me._getOffset(event);
                             customMenu = eventShape.createContextMenu();
                         }
                     }
 
                     //커스텀 콘텍스트 메뉴가 있을경우 처리
                     if (customMenu) {
+                        if($.isEmptyObject(customMenu)){
+                            return false;
+                        }
                         for (var key in customMenu) {
                             if (!customMenu[key]) {
                                 continue;
@@ -34175,6 +34193,7 @@ OG.graph.Canvas = function (container, containerSize, backgroundColor, backgroun
         /**
          * 리사이즈 가능여부
          */
+        RESIZE_CANVAS_MARGIN: 5,
         RESIZABLE: true,
         RESIZABLE_: {
             GEOM: true,
@@ -34312,6 +34331,11 @@ OG.graph.Canvas = function (container, containerSize, backgroundColor, backgroun
          * 마우스 우클릭 메뉴 가능여부
          */
         ENABLE_CONTEXTMENU: true,
+
+        /**
+         * 루트 컨텍스트 메뉴 가능여부
+         */
+        ENABLE_ROOT_CONTEXTMENU: true,
 
         /**
          * 캔버스 스케일(리얼 사이즈 : Scale = 1)
@@ -34910,7 +34934,9 @@ OG.graph.Canvas.prototype = {
         this._HANDLER.setDragPageMovable();
         this._HANDLER.setEnableHotKey(this._CONFIG.ENABLE_HOTKEY);
         if (this._CONFIG.ENABLE_CONTEXTMENU) {
-            this._HANDLER.enableRootContextMenu();
+            if (this._CONFIG.ENABLE_ROOT_CONTEXTMENU) {
+                this._HANDLER.enableRootContextMenu();
+            }
             this._HANDLER.enableShapeContextMenu();
         }
 
@@ -35266,7 +35292,7 @@ OG.graph.Canvas.prototype = {
         var svg = me._RENDERER.getRootElement();
         var svgWidth, svgHeight, vx, vy, xRate, yRate, xImgRate, yImgRate;
         var slider = this._CONFIG.SLIDER;
-        if(!slider){
+        if (!slider) {
             return;
         }
         var sliderImage = slider.find('.sliderImage');

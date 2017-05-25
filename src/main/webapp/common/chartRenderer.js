@@ -50,7 +50,20 @@ var ChartRenderer = function (container, viewController) {
         checkBridgeEdge: true,
         autoHistory: false
     });
-    this.canvas._CONFIG.DEFAULT_STYLE.EDGE["edge-type"] = "plain";
+    this.canvas._CONFIG.DEFAULT_STYLE.EDGE = {
+        stroke: "black",
+        fill: "none",
+        "fill-opacity": 0,
+        "stroke-width": 1,
+        "stroke-opacity": 1,
+        "edge-type": "plain",
+        "arrow-start": "none",
+        "arrow-end": "block",
+        "stroke-dasharray": "",
+        "label-position": "center",
+        "stroke-linejoin": "round",
+        cursor: "pointer"
+    };
     this.canvas._CONFIG.GUIDE_CONTROL_LINE_NUM = 1;
     this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
     this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
@@ -201,7 +214,16 @@ ChartRenderer.prototype = {
                 var color = me.getColorFromState(contentData['cur_state']);
                 color = color ? color : '#fff';
                 shape.data = JSON.parse(JSON.stringify(contentData));
-                shape.LABEL_EDITABLE = false;
+
+                //TODO
+                //컨텐트 삭제 방지. ok
+                //더블클릭시 보여줄 액티비티 아이디: cur_wfa_config_id. ok
+                //마우스 업 시에 선 하이라이트 만들기. ok
+                //행 추가 api 콘텍스트에서 조정하기. ok
+                //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.
+                //컨테이너 높이 조정. 마추기.
+                //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기.
+
                 result.contents.push({
                     shape: shape,
                     width: contentData.width ? contentData.width + 'px' : me._CONFIG.ACTIVITY_WIDTH + 'px',
@@ -249,8 +271,8 @@ ChartRenderer.prototype = {
             var activityId = activity['tot_wfa'];
             for (var column in row) {
                 var values = row[column];
-                if(typeof values == 'object'){
-                    $.each(values, function(v, value){
+                if (typeof values == 'object') {
+                    $.each(values, function (v, value) {
                         if (activityId == value['tot_wfa']) {
                             selected = {
                                 data: value,
@@ -374,6 +396,7 @@ ChartRenderer.prototype = {
 
         //옵션데이터
         var options = {
+            columnEditable: false,
             axis: 'X',
             pageLength: 100,
             currentPage: 1,
@@ -562,6 +585,7 @@ ChartRenderer.prototype = {
         }
     }
 
+
     //========================================================================//
     //=========================Start Storage Query============================//
     //========================================================================//
@@ -639,7 +663,164 @@ ChartRenderer.prototype = {
      * 캔버스가 처음 렌더링 될 시 필요한 이벤트들을 바인딩한다.
      */
     bindEvent: function () {
-        var me = this;
+        var chartRenderer = this;
+        /**
+         * @class
+         * @extends OG.shape.GeomShape
+         * @requires OG.common.*
+         * @requires OG.geometry.*
+         *
+         * @param {String} label 라벨 [Optional]
+         * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
+         * @private
+         */
+        OG.shape.bpmn.A_Task = function (label) {
+            OG.shape.bpmn.A_Task.superclass.call(this);
+
+            this.GROUP_DROPABLE = false;
+            this.SHAPE_ID = 'OG.shape.bpmn.A_Task';
+            this.label = label;
+            this.CONNECTABLE = true;
+            this.GROUP_COLLAPSIBLE = false;
+            this.DELETABLE = false;
+            this.LABEL_EDITABLE = false;
+        };
+        OG.shape.bpmn.A_Task.prototype = new OG.shape.GroupShape();
+        OG.shape.bpmn.A_Task.superclass = OG.shape.GroupShape;
+        OG.shape.bpmn.A_Task.prototype.constructor = OG.shape.bpmn.A_Task;
+        OG.A_Task = OG.shape.bpmn.A_Task;
+
+        /**
+         * 드로잉할 Shape 을 생성하여 반환한다.
+         *
+         * @return {OG.geometry.Geometry} Shape 정보
+         * @override
+         */
+        OG.shape.bpmn.A_Task.prototype.createShape = function () {
+            if (this.geom) {
+                return this.geom;
+            }
+
+            this.geom = new OG.geometry.Rectangle([0, 0], 100, 100);
+            this.geom.style = new OG.geometry.Style({
+                //fill: 'r[(10, 10)]#FFFFFF-#FFFFCC',
+                'fill-r': 1,
+                'fill-cx': .1,
+                'fill-cy': .1,
+                "stroke-width": 1.2,
+                fill: 'r(.1, .1)#FFFFFF-#FFFFCC',
+                'fill-opacity': 1,
+                r: '10'
+            });
+
+            return this.geom;
+        };
+
+        OG.shape.bpmn.A_Task.prototype.createSubShape = function () {
+            this.sub = [];
+            return this.sub;
+        };
+
+        OG.shape.bpmn.A_Task.prototype.createContextMenu = function () {
+            var me = this;
+            this.contextMenu = {
+                'property': {
+                    name: '정보보기', callback: function () {
+                        if (me.data && me.data['cur_wfa_config_id']) {
+                            if (chartRenderer.viewController.aras) {
+                                chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
+                            }
+                        }
+                    }
+                }
+            };
+            return this.contextMenu;
+        };
+        OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
+            var me = this;
+            $(me.currentElement).bind('mouseover', function (event) {
+                var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
+                var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
+                var edges = prevEdges.concat(nextEdges);
+                $.each(edges, function (i, edge) {
+                    me.currentCanvas.setShapeStyle(edge, {
+                        "stroke": "RGB(66,139,202)",
+                        "stroke-width": "3",
+                        "stroke-dasharray": "",
+                        "opacity": "0.7",
+                        'marker': {
+                            'end': {
+                                'id': 'OG.marker.ArrowMarker',
+                                'size': [2, 2]
+                            }
+                        }
+                    });
+                });
+            });
+            $(me.currentElement).bind('mouseout', function () {
+                var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
+                var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
+                var edges = prevEdges.concat(nextEdges);
+                var style = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+                style.marker = null;
+                $.each(edges, function (i, edge) {
+                    me.currentCanvas.setShapeStyle(edge, style);
+                });
+            });
+        };
+
+        OG.shape.component.Cell.prototype.createContextMenu = function () {
+            var me = this;
+
+            function guid() {
+                function s4() {
+                    return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+                }
+
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                    s4() + '-' + s4() + s4() + s4();
+            }
+
+            //칼럼인 경우 행 추가 가능하다.
+            if (me.data && me.data.dataTable && me.data.dataTable.type == 'column') {
+                var cellView = me.data.dataTable;
+                var tableId = cellView.tableId;
+                var table = me.currentCanvas.getElementById(tableId);
+                if (table) {
+                    this.contextMenu = {
+                        'left': {
+                            name: '오른쪽 열 추가', callback: function () {
+                                var existColumn = table.shape.getColumnByField(cellView.column);
+                                table.shape.addColumn({
+                                    data: guid(),
+                                    title: existColumn.title + ' Copy',
+                                    defaultContent: '',
+                                    renderer: existColumn.renderer,
+                                    columnEditable : true
+                                }, cellView.cellIndex + 1);
+                            }
+                        },
+                        'right': {
+                            name: '왼쪽 열 추가', callback: function () {
+                                var existColumn = table.shape.getColumnByField(cellView.column);
+                                table.shape.addColumn({
+                                    data: guid(),
+                                    title: existColumn.title + ' Copy',
+                                    defaultContent: '',
+                                    renderer: existColumn.renderer,
+                                    columnEditable : true
+                                }, cellView.cellIndex);
+                            }
+                        }
+                    };
+                    return this.contextMenu;
+                }
+            } else {
+                return {};
+            }
+        };
     }
 
 };
