@@ -15,6 +15,7 @@ var ChartRenderer = function (container, viewController) {
          * 캔버스 높이
          */
         CONTAINER_HEIGHT: 600,
+        CONTAINER_MIN_HEIGHT: 600,
 
         ACTIVITY_WIDTH: 80,
         ACTIVITY_HEIGHT: 38,
@@ -860,11 +861,17 @@ ChartRenderer.prototype = {
         }
 
         var boundary = me.canvas.getBoundary(tableElement);
+
+
         //캔버스 사이즈 조정
         this.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
 
         //컨테이너 높이 조정
-        this._CONTAINER.height(boundary.getHeight() + 30);
+        var containerHeight = me._CONFIG.CONTAINER_MIN_HEIGHT;
+        if(boundary.getHeight() + 30 > containerHeight){
+            containerHeight = boundary.getHeight() + 30;
+        }
+        this._CONTAINER.height(containerHeight);
     }
 
 
