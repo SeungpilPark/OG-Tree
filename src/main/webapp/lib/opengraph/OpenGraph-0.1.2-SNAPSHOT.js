@@ -17487,6 +17487,7 @@ OG.shape.component.DataTable.prototype.removeOutRangeCells = function (columns, 
                         }
                     })
                 }
+                delete row.cells[key];
             }
         }
     }
