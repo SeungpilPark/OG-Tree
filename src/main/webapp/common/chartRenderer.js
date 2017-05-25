@@ -230,6 +230,7 @@ ChartRenderer.prototype = {
                 //행 추가 api 콘텍스트에서 조정하기. ok
                 //컨테이너 높이 조정. 마추기. ok
                 //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기. ok
+                //더블클릭 아이템 쇼우하기. ok
                 //삭제 후 재구성 시에 셀 속에 sort 된 차례대로 살리기.
                 //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.
 
@@ -511,6 +512,7 @@ ChartRenderer.prototype = {
         //기존 액티비티들만 살려서 row 를 꾸민다.
         //신규 액티비티들을 푸쉬한다.
 
+        //기존 데이터 테이블에 있는 액티비티를 재구성한다.
         $.each(activities, function (a, activity) {
             var rowByTeam = me.getDataRowByTeam(activity['cur_eng_func_code'], rowData);
 
@@ -545,6 +547,7 @@ ChartRenderer.prototype = {
 
             rowByTeam[column].push(activity);
         });
+
 
         //기존 데이터가 없다면, 각 셀 데이터의 컨텐트 개수에 따라 옵션의 칼럼 너비를 조정해주도록 한다.
         if (!existTableData && me._CONFIG.ARRANGEMENT == 'horizontal') {
@@ -799,6 +802,16 @@ ChartRenderer.prototype = {
                 $.each(edges, function (i, edge) {
                     me.currentCanvas.setShapeStyle(edge, style);
                 });
+            });
+
+            $(me.currentElement).bind({
+                'dblclick': function () {
+                    if (me.data && me.data['cur_wfa_config_id']) {
+                        if (chartRenderer.viewController.aras) {
+                            chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
+                        }
+                    }
+                }
             });
         };
 
