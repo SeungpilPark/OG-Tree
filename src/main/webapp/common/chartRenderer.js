@@ -418,7 +418,7 @@ ChartRenderer.prototype = {
 
         //옵션데이터
         var options = {
-            resizeAxis: false,
+            resizeAxis: 'X',
             columnEditable: false,
             axis: 'X',
             pageLength: 100,
