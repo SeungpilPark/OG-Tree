@@ -1959,17 +1959,17 @@ DataController.prototype = {
                 {
                     "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
                     "keyed_name": "HBD",
-                    "_end_date": "04-17-17"
+                    "_end_date": "4/17/2017 1:00:00 PM"
                 },
                 {
                     "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
                     "keyed_name": "ITB",
-                    "_end_date": "04-17-17"
+                    "_end_date": "4/17/2017 1:00:00 PM"
                 },
                 {
                     "_rel_project": "AF6C25B39E634F65AAC7D7FD5FE606D6",
                     "keyed_name": "P&ID",
-                    "_end_date": "04-23-17"
+                    "_end_date": "4/17/2017 1:00:00 PM"
                 }
             ]
         } else {
