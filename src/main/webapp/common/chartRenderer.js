@@ -14,7 +14,7 @@ var ChartRenderer = function (container, viewController) {
         /**
          * 캔버스 높이
          */
-        CONTAINER_HEIGHT: 800,
+        CONTAINER_HEIGHT: 600,
 
         ACTIVITY_WIDTH: 80,
         ACTIVITY_HEIGHT: 38,
@@ -128,14 +128,13 @@ ChartRenderer.prototype = {
     //========================================================================//
     //=============================Data apis==================================//
     //========================================================================//
+
     /**
-     * Aras 데이터를 테이블 데이터로 변환한다.
-     * @param chartData
+     * 칼럼 이름으로 칼럼 옵션을 얻어온다.
+     * @param columns
+     * @param field
+     * @return {*}
      */
-    convertData: function (chartData) {
-
-    },
-
     getColumnByField: function (columns, field) {
         for (var i = 0, leni = columns.length; i < leni; i++) {
             if (columns[i].data == field) {
@@ -144,6 +143,11 @@ ChartRenderer.prototype = {
         }
     },
 
+    /**
+     * 스테이터스를 컬러로 바꾼다.
+     * @param state
+     * @return {*}
+     */
     getColorFromState: function (state) {
         var me = this;
         var selectedColor;
@@ -160,6 +164,10 @@ ChartRenderer.prototype = {
         return selectedColor;
     },
 
+    /**
+     * 데이터 테이블의 렌더러를 정의하여 리턴한다. value 를 shape 로 변환하는 로직이 담겨있다.
+     * @return {tableRenderer}
+     */
     getDataTableRenderer: function () {
         var me = this;
         var tableRenderer = function (value) {
@@ -220,9 +228,10 @@ ChartRenderer.prototype = {
                 //더블클릭시 보여줄 액티비티 아이디: cur_wfa_config_id. ok
                 //마우스 업 시에 선 하이라이트 만들기. ok
                 //행 추가 api 콘텍스트에서 조정하기. ok
+                //컨테이너 높이 조정. 마추기. ok
+                //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기. ok
+                //삭제 후 재구성 시에 셀 속에 sort 된 차례대로 살리기.
                 //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.
-                //컨테이너 높이 조정. 마추기.
-                //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기.
 
                 result.contents.push({
                     shape: shape,
@@ -257,7 +266,7 @@ ChartRenderer.prototype = {
     },
 
     /**
-     * 액티비티에 해당하는 데이터 정보를 반환한다.
+     * rows 데이터 를 조회하여, 주어진 액티비티에 해당하는 정보를 반환한다.
      * @param activity
      * @param rows
      * @return {null}
@@ -277,7 +286,8 @@ ChartRenderer.prototype = {
                             selected = {
                                 data: value,
                                 column: column,
-                                dataIndex: i
+                                dataIndex: i,
+                                contentIndex: v
                             }
                         }
                     })
@@ -357,6 +367,7 @@ ChartRenderer.prototype = {
         var me = this;
         var dataTable;
         var existTableData;
+        var tableElement;
 
         me.existJson = null;
         me.canvas.clear();
@@ -365,9 +376,10 @@ ChartRenderer.prototype = {
         if (existJson) {
             me.existJson = existJson;
             me.canvas.loadJSON(existJson);
-            var element = me.canvas.getElementsByShapeId('OG.shape.component.DataTable');
-            if (element && element.length) {
-                dataTable = element[0].shape;
+            var tables = me.canvas.getElementsByShapeId('OG.shape.component.DataTable');
+            if (tables && tables.length) {
+                tableElement = tables[0];
+                dataTable = tableElement.shape;
                 existTableData = dataTable.data.tableData;
 
                 //Edge 들의 연결을 모두 해제하고, from,to 의 액티비티 연결정보를 저장하고있는다.
@@ -401,7 +413,7 @@ ChartRenderer.prototype = {
             pageLength: 100,
             currentPage: 1,
             columnHeight: 30,
-            columnWidth: 140,
+            columnWidth: 160,
             columnStyle: {
                 'font-color': '#fff',
                 'fill': '#abaaad',
@@ -461,7 +473,15 @@ ChartRenderer.prototype = {
         var activities = chartData['activities'];
 
         for (var i = 0; i < headers.length; i++) {
-            var title = headers[i]['keyed_name'] + '\n' + headers[i]['_end_date'];
+            var convertDate;
+            try {
+                convertDate = new Date(headers[i]['_end_date'] + ' GMT');
+                convertDate = convertDate.toLocaleString();
+            } catch (e) {
+                convertDate = headers[i]['_end_date'];
+            }
+
+            var title = headers[i]['keyed_name'] + '\n' + convertDate;
             var column = {
                 data: headers[i]['keyed_name'],
                 title: title,
@@ -487,16 +507,22 @@ ChartRenderer.prototype = {
             rowData.push(row);
         }
 
+        //할일.
+        //기존 액티비티들만 살려서 row 를 꾸민다.
+        //신규 액티비티들을 푸쉬한다.
+
         $.each(activities, function (a, activity) {
             var rowByTeam = me.getDataRowByTeam(activity['cur_eng_func_code'], rowData);
 
-            var column;
+            var column, isExist = false, contentIndex = 0;
 
             //기존 데이터가 있다면, 기존 액티비티가 들어있는 칼럼을 찾는다.
             if (existTableData) {
                 var existActivityInfo = me.getExistActivityFromRowsData(activity, existTableData);
                 if (existActivityInfo) {
+                    isExist = true;
                     column = existActivityInfo.column;
+                    contentIndex = existActivityInfo.contentIndex;
                 }
             }
 
@@ -543,7 +569,7 @@ ChartRenderer.prototype = {
         dataTable.setOptions(options);
         dataTable.setData(rowData);
         if (!existJson) {
-            this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
+            tableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
         }
         dataTable.draw();
 
@@ -583,6 +609,13 @@ ChartRenderer.prototype = {
             });
             me.connections = [];
         }
+
+        var boundary = me.canvas.getBoundary(tableElement);
+        //캔버스 사이즈 조정
+        this.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
+
+        //컨테이너 높이 조정
+        this._CONTAINER.height(boundary.getHeight() + 30);
     }
 
 
@@ -798,7 +831,7 @@ ChartRenderer.prototype = {
                                     title: existColumn.title + ' Copy',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
-                                    columnEditable : true
+                                    columnEditable: true
                                 }, cellView.cellIndex + 1);
                             }
                         },
@@ -810,7 +843,7 @@ ChartRenderer.prototype = {
                                     title: existColumn.title + ' Copy',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
-                                    columnEditable : true
+                                    columnEditable: true
                                 }, cellView.cellIndex);
                             }
                         }
