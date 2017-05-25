@@ -17156,6 +17156,7 @@ OG.shape.component.DataTable = function () {
 
     //옵션데이터
     this.options = {
+        resizeAxis: 'X',
         /**
          * 셀 콘텐트 axis 무브
          */
@@ -18742,6 +18743,14 @@ OG.shape.component.DataTable.prototype.onCellResize = function (cell, offset) {
     //이웃한 셀의 크기 조정
     //소속한 row 의 height 조정
     var me = this;
+    if (me.options.resizeAxis == 'X') {
+        offset[0] == 0;
+        offset[1] == 0;
+    } else if (me.options.resizeAxis == 'Y') {
+        offset[3] == 0;
+        offset[4] == 0;
+    }
+
     var boundary = me.currentCanvas.getBoundary(cell);
     var cellView = cell.shape.data.dataTable;
     var column = cellView.column;
@@ -18750,33 +18759,39 @@ OG.shape.component.DataTable.prototype.onCellResize = function (cell, offset) {
 
     if (cellView.type == 'column') {
         //뷰 데이터의 columnHeight 를 변경한다.
-        me.data.viewData.columnHeight = boundary.getHeight();
+        if(me.options.resizeAxis != 'X'){
+            me.data.viewData.columnHeight = boundary.getHeight();
+        }
     }
     else if (cellView.type == 'cell') {
         //뷰 데이터의 rowHeight 를 변경한다.
-        me.data.viewData.rows[rowIndex].rowHeight = boundary.getHeight();
-    }
-
-    //뷰 칼럼의 width 를 변경한다.
-    var columnViews = me.data.viewData.columns;
-    columnViews[column].width = boundary.getWidth();
-
-    //이웃한 칼럼의 width 를 변경한다.
-    //offset 은 상,하,좌,우
-    var moveLeft = offset[2];
-    var moveRight = offset[3];
-
-    //좌측이 움직였을 경우
-    if (moveLeft != 0) {
-        var leftCell = me.options.columns[cellIndex - 1];
-        if (leftCell) {
-            columnViews[leftCell.data].width = columnViews[leftCell.data].width - moveLeft;
+        if(me.options.resizeAxis != 'X'){
+            me.data.viewData.rows[rowIndex].rowHeight = boundary.getHeight();
         }
     }
 
-    //우측이 움직였을 경우는 이웃 칼럼의 처리를 하지 않음.
-    if (moveRight != 0) {
+    //뷰 칼럼의 width 를 변경한다.
+    if(me.options.resizeAxis != 'Y'){
+        var columnViews = me.data.viewData.columns;
+        columnViews[column].width = boundary.getWidth();
 
+        //이웃한 칼럼의 width 를 변경한다.
+        //offset 은 상,하,좌,우
+        var moveLeft = offset[2];
+        var moveRight = offset[3];
+
+        //좌측이 움직였을 경우
+        if (moveLeft != 0) {
+            var leftCell = me.options.columns[cellIndex - 1];
+            if (leftCell) {
+                columnViews[leftCell.data].width = columnViews[leftCell.data].width - moveLeft;
+            }
+        }
+
+        //우측이 움직였을 경우는 이웃 칼럼의 처리를 하지 않음.
+        if (moveRight != 0) {
+
+        }
     }
     me.draw(true);
     var refreshCellView = me.refreshCellView(cellView);
@@ -18960,6 +18975,9 @@ OG.shape.component.Cell.prototype.createSubShape = function () {
 
 OG.shape.component.Cell.prototype.onResize = function (offset) {
     var me = this;
+    if (offset[0] == 0 && offset[1] == 0 && offset[2] == 0 && offset[3] == 0) {
+        return;
+    }
     if (me.data && me.data.dataTable) {
         var tableId = me.data.dataTable.tableId;
         var table = me.currentCanvas.getElementById(tableId);

@@ -1099,7 +1099,7 @@ ChartRenderer.prototype = {
                                     title: '',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
-                                    columnEditable: true
+                                    columnEditable: false
                                 }, cellView.cellIndex + 1);
                             }
                         },
@@ -1112,7 +1112,7 @@ ChartRenderer.prototype = {
                                     title: '',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
-                                    columnEditable: true
+                                    columnEditable: false
                                 }, cellView.cellIndex);
                             }
                         },
