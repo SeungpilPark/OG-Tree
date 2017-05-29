@@ -1908,7 +1908,12 @@ DataController.prototype = {
         var me = this, params = {
             owned_by_id: parent.top.thisItem.getProperty('owned_by_id')
         };
-        return me.applyMethod('DHI_Project_CheckPMLoginUser', me.createBody(params));
+        var applyMethod = me.applyMethod('DHI_Project_CheckPMLoginUser', me.createBody(params));
+        if(applyMethod){
+            return applyMethod.getResult();
+        }else{
+            return false;
+        }
     },
     getProjectMapData: function () {
         var inn = this.aras.newIOMInnovator();
