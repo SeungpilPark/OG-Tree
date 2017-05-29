@@ -8,7 +8,8 @@
  * @param {ChartViewController} viewController
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var ChartRenderer = function (container, viewController) {
+var ChartRenderer = function (container, viewController, editMode) {
+    this.editMode = editMode;
     this.viewController = viewController;
     this._CONFIG = {
         /**
@@ -22,6 +23,10 @@ var ChartRenderer = function (container, viewController) {
         ARRANGEMENT: 'horizontal',
         ARRANGEMENT_MARGIN: 24,
 
+
+        /**
+         * 커스텀 컬럼 식별자
+         */
         CUSTOM_COL_PREFIX: 'customColPrefix',
 
         /**
@@ -39,25 +44,47 @@ var ChartRenderer = function (container, viewController) {
     // Canvas
     this.canvas = new OG.Canvas(container, [this._CONTAINER.width(), this._CONFIG.CONTAINER_HEIGHT], 'white');
 
-    this.canvas.initConfig({
-        selectable: true,
-        dragSelectable: true,
-        movable: true,
-        resizable: true,
-        connectable: true,
-        selfConnectable: true,
-        connectCloneable: true,
-        connectRequired: true,
-        labelEditable: true,
-        groupDropable: true,
-        collapsible: true,
-        enableHotKey: false,
-        enableContextMenu: true,
-        useSlider: false,
-        stickGuide: true,
-        checkBridgeEdge: true,
-        autoHistory: false
-    });
+    if(this.editMode){
+        this.canvas.initConfig({
+            selectable: true,
+            dragSelectable: true,
+            movable: true,
+            resizable: true,
+            connectable: true,
+            selfConnectable: true,
+            connectCloneable: true,
+            connectRequired: true,
+            labelEditable: true,
+            groupDropable: true,
+            collapsible: true,
+            enableHotKey: false,
+            enableContextMenu: true,
+            useSlider: false,
+            stickGuide: true,
+            checkBridgeEdge: true,
+            autoHistory: false
+        });
+    }else{
+        this.canvas.initConfig({
+            selectable: true,
+            dragSelectable: true,
+            movable: false,
+            resizable: false,
+            connectable: false,
+            selfConnectable: false,
+            connectCloneable: true,
+            connectRequired: true,
+            labelEditable: true,
+            groupDropable: true,
+            collapsible: true,
+            enableHotKey: false,
+            enableContextMenu: false,
+            useSlider: false,
+            stickGuide: true,
+            checkBridgeEdge: true,
+            autoHistory: false
+        });
+    }
     this.canvas._CONFIG.DEFAULT_STYLE.EDGE = {
         stroke: "black",
         fill: "none",
@@ -231,24 +258,6 @@ ChartRenderer.prototype = {
                 color = color ? color : '#fff';
                 shape.data = JSON.parse(JSON.stringify(contentData));
 
-                //TODO
-                //컨텐트 삭제 방지. ok
-                //더블클릭시 보여줄 액티비티 아이디: cur_wfa_config_id. ok
-                //마우스 업 시에 선 하이라이트 만들기. ok
-                //행 추가 api 콘텍스트에서 조정하기. ok
-                //컨테이너 높이 조정. 마추기. ok
-                //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기. ok
-                //더블클릭 아이템 쇼우하기. ok
-
-                // 1.컨테이너 높이 min 설정.ok
-                // 2.시간은 빼기.(날짜만.).ok
-                // 3.세로는 고정. ok
-                // 5.삭제 만들기 삭제하면 전부 왼쪽으로 가기. ok
-
-                //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.ok
-                //콘텐트 삭제 후 재구성 시에 셀 속에 sort 된 차례대로 살리기. ok
-                //스트링 .. 처리.  & 툴팁처리
-
                 result.contents.push({
                     shape: shape,
                     width: contentData.width ? contentData.width + 'px' : me._CONFIG.ACTIVITY_WIDTH + 'px',
@@ -379,7 +388,6 @@ ChartRenderer.prototype = {
      * @param existJson
      */
     render: function (chartData, existJson) {
-        console.log('debug');
         var me = this;
         var dataTable;
         var existTableData;

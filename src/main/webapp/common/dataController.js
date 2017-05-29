@@ -1904,6 +1904,12 @@ DataController.prototype = {
         }
         return tempData;
     },
+    checkPM: function () {
+        var me = this, params = {
+            owned_by_id: parent.top.thisItem.getProperty('owned_by_id')
+        };
+        return me.applyMethod('DHI_Project_CheckPMLoginUser', me.createBody(params));
+    },
     getProjectMapData: function () {
         var inn = this.aras.newIOMInnovator();
         var item = inn.newItem('Project', "get");

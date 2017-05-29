@@ -19,10 +19,10 @@ var ChartViewController = function () {
     this.aras = null;
 
     /**
-     * Dev 모드
+     * Edit 모드
      * @type {string}
      */
-    this.mode = 'sample'; //random,sample
+    this.editMode = true;
 
 
     this.chartStateJson = null;
@@ -36,18 +36,22 @@ ChartViewController.prototype = {
      */
     init: function () {
         var me = this;
-        me.renderer = new ChartRenderer('canvas', me);
-        me.renderer.init();
 
         if (parent.top.aras) {
-            me.aras = new DataController(null, me.renderer, me);
+            me.aras = new DataController(null, null, me);
             me.aras.init();
-
-            // var headerItem = me.aras.getWorkflowHeader(me.aras.wfId);
-            // if (headerItem.getItemCount() == 1) {
-            //     me.renderHeaders(headerItem);
-            // }
             me.renderHeaders(me.aras.projectName);
+
+            this.editMode = me.aras.checkPM();
+            $('#print').hide();
+        }
+
+        me.renderer = new ChartRenderer('canvas', me, this.editMode);
+        me.renderer.init();
+
+        //에디트 모드가 아닐경우 save 숨김
+        if (!this.editMode) {
+            $('#save').hide();
         }
 
         me.renderStateBox();
@@ -89,10 +93,10 @@ ChartViewController.prototype = {
         });
 
         $('#refresh').click(function () {
-            try{
+            try {
                 me.startRender();
                 toastr.success('Refreshed.');
-            }catch (e){
+            } catch (e) {
                 toastr.error('Refresh failed.');
             }
         });
