@@ -17817,12 +17817,12 @@ OG.shape.component.DataTable.prototype.reconnectEdgesToContent = function (cellV
             if (direction == 'from') {
                 shapeId = fromTerminal.substring(0, fromTerminal.indexOf(OG.Constants.TERMINAL));
                 replace = fromTerminal.replace(shapeId, contentElement.id);
-                me.currentCanvas.getRenderer().connect(replace, toTerminal, edge, null, null, true);
+                me.currentCanvas.getRenderer().connect(replace, null, edge, null, null, true);
             }
             if (direction == 'to') {
                 shapeId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
                 replace = toTerminal.replace(shapeId, contentElement.id);
-                me.currentCanvas.getRenderer().connect(fromTerminal, replace, edge, null, null, true);
+                me.currentCanvas.getRenderer().connect(null, replace, edge, null, null, true);
             }
         }
         me.data.viewData.rows[data.rowDataIndex].cells[data.column]['connection'] = [];

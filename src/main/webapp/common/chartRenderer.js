@@ -267,18 +267,18 @@ ChartRenderer.prototype = {
 
     /**
      * 팀에 해당하는 data row 를 반환한다.
-     * @param team
+     * @param code
      * @param rows
+     * @param rowIndexMapByCode
      * @return {*}
      */
-    getDataRowByTeam: function (team, rows) {
-        var rowByTeam;
-        $.each(rows, function (r, row) {
-            if (row.team == team) {
-                rowByTeam = row;
-            }
-        });
-        return rowByTeam;
+    getDataRowByCode: function (funcCode, rows, rowIndexMapByCode) {
+        var rowByCode;
+        if (typeof rowIndexMapByCode[funcCode] == 'number') {
+            var rowIndex = rowIndexMapByCode[funcCode];
+            rowByCode = rows[rowIndex];
+        }
+        return rowByCode;
     },
 
     /**
@@ -458,7 +458,7 @@ ChartRenderer.prototype = {
             },
             columns: [
                 {
-                    data: 'team',
+                    data: 'func_code',
                     title: '주요 Activity\n일정(D day)',
                     defaultContent: '',
                     columnWidth: 100,
@@ -770,17 +770,19 @@ ChartRenderer.prototype = {
 
 
         var rowData = [];
+        var rowIndexMapByCode = {};
         for (var i = 0; i < rows.length; i++) {
             var row = {};
-            //제일 앞 칼럼은 팀이름 데이터
-            row['team'] = rows[i]['_eng_func_code'];
+            //제일 앞 칼럼은 코드 데이터
+            row['func_code'] = rows[i]['_eng_func_code'];
             rowData.push(row);
+            rowIndexMapByCode[rows[i]['_eng_func_code']] = i;
         }
 
 
         //기존 데이터 테이블에 있는 액티비티를 재구성한다.
         $.each(activities, function (a, activity) {
-            var rowByTeam = me.getDataRowByTeam(activity['cur_eng_func_code'], rowData);
+            var rowByCode = me.getDataRowByCode(activity['cur_eng_func_code'], rowData, rowIndexMapByCode);
             var column, isExist = false, contentIndex = -1;
 
             //기존 데이터가 있다면, 기존 액티비티가 들어있는 칼럼을 찾는다.
@@ -805,8 +807,14 @@ ChartRenderer.prototype = {
             }
 
             //해당 팀의 칼럼에 액티비티를 추가한다.
-            if (!rowByTeam[column]) {
-                rowByTeam[column] = []
+            if (!rowByCode[column]) {
+                rowByCode[column] = []
+            }
+
+            //액티비티의 tot_wfa_label 값으로 해당 row 의 func_code (로우 헤더) 값을 치환한다.
+            if (activity['tot_wfa_label']) {
+                var replaceLabel = activity['tot_wfa_label'].replace('(' + activity['tot_wfa'] + ')', '');
+                rowByCode['func_code'] = replaceLabel;
             }
 
             //existActivitySize 에서 해당 액티비티의 삭제 전 사이즈를 구한다.
@@ -818,12 +826,11 @@ ChartRenderer.prototype = {
 
             //contentIndex 가 있다면 해당 위치에 인서트하고, 그 외에는 push
             if (contentIndex < 0) {
-                rowByTeam[column].push(activity);
+                rowByCode[column].push(activity);
             } else {
-                rowByTeam[column].splice(contentIndex, 0, activity);
+                rowByCode[column].splice(contentIndex, 0, activity);
             }
         });
-        console.log(rowData);
 
 
         //기존 데이터가 없다면, 각 셀 데이터의 컨텐트 개수에 따라 옵션의 칼럼 너비를 조정해주도록 한다.
@@ -921,9 +928,9 @@ ChartRenderer.prototype = {
      */
     labelSubstring: function (label) {
         var length = this._CONFIG.LABEL_MAX_LENGTH;
-        if(label.length > length){
+        if (label.length > length) {
             return label.substring(0, length) + '..';
-        }else{
+        } else {
             return label;
         }
     },
@@ -1105,7 +1112,7 @@ ChartRenderer.prototype = {
                 'dblclick': function () {
                     if (me.data && me.data['cur_wfa_config_id']) {
                         if (chartRenderer.viewController.aras) {
-                            chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
+                            chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);
                         }
                     }
                 }
