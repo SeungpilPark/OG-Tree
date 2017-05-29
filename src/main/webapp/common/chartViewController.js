@@ -43,6 +43,11 @@ ChartViewController.prototype = {
             me.renderHeaders(me.aras.projectName);
 
             this.editMode = me.aras.checkPM();
+            if (typeof this.editMode == 'string' && this.editMode == 'true') {
+                this.editMode = true;
+            } else {
+                this.editMode = false;
+            }
             $('#print').hide();
         }
 
