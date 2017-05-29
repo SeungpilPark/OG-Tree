@@ -63,34 +63,44 @@
   ],
   "rows": [
     {
-      "_eng_func_code": "A-BA-2004"
+      "_eng_func_code": "A-BA-2004",
+      "c_label": "BLR) Building Enclosure(A-BA-2004)"
     },
     {
-      "_eng_func_code": "P-BA-2001"
+      "_eng_func_code": "P-BA-2001",
+      "c_label": "BLR) Building Enclosure(P-BA-2001)"
     },
     {
-      "_eng_func_code": "P-BA-2005"
+      "_eng_func_code": "P-BA-2005",
+      "c_label": "BLR) Building Enclosure(P-BA-2005)"
     },
     {
-      "_eng_func_code": "P-BA-2002"
+      "_eng_func_code": "P-BA-2002",
+      "c_label": "BLR) Building Enclosure(P-BA-2002)"
     },
     {
-      "_eng_func_code": "P-BA-2006"
+      "_eng_func_code": "P-BA-2006",
+      "c_label": "BLR) Building Enclosure(P-BA-2006)"
     },
     {
-      "_eng_func_code": "P-BA-2007"
+      "_eng_func_code": "P-BA-2007",
+      "c_label": "BLR) Building Enclosure(P-BA-2007)"
     },
     {
-      "_eng_func_code": "P-BA-2008"
+      "_eng_func_code": "P-BA-2008",
+      "c_label": "BLR) Building Enclosure(P-BA-2008)"
     },
     {
-      "_eng_func_code": "P-BA-2009"
+      "_eng_func_code": "P-BA-2009",
+      "c_label": "BLR) Building Enclosure(P-BA-2009)"
     },
     {
-      "_eng_func_code": "P-BA-2010"
+      "_eng_func_code": "P-BA-2010",
+      "c_label": "BLR) Building Enclosure(P-BA-2010)"
     },
     {
-      "_eng_func_code": "P-BA-2011"
+      "_eng_func_code": "P-BA-2011",
+      "c_label": "BLR) Building Enclosure(P-BA-2011)"
     }
   ],
   "activities": [

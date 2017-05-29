@@ -774,7 +774,7 @@ ChartRenderer.prototype = {
         for (var i = 0; i < rows.length; i++) {
             var row = {};
             //제일 앞 칼럼은 코드 데이터
-            row['func_code'] = rows[i]['_eng_func_code'];
+            row['func_code'] = rows[i]['c_label'];
             rowData.push(row);
             rowIndexMapByCode[rows[i]['_eng_func_code']] = i;
         }
@@ -809,12 +809,6 @@ ChartRenderer.prototype = {
             //해당 팀의 칼럼에 액티비티를 추가한다.
             if (!rowByCode[column]) {
                 rowByCode[column] = []
-            }
-
-            //액티비티의 tot_wfa_label 값으로 해당 row 의 func_code (로우 헤더) 값을 치환한다.
-            if (activity['tot_wfa_label']) {
-                var replaceLabel = activity['tot_wfa_label'].replace('(' + activity['tot_wfa'] + ')', '');
-                rowByCode['func_code'] = replaceLabel;
             }
 
             //existActivitySize 에서 해당 액티비티의 삭제 전 사이즈를 구한다.
