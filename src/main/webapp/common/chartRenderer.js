@@ -20,7 +20,14 @@ var ChartRenderer = function (container, viewController) {
         ACTIVITY_WIDTH: 80,
         ACTIVITY_HEIGHT: 38,
         ARRANGEMENT: 'horizontal',
-        ARRANGEMENT_MARGIN: 24
+        ARRANGEMENT_MARGIN: 24,
+
+        CUSTOM_COL_PREFIX: 'customColPrefix',
+
+        /**
+         * 라벨 최대 글자 크기
+         */
+        LABEL_MAX_LENGTH: 25
     };
 
     this._CONTAINER = $('#' + container);
@@ -219,7 +226,7 @@ ChartRenderer.prototype = {
 
             for (var i = 0; i < value.length; i++) {
                 var contentData = value[i];
-                var shape = new OG.A_Task(contentData['cur_wfa_name']);
+                var shape = new OG.A_Task(me.labelSubstring(contentData['cur_wfa_name']));
                 var color = me.getColorFromState(contentData['cur_state']);
                 color = color ? color : '#fff';
                 shape.data = JSON.parse(JSON.stringify(contentData));
@@ -232,16 +239,15 @@ ChartRenderer.prototype = {
                 //컨테이너 높이 조정. 마추기. ok
                 //GMT 0 시간인데,  사용자 로컬 피시 타임존으로 바꾸기. ok
                 //더블클릭 아이템 쇼우하기. ok
-                //삭제 후 재구성 시에 셀 속에 sort 된 차례대로 살리기.
-                //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.
 
-                // 1.컨테이너 높이 min 설정.
-                // 2.시간은 빼기.(날짜만.)
-                // 3.세로는 고정.
-                // 4.셀 안에서 컨텐트들이 자유롭게 움직이는 방안.
-                //
-                // 5.삭제 만들기 삭제하면 전부 왼쪽으로 가기.
-                // 6.칼럼 신규 추가, 프로젝트 복사시 그 칼럼의 인덱스대로 추가해놓기.
+                // 1.컨테이너 높이 min 설정.ok
+                // 2.시간은 빼기.(날짜만.).ok
+                // 3.세로는 고정. ok
+                // 5.삭제 만들기 삭제하면 전부 왼쪽으로 가기. ok
+
+                //행추가시 헤더 데이터에 커스텀 값 입력해서, 데이터 헤더에 없어도 살려두기.ok
+                //콘텐트 삭제 후 재구성 시에 셀 속에 sort 된 차례대로 살리기. ok
+                //스트링 .. 처리.  & 툴팁처리
 
                 result.contents.push({
                     shape: shape,
@@ -378,6 +384,7 @@ ChartRenderer.prototype = {
         var dataTable;
         var existTableData;
         var tableElement;
+        var existViewData;
 
         me.existJson = null;
         me.canvas.clear();
@@ -390,8 +397,8 @@ ChartRenderer.prototype = {
             if (tables && tables.length) {
                 tableElement = tables[0];
                 dataTable = tableElement.shape;
-                existTableData = dataTable.data.tableData;
-
+                existTableData = JSON.parse(JSON.stringify(dataTable.data.tableData));
+                existViewData = JSON.parse(JSON.stringify(dataTable.data.viewData));
                 //Edge 들의 연결을 모두 해제하고, from,to 의 액티비티 연결정보를 저장하고있는다.
                 me.connections = me.keepEdges();
 
@@ -483,6 +490,7 @@ ChartRenderer.prototype = {
         var rows = chartData.rows;
         var activities = chartData['activities'];
 
+        //옵션 칼럼정보를 구성한다.
         for (var i = 0; i < headers.length; i++) {
             var convertDate;
 
@@ -742,6 +750,25 @@ ChartRenderer.prototype = {
             options.columns.push(column);
         }
 
+        //기존 테이블의 칼럼뷰데이터의 커스텀 칼럼의 인덱스들을, 칼럼 옵션에 인서트한다.
+        if (existViewData && existViewData.columns) {
+            for (var key in existViewData.columns) {
+                var columnView = existViewData.columns[key];
+                if (columnView.column.indexOf(me._CONFIG.CUSTOM_COL_PREFIX) != -1) {
+                    var column = {
+                        data: columnView.column,
+                        title: '',
+                        defaultContent: '',
+                        renderer: me.getDataTableRenderer(),
+                        columnEditable: false
+                    };
+                    var columnIndex = columnView.cellIndex;
+                    options.columns.splice(columnIndex, 0, column);
+                }
+            }
+        }
+
+
         var rowData = [];
         for (var i = 0; i < rows.length; i++) {
             var row = {};
@@ -750,15 +777,11 @@ ChartRenderer.prototype = {
             rowData.push(row);
         }
 
-        //할일.
-        //기존 액티비티들만 살려서 row 를 꾸민다.
-        //신규 액티비티들을 푸쉬한다.
 
         //기존 데이터 테이블에 있는 액티비티를 재구성한다.
         $.each(activities, function (a, activity) {
             var rowByTeam = me.getDataRowByTeam(activity['cur_eng_func_code'], rowData);
-
-            var column, isExist = false, contentIndex = 0;
+            var column, isExist = false, contentIndex = -1;
 
             //기존 데이터가 있다면, 기존 액티비티가 들어있는 칼럼을 찾는다.
             if (existTableData) {
@@ -770,7 +793,7 @@ ChartRenderer.prototype = {
                     if (me.getColumnByField(options.columns, column)) {
                         isExist = true;
                         contentIndex = existActivityInfo.contentIndex;
-                    }else{
+                    } else {
                         column = null;
                     }
                 }
@@ -793,8 +816,14 @@ ChartRenderer.prototype = {
                 //activity['height'] = beforeSize['height'];
             }
 
-            rowByTeam[column].push(activity);
+            //contentIndex 가 있다면 해당 위치에 인서트하고, 그 외에는 push
+            if (contentIndex < 0) {
+                rowByTeam[column].push(activity);
+            } else {
+                rowByTeam[column].splice(contentIndex, 0, activity);
+            }
         });
+        console.log(rowData);
 
 
         //기존 데이터가 없다면, 각 셀 데이터의 컨텐트 개수에 따라 옵션의 칼럼 너비를 조정해주도록 한다.
@@ -869,7 +898,7 @@ ChartRenderer.prototype = {
 
         //컨테이너 높이 조정
         var containerHeight = me._CONFIG.CONTAINER_MIN_HEIGHT;
-        if(boundary.getHeight() + 30 > containerHeight){
+        if (boundary.getHeight() + 30 > containerHeight) {
             containerHeight = boundary.getHeight() + 30;
         }
         this._CONTAINER.height(containerHeight);
@@ -885,6 +914,19 @@ ChartRenderer.prototype = {
     //=================================Utils==================================//
     //========================================================================//
     ,
+    /**
+     * 주어진 라벨이 최대 표기 숫자를 넘길 경우 텍스트를 줄인다.
+     * @param label 라벨
+     * @returns {String} fixed label
+     */
+    labelSubstring: function (label) {
+        var length = this._CONFIG.LABEL_MAX_LENGTH;
+        if(label.length > length){
+            return label.substring(0, length) + '..';
+        }else{
+            return label;
+        }
+    },
     /**
      * 주어진 스트링이 빈값인지를 확인한다.
      * @param value String
@@ -1068,6 +1110,29 @@ ChartRenderer.prototype = {
                     }
                 }
             });
+
+            $(me.currentElement).bind('mouseover', function (event) {
+                $('.og-tooltip').remove();
+                if (me.data && me.data['cur_wfa_name']) {
+                    var text = me.data['cur_wfa_name'] + ' (' + me.data['cur_state'] + ')';
+                    var tooltip =
+                        $('<div class="og-tooltip ui-tooltip ui-widget ui-corner-all" id="' + me.currentElement.id + '-tooltip">' +
+                            '<div class="ui-tooltip-content">' + text + '</div>' +
+                            '</div>');
+                    tooltip.css({
+                        position: 'absolute',
+                        'top': event.pageY,
+                        'left': event.pageX + 15,
+                        'background-color': '#333',
+                        'color': 'whitesmoke',
+                        'font-size': '12px'
+                    });
+                    $('body').append(tooltip);
+                }
+            });
+            $(me.currentElement).bind('mouseout', function () {
+                $('.og-tooltip').remove();
+            });
         };
 
         OG.shape.component.Cell.prototype.createContextMenu = function () {
@@ -1093,34 +1158,43 @@ ChartRenderer.prototype = {
                     this.contextMenu = {
                         'left': {
                             name: '오른쪽 열 추가', callback: function () {
-                                console.log('cellView.cellIndex' , cellView.cellIndex);
+                                console.log('cellView.cellIndex', cellView.cellIndex);
                                 var existColumn = table.shape.getColumnByField(cellView.column);
                                 table.shape.addColumn({
-                                    data: guid(),
+                                    data: chartRenderer._CONFIG.CUSTOM_COL_PREFIX + guid(),
                                     title: '',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
                                     columnEditable: false
                                 }, cellView.cellIndex + 1);
+                                toastr.success('Column created.');
                             }
                         },
                         'right': {
                             name: '왼쪽 열 추가', callback: function () {
-                                console.log('cellView.cellIndex' , cellView.cellIndex);
+                                console.log('cellView.cellIndex', cellView.cellIndex);
                                 var existColumn = table.shape.getColumnByField(cellView.column);
                                 table.shape.addColumn({
-                                    data: guid(),
+                                    data: chartRenderer._CONFIG.CUSTOM_COL_PREFIX + guid(),
                                     title: '',
                                     defaultContent: '',
                                     renderer: existColumn.renderer,
                                     columnEditable: false
                                 }, cellView.cellIndex);
+                                toastr.success('Column created.');
                             }
                         },
                         'remove': {
                             name: '열 삭제', callback: function () {
-                                console.log('cellView.cellIndex' , cellView.cellIndex);
-                                table.shape.removeColumn(cellView.cellIndex);
+                                //커스텀 칼럼 일 경우만 삭제가능.
+                                if (cellView.column && cellView.column.indexOf(chartRenderer._CONFIG.CUSTOM_COL_PREFIX) != -1) {
+                                    table.shape.removeColumn(cellView.cellIndex);
+                                    toastr.success('Column removed.');
+                                } else {
+                                    toastr.error('This column can not be deleted.');
+                                }
+                                //console.log('cellView.cellIndex', cellView.cellIndex);
+                                //table.shape.removeColumn(cellView.cellIndex);
                             }
                         }
                     };

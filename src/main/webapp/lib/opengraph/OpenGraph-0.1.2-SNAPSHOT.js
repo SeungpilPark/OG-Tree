@@ -6256,6 +6256,9 @@ OG.shape.bpmn = {};
 OG.shape.elec = {};
 
 /** @namespace */
+OG.shape.dids = {};
+
+/** @namespace */
 OG.shape.component = {};
 
 /**
@@ -6322,6 +6325,7 @@ OG.common.Constants = {
         TEXT: "TEXT",
         HTML: "HTML",
         IMAGE: "IMAGE",
+        SVG: "SVG",
         EDGE: "EDGE",
         GROUP: "GROUP"
     },
@@ -11242,6 +11246,66 @@ OG.shape.EdgeShape.prototype.clone = function () {
 	shape.toLabel = this.toLabel;
 	shape.setData(JSON.parse(JSON.stringify(this.getData())));
 
+	return shape;
+};
+/**
+ * Svg Shape
+ *
+ * @class
+ * @extends OG.shape.IShape
+ * @requires OG.common.*
+ * @requires OG.geometry.*
+ *
+ * @param {String} xml xml String
+ * @param {String} label 라벨 [Optional]
+ * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
+ */
+OG.shape.SvgShape = function (xml, label) {
+	OG.shape.SvgShape.superclass.call(this);
+
+	this.TYPE = OG.Constants.SHAPE_TYPE.IMAGE;
+	this.SHAPE_ID = 'OG.shape.SvgShape';
+	this.label = label;
+
+	/**
+	 * 드로잉할 xml
+	 * @type String
+	 */
+	this.xml = xml;
+
+	/**
+	 * 회전각도
+	 * @type Number
+	 */
+	this.angle = 0;
+};
+OG.shape.SvgShape.prototype = new OG.shape.IShape();
+OG.shape.SvgShape.superclass = OG.shape.IShape;
+OG.shape.SvgShape.prototype.constructor = OG.shape.SvgShape;
+OG.SvgShape = OG.shape.SvgShape;
+
+/**
+ * 드로잉할 xml 스트링을 반환한다.
+ *
+ * @return {String} xml String
+ * @override
+ */
+OG.shape.SvgShape.prototype.createShape = function () {
+	return this.xml;
+};
+
+/**
+ * Shape 을 복사하여 새로인 인스턴스로 반환한다.
+ *
+ * @return {OG.shape.IShape} 복사된 인스턴스
+ * @override
+ */
+OG.shape.SvgShape.prototype.clone = function () {
+	var shape = eval('new ' + this.SHAPE_ID + '()');
+	shape.xml = this.xml;
+	shape.label = this.label;
+	shape.angle = this.angle;
+	shape.setData(JSON.parse(JSON.stringify(this.getData())));
 	return shape;
 };
 /**
@@ -17164,7 +17228,7 @@ OG.shape.component.DataTable = function () {
         /**
          * 페이지당 row 수
          */
-        pageLength: 25,
+        pageLength: 100,
         /**
          * 시작 페이지
          */
@@ -17675,7 +17739,8 @@ OG.shape.component.DataTable.prototype.addCellContent = function (cellView, cont
                 }
                 me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'].move(beforeIndex, newIndex);
                 me.data.viewData.rows[data.rowIndex].cells[data.column]['value'].move(beforeIndex, newIndex);
-                me.data.tableData[data.rowDataIndex][data.column].move(beforeIndex, newIndex);
+                me.data.tableData[data.rowDataIndex][data.column] =
+                    JSON.parse(JSON.stringify(me.data.viewData.rows[data.rowIndex].cells[data.column]['value']));
                 me.redrawCell(me.refreshCellView(cellView));
             }
         }
@@ -18574,12 +18639,12 @@ OG.shape.component.DataTable.prototype.drawCellContent = function (cellView, inf
         contentElement.shape.onAddToGroup = function (groupElement, element) {
             //그룹이 소속된 테이블이 아닐 경우, 셀에 자신의 정보를 삭제한 후, 등록된 이벤트 핸들러들을 스스로 초기화시킨다.
             if (groupElement.id != me.currentElement.id) {
-                me.removeCellContent(contentElement, true);
-                contentElement.shape.onRemoveShape = function () {
+                me.removeCellContent(element, true);
+                element.shape.onRemoveShape = function () {
                 };
-                contentElement.shape.onAddToGroup = function () {
+                element.shape.onAddToGroup = function () {
                 };
-                contentElement.shape.onResize = function () {
+                element.shape.onResize = function () {
                 };
             }
         }
@@ -18761,19 +18826,19 @@ OG.shape.component.DataTable.prototype.onCellResize = function (cell, offset) {
 
     if (cellView.type == 'column') {
         //뷰 데이터의 columnHeight 를 변경한다.
-        if(me.options.resizeAxis != 'X'){
+        if (me.options.resizeAxis != 'X') {
             me.data.viewData.columnHeight = boundary.getHeight();
         }
     }
     else if (cellView.type == 'cell') {
         //뷰 데이터의 rowHeight 를 변경한다.
-        if(me.options.resizeAxis != 'X'){
+        if (me.options.resizeAxis != 'X') {
             me.data.viewData.rows[rowIndex].rowHeight = boundary.getHeight();
         }
     }
 
     //뷰 칼럼의 width 를 변경한다.
-    if(me.options.resizeAxis != 'Y'){
+    if (me.options.resizeAxis != 'Y') {
         var columnViews = me.data.viewData.columns;
         columnViews[column].width = boundary.getWidth();
 
@@ -18824,6 +18889,9 @@ OG.shape.component.DataTable.prototype.onAddToGroup = function (groupElement, el
         //콘텐트의 중심을 포함한 셀을 찾는다.
         var centroid = me.currentCanvas.getBoundary(element).getCentroid();
         dropCell = me.getCellViewFromOffset([centroid.x, centroid.y]);
+        if (dropCell && dropCell.type == 'column') {
+            dropCell = null;
+        }
 
         //드랍셀이 없고 이전 셀도 없다면 콘텐트를 테이블 밖으로 빼야 한다.
         //이 경우는 외부에서 드랍되었는데 칼럼으로 떨어진 경우다.
@@ -20473,7 +20541,11 @@ OG.renderer.RaphaelRenderer.prototype._removeChild = function (rElement) {
     if (rElement) {
         childNodes = rElement.node.childNodes;
         for (i = childNodes.length - 1; i >= 0; i--) {
-            this._remove(this._getREleById(childNodes[i].id));
+            if (childNodes[i].tagName == 'svg') {
+                childNodes[i].parentNode.removeChild(childNodes[i]);
+            } else {
+                this._remove(this._getREleById(childNodes[i].id));
+            }
         }
     }
 };
@@ -20498,15 +20570,6 @@ OG.renderer.RaphaelRenderer.prototype._drawSubShape = function (groupElement) {
     if (!groupElement.shape.createSubShape) {
         return;
     }
-
-    // //shape 데이터와 groupElement 의 데이터 중 element 의 데이터를 우선시한다.
-    // if (groupElement.data) {
-    //     groupElement.shape.setData(groupElement.data);
-    // }
-    // //shape 만 데이터가 있을 경우 element 에도 데이터를 적용시킨다.
-    // else if (groupElement.shape.getData()) {
-    //     groupElement.data = groupElement.shape.getData();
-    // }
 
     subShapeNodes = groupElement.shape.createSubShape();
     if (!subShapeNodes || !subShapeNodes.length) {
@@ -21635,7 +21698,7 @@ OG.renderer.RaphaelRenderer.prototype._drawLabel = function (position, text, siz
 OG.renderer.RaphaelRenderer.prototype.drawShape = function (position, shape, size, style, id, preventEvent) {
     var width = size ? size[0] : 100,
         height = size ? size[1] : 100,
-        groupNode, geometry, text, image, html,
+        groupNode, geometry, text, image, html, xml,
         me = this;
 
     if (shape instanceof OG.shape.GeomShape) {
@@ -21661,6 +21724,13 @@ OG.renderer.RaphaelRenderer.prototype.drawShape = function (position, shape, siz
 
         groupNode = this.drawImage(position, image, size, style, id);
         shape.image = groupNode.image;
+        shape.angle = groupNode.angle;
+        shape.geom = groupNode.geom;
+    } else if (shape instanceof OG.shape.SvgShape) {
+        xml = shape.createShape();
+
+        groupNode = this.drawSvg(position, xml, size, style, id);
+        shape.xml = groupNode.xml;
         shape.angle = groupNode.angle;
         shape.geom = groupNode.geom;
     } else if (shape instanceof OG.shape.HtmlShape) {
@@ -21733,48 +21803,44 @@ OG.renderer.RaphaelRenderer.prototype.drawShape = function (position, shape, siz
         }
     }
 
+    //TODO 이 구간에서 성능저하가 있으므로 신규 shape 이며 그룹위에 떨어졌을 경우 바로 그룹처리 하는 로직을 잠시 보류.
     //신규 shape 이면 그룹위에 그려졌을 경우 그룹처리
-    var setGroup = function () {
-        var frontGroup = me.getFrontForBoundary(me.getBoundary(groupNode));
-
-        if (!frontGroup) {
-            return;
-        }
-        //draw 대상이 Edge 이면 리턴.
-        if (me.isEdge(groupNode)) {
-            return;
-        }
-        //draw 대상이 Lane 인 경우 리턴.
-        if (me.isLane(groupNode)) {
-            return;
-        }
-        //그룹이 Lane 인 경우 RootLane 으로 변경
-        if (me.isLane(frontGroup)) {
-            frontGroup = me.getRootLane(frontGroup);
-        }
-        if (!me._CONFIG.GROUP_DROPABLE || !frontGroup.shape.GROUP_DROPABLE) {
-            return;
-        }
-
-        //자신일 경우 반응하지 않는다.
-        if (frontGroup.id === groupNode.id) {
-            return;
-        }
-        frontGroup.appendChild(groupNode);
-    };
-    if (!id) {
-        setGroup();
-    }
+    // var setGroup = function () {
+    //     var frontGroup = me.getFrontForBoundary(me.getBoundary(groupNode));
+    //
+    //     if (!frontGroup) {
+    //         return;
+    //     }
+    //     //draw 대상이 Edge 이면 리턴.
+    //     if (me.isEdge(groupNode)) {
+    //         return;
+    //     }
+    //     //draw 대상이 Lane 인 경우 리턴.
+    //     if (me.isLane(groupNode)) {
+    //         return;
+    //     }
+    //     //그룹이 Lane 인 경우 RootLane 으로 변경
+    //     if (me.isLane(frontGroup)) {
+    //         frontGroup = me.getRootLane(frontGroup);
+    //     }
+    //     if (!me._CONFIG.GROUP_DROPABLE || !frontGroup.shape.GROUP_DROPABLE) {
+    //         return;
+    //     }
+    //
+    //     //자신일 경우 반응하지 않는다.
+    //     if (frontGroup.id === groupNode.id) {
+    //         return;
+    //     }
+    //     frontGroup.appendChild(groupNode);
+    // };
+    // if (!id) {
+    //     setGroup();
+    // }
 
     //신규 Lane 또는 Pool 이 그려졌을 경우 처리
-    if (!id && (me.isLane(groupNode) || me.isPool(groupNode))) {
-        //if (preventDrop) {
-        //    me.putInnerShapeToPool(groupNode);
-        //} else {
-        //    me.setDropablePool(groupNode);
-        //}
-        me.putInnerShapeToPool(groupNode);
-    }
+    // if (!id && (me.isLane(groupNode) || me.isPool(groupNode))) {
+    //     me.putInnerShapeToPool(groupNode);
+    // }
 
     //shape 에 현재 캔버스,엘리먼트 등록
     shape.currentElement = groupNode;
@@ -22136,6 +22202,98 @@ OG.renderer.RaphaelRenderer.prototype.drawImage = function (position, imgSrc, si
 
     if (group.node.shape) {
         group.node.shape.image = imgSrc;
+        group.node.shape.angle = angle;
+        group.node.shape.geom = geom;
+
+        if (group.node.image) {
+            if (OG.Util.isIE7()) {
+                group.node.removeAttribute("image");
+            } else {
+                delete group.node.image;
+            }
+        }
+        if (group.node.angle) {
+            if (OG.Util.isIE7()) {
+                group.node.removeAttribute("angle");
+            } else {
+                delete group.node.angle;
+            }
+        }
+        if (group.node.geom) {
+            if (OG.Util.isIE7()) {
+                group.node.removeAttribute("geom");
+            } else {
+                delete group.node.geom;
+            }
+        }
+    }
+
+    return group.node;
+};
+
+/**
+ * Svg 를 캔버스에 위치 및 사이즈 지정하여 드로잉한다.
+ *
+ * @param {Number[]} position 드로잉할 위치 좌표(중앙 기준)
+ * @param {String} xml 드로잉할 xml
+ * @param {Number[]} size Image Width, Height, Angle
+ * @param {OG.geometry.Style|Object} style 스타일
+ * @param {String} id Element ID 지정
+ * @return {Element} DOM Element
+ * @override
+ */
+OG.renderer.RaphaelRenderer.prototype.drawSvg = function (position, xml, size, style, id) {
+    var me = this, width = size ? size[0] : null,
+        height = size ? size[1] : null,
+        angle = size ? size[2] || 0 : 0,
+        group, element, _style = {}, bBox, geom, left, top;
+    OG.Util.apply(_style, (style instanceof OG.geometry.Style) ? style.map : style || {}, me._CONFIG.DEFAULT_STYLE.SVG);
+
+    // ID 지정된 경우 존재하면 하위 노드 제거
+    if (id === 0 || id) {
+        group = this._getREleById(id);
+        if (group) {
+            this._removeChild(group);
+        } else {
+            group = this._PAPER.group();
+            this._add(group, id, OG.Constants.NODE_TYPE.SHAPE, OG.Constants.SHAPE_TYPE.SVG);
+            this._ROOT_GROUP.node.appendChild(group.node);
+        }
+    } else {
+        group = this._PAPER.group();
+        this._add(group, id, OG.Constants.NODE_TYPE.SHAPE, OG.Constants.SHAPE_TYPE.SVG);
+        this._ROOT_GROUP.node.appendChild(group.node);
+    }
+
+    // Draw xml
+    element = $(xml); //this._PAPER.image(imgSrc, position[0], position[1], width, height);
+    for (var key in _style) {
+        element.attr(key, _style[key]);
+    }
+
+    left = OG.Util.round(position[0] - width / 2);
+    top = OG.Util.round(position[1] - height / 2);
+
+    // text align 적용
+    element.attr('x', left + 'px');
+    element.attr('y', top + 'px');
+    element.attr('width', width + 'px');
+    element.attr('height', height + 'px');
+
+    geom = new OG.Rectangle([left, top], width, height);
+    if (angle) {
+        element.rotate(angle);
+    }
+    geom.style.map = _style;
+
+    $(group.node).append(element);
+    group.node.xml = xml;
+    group.node.angle = angle;
+    group.node.geom = geom;
+    group.attr(me._CONFIG.DEFAULT_STYLE.SHAPE);
+
+    if (group.node.shape) {
+        group.node.shape.xml = xml;
         group.node.shape.angle = angle;
         group.node.shape.geom = geom;
 
@@ -22663,6 +22821,16 @@ OG.renderer.RaphaelRenderer.prototype.redrawShape = function (element, excludeEd
                 element = this.drawText([center.x, center.y], element.shape.text,
                     [width, height, element.shape.angle], element.shape.geom.style, element.id);
                 this.redrawConnectedEdge(element, excludeEdgeId);
+                break;
+            case OG.Constants.SHAPE_TYPE.SVG:
+                envelope = element.shape.geom.getBoundary();
+                center = envelope.getCentroid();
+                width = envelope.getWidth();
+                height = envelope.getHeight();
+                element = this.drawSvg([center.x, center.y], element.shape.xml,
+                    [width, height, element.shape.angle], element.shape.geom.style, element.id);
+                this.redrawConnectedEdge(element, excludeEdgeId);
+                this.drawLabel(element);
                 break;
             case OG.Constants.SHAPE_TYPE.IMAGE:
                 envelope = element.shape.geom.getBoundary();
@@ -24342,7 +24510,9 @@ OG.renderer.RaphaelRenderer.prototype.removeShape = function (element, preventEv
     this.removeAllConnectGuide();
 
     for (i = childNodes.length - 1; i >= 0; i--) {
-        if ($(childNodes[i]).attr("_type") === OG.Constants.NODE_TYPE.SHAPE) {
+        if (childNodes[i].tagName == 'svg') {
+            childNodes[i].parentNode.removeChild(childNodes[i]);
+        } else if ($(childNodes[i]).attr("_type") === OG.Constants.NODE_TYPE.SHAPE) {
             this.removeShape(childNodes[i]);
         }
     }
@@ -31468,7 +31638,7 @@ OG.handler.EventHandler.prototype = {
 
                     //커스텀 콘텍스트 메뉴가 있을경우 처리
                     if (customMenu) {
-                        if($.isEmptyObject(customMenu)){
+                        if(customMenu == null || $.isEmptyObject(customMenu)){
                             return false;
                         }
                         for (var key in customMenu) {
@@ -34601,6 +34771,9 @@ OG.graph.Canvas = function (container, containerSize, backgroundColor, backgroun
             }
             ,
             IMAGE: {
+                "label-position": "bottom", "text-anchor": "middle", "vertical-align": "top"
+            },
+            SVG: {
                 "label-position": "bottom", "text-anchor": "middle", "vertical-align": "top"
             }
             ,

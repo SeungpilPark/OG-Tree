@@ -98,7 +98,7 @@
       "tot_wfa": "A-BA-2004-00-001",
       "cur_rel_project": "41288901F225472CA37E9B5C6FB207C5",
       "cur_wfa": "Z14345-A-BA-2004-00-001",
-      "cur_wfa_name": "DL 자료 접수 및 전달",
+      "cur_wfa_name": "DL 자료 접수 및 전달 PDS & SP3D Spec Work",
       "cur_state": "In Planning",
       "cur_wfa_config_id": "687FE7856D5C471682AAF0130B3C5403",
       "cur_eng_func_code": "A-BA-2004",
@@ -153,7 +153,7 @@
       "cur_wfa_name": "Stress Analysis",
       "cur_state": "Waiting",
       "cur_wfa_config_id": "332F3015406F447DA8AFC801C57E15D4",
-      "cur_eng_func_code": "P-BA-2006",
+      "cur_eng_func_code": "P-BA-2005",
       "cur_check_alarm": "NULL",
       "ref_rel_project": "NULL",
       "ref_wfa": "NULL",
@@ -394,7 +394,7 @@
       "ref_wfa_config_id": "NULL"
     },
     {
-      "tot_wfa": "P-BA-2001-00-004",
+      "tot_wfa": "P-BA-2001-00-023",
       "cur_rel_project": "41288901F225472CA37E9B5C6FB207C5",
       "cur_wfa": "Z14345-P-BA-2001-00-004",
       "cur_wfa_name": "Stress Analysis",
@@ -407,7 +407,7 @@
       "ref_wfa_config_id": "NULL"
     },
     {
-      "tot_wfa": "P-BA-2001-00-023",
+      "tot_wfa": "P-BA-2001-00-024",
       "cur_rel_project": "41288901F225472CA37E9B5C6FB207C5",
       "cur_wfa": "Z14345-P-BA-2001-00-004",
       "cur_wfa_name": "Stress Analysis",
@@ -420,7 +420,7 @@
       "ref_wfa_config_id": "NULL"
     },
     {
-      "tot_wfa": "P-BA-2001-00-024",
+      "tot_wfa": "P-BA-2001-00-025",
       "cur_rel_project": "41288901F225472CA37E9B5C6FB207C5",
       "cur_wfa": "Z14345-P-BA-2001-00-004",
       "cur_wfa_name": "Stress Analysis",
