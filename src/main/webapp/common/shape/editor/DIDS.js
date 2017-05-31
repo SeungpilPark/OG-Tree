@@ -51,7 +51,7 @@ OG.shape.DIDS.prototype.addSelectLabel = function () {
 
 OG.shape.DIDS.prototype.addCheckBox = function () {
     //CHECKBOX 허용 안될 경우 리턴.
-    if(!this.CHECKBOX){
+    if (!this.CHECKBOX) {
         return;
     }
     //락일 경우 체크박스 표현 안함.
@@ -200,7 +200,12 @@ OG.shape.DIDS.prototype.onDrawShape = function () {
             } else {
                 me.CHECKED = true;
             }
-            me.currentCanvas.getRenderer().redrawShape(me.currentElement);
+
+            //다른 더블클릭 이벤트 시간을 위하여 리드로우에 시간차를 둔다.
+            //200 = 더블클릭하는 시간.
+            setTimeout(function(){
+                me.currentCanvas.getRenderer().redrawShape(me.currentElement);
+            },200);
         }
     });
 };

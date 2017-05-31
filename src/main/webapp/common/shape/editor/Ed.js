@@ -80,17 +80,3 @@ OG.shape.Ed.prototype.createSubShape = function () {
 
     return this.sub;
 };
-
-OG.shape.Ed.prototype.onDrawShape = function () {
-    var me = this;
-    $(me.currentElement).click(function () {
-        if (me.data.position == 'my-out' || me.data.position == 'my') {
-            if (me.CHECKED) {
-                me.CHECKED = false;
-            } else {
-                me.CHECKED = true;
-            }
-            me.currentCanvas.getRenderer().redrawShape(me.currentElement);
-        }
-    })
-};
