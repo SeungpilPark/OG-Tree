@@ -192,6 +192,10 @@ div.tooltip-inner {
     background-image: url('../../common/icons/pick-ed.svg');
     background-size: 18px;
 }
+.context-menu-item.icon-name-change {
+    background-image: url('../../common/icons/name-change.svg');
+    background-size: 14px;
+}
 .form-group{
     margin-bottom: 5px;
 }

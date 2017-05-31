@@ -255,7 +255,7 @@ var EditorRenderer = function (container) {
             /**
              * ED 세로
              */
-            ED_HEIGHT: 30,
+            ED_HEIGHT: 40,
             /**
              * ED 마진
              */
@@ -1010,8 +1010,8 @@ EditorRenderer.prototype = {
                 diffY = targetActivityView.y - (me._CONFIG.SHAPE_SIZE.FOLDER_HEIGHT / 2);
                 for (var l = 0, lenl = loaded.length; l < lenl; l++) {
                     if (loaded[l].targetActivity == targetActivity['id']) {
-                        diffY = diffY + loaded[l].sourceInHeight + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
-                        totalInHeight = totalInHeight + loaded[l].sourceInHeight + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
+                        diffY = diffY + loaded[l].sourceInHeight;// + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
+                        totalInHeight = totalInHeight + loaded[l].sourceInHeight;// + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
                     }
                 }
 
@@ -1695,7 +1695,6 @@ EditorRenderer.prototype = {
             for (var i = 0, leni = rootGroup.length; i < leni; i++) {
                 getViewData(rootGroup[i], 1);
             }
-
             viewData.totalHeight = lastViewBottom;
         } else {
             //최소한의 totalHeight 는 폴더의 크기로 남겨두도록 한다.
@@ -2175,50 +2174,22 @@ EditorRenderer.prototype = {
         }
     },
     /**
-     * 매핑시 셀렉트 된 아이템의 S 마크를 업데이트 한다.
-     * @param view OG-Tree view data
-     * @param element OG-Tree Dom Element
-     * @param customData OG-Tree data
-     */
-    updateMappingLabel: function (view, element, customData) {
-        //엘리먼트와 뷰의 위치가 바뀌었을 경우
-        //엘리먼트와 뷰의 매핑이 틀릴경우
-        //엘리먼트와 뷰의 셀렉트가 틀릴경우 매핑 라벨을 새로 그리도록 한다.
-        var enableDraw = false;
-        if (customData.x != view.x || customData.y != view.y) {
-            enableDraw = true;
-        }
-        if (customData.selected != view.selected) {
-            enableDraw = true;
-        }
-        if (enableDraw) {
-            this.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
-
-            var id = view.id + this.Constants.PREFIX.SELECTED_LABEL;
-            if (!view.selected) {
-                if (this.canvas.getElementById(id)) {
-                    this.canvas.removeShape(id);
-                }
-            }
-            this.drawMappingLabel(view);
-        }
-    },
-    /**
      * 액티비티 아이템을 업데이트 한다.
      * @param view OG-Tree view data
      * @param element OG-Tree Dom Element
      */
     updateActivity: function (view, element) {
-        var customData = this.canvas.getCustomData(element);
+        var customData = element.shape.data;
         var needUpdate = false;
         if (customData.name != view.name) {
-            this.canvas.drawLabel(element, view.name);
+            element.shape.label = view.name;
             needUpdate = true;
         }
         if (needUpdate) {
-            this.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
+            element.shape.data = JSON.parse(JSON.stringify(view));
+            this._RENDERER.redrawShape(element);
         }
-        this.updateImageShapeStatus(view, element);
+        //this.updateImageShapeStatus(view, element);
     },
     /**
      * 액티비티 아이템을 드로잉한다.
@@ -2235,10 +2206,12 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MOVE_SORTABLE) {
             shape.MOVABLE = false;
         }
+        shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
-            {'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE, 'vertical-align': 'top'}, view.id);
-        me.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
-        me.updateImageShapeStatus(view, element);
+            {
+                'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
+                'vertical-align': 'top'
+            }, view.id);
         me.bindDblClickEvent(element);
         me.bindTooltip(element);
         me.bindMappingHighLight(element);
@@ -2249,25 +2222,23 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateFolder: function (view, element) {
-        var customData = this.canvas.getCustomData(element);
+        var customData = element.shape.data;
         var needUpdate = false;
         if (customData.blur != view.blur) {
-            if (view.blur) {
-                this.canvas.setShapeStyle(element, {"opacity": this._CONFIG.DEFAULT_STYLE.BLUR});
-            } else {
-                this.canvas.setShapeStyle(element, {"opacity": "1"});
-            }
+            element.shape.geom.style.map.opacity = view.blur ? this._CONFIG.DEFAULT_STYLE.BLUR : '1';
             needUpdate = true;
         }
         if (customData.name != view.name) {
-            this.canvas.drawLabel(element, view.name);
+            element.shape.label = view.name;
+            needUpdate = true;
+        }
+        if (customData.selected != view.selected) {
             needUpdate = true;
         }
         if (needUpdate) {
-            this.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
+            element.shape.data = JSON.parse(JSON.stringify(view));
+            this._RENDERER.redrawShape(element);
         }
-        this.updateImageShapeStatus(view, element);
-        this.updateMappingLabel(view, element, customData);
     },
     /**
      * 폴더 아이템을 드로잉한다.
@@ -2284,15 +2255,14 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MAPPING_ENABLE) {
             shape.MOVABLE = false;
         }
+        shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
-            {'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE, 'vertical-align': 'top'}, view.id);
-        me.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
-        if (view.blur) {
-            this.canvas.setShapeStyle(element, {"opacity": me._CONFIG.DEFAULT_STYLE.BLUR});
-        }
-        me.updateImageShapeStatus(view, element);
-
-        me.drawMappingLabel(view, element);
+            {
+                'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
+                'vertical-align': 'top',
+                'opacity': view.blur ? me._CONFIG.DEFAULT_STYLE.BLUR : '1'
+            },
+            view.id);
         me.bindDblClickEvent(element);
         me.bindTooltip(element);
         me.bindMappingHighLight(element);
@@ -2303,25 +2273,25 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateEd: function (view, element) {
-        var customData = this.canvas.getCustomData(element);
+        var customData = element.shape.data;
         var needUpdate = false;
         if (customData.blur != view.blur) {
-            if (view.blur) {
-                this.canvas.setShapeStyle(element, {"opacity": this._CONFIG.DEFAULT_STYLE.BLUR});
-            } else {
-                this.canvas.setShapeStyle(element, {"opacity": "1"});
-            }
+            element.shape.geom.style.map.opacity = view.blur ? this._CONFIG.DEFAULT_STYLE.BLUR : '1';
             needUpdate = true;
         }
         if (customData.name != view.name) {
-            this.canvas.drawLabel(element, view.name);
+            element.shape.label = view.name;
             needUpdate = true;
         }
-        if (needUpdate) {
-            this.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
+        if (customData.extData) {
+            if (customData.data.extData['c_type'] != view.data.extData['c_type']) {
+                needUpdate = true;
+            }
         }
-        this.updateImageShapeStatus(view, element);
-        this.updateMappingLabel(view, element, customData);
+        if (needUpdate) {
+            element.shape.data = JSON.parse(JSON.stringify(view));
+            this._RENDERER.redrawShape(element);
+        }
     },
     /**
      * ED 아이템을 드로잉한다.
@@ -2338,15 +2308,13 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MAPPING_ENABLE) {
             shape.MOVABLE = false;
         }
+        shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
-            {'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE, 'vertical-align': 'top'}, view.id);
-        me.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
-        if (view.blur) {
-            this.canvas.setShapeStyle(element, {"opacity": me._CONFIG.DEFAULT_STYLE.BLUR});
-        }
-        me.updateImageShapeStatus(view, element);
-
-        me.drawMappingLabel(view, element);
+            {
+                'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
+                'vertical-align': 'top',
+                'opacity': view.blur ? me._CONFIG.DEFAULT_STYLE.BLUR : '1'
+            }, view.id);
         me.bindDblClickEvent(element);
         me.bindTooltip(element);
         me.bindMappingHighLight(element);
@@ -2444,14 +2412,9 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateExpander: function (view, element) {
-        var href = $(element).find('image').attr('href');
-        if (href) {
-            if (view.data.expand && href != 'common/shape/editor/collapse.svg') {
-                $(element).find('image').attr('href', 'common/shape/editor/collapse.svg');
-            }
-            else if (!view.data.expand && href != 'common/shape/editor/expand.svg') {
-                $(element).find('image').attr('href', 'common/shape/editor/expand.svg');
-            }
+        if (element.shape.data.data.expand != view.data.expand) {
+            element.shape.data = JSON.parse(JSON.stringify(view));
+            this._RENDERER.redrawShape(element);
         }
     },
     /**
@@ -2460,15 +2423,14 @@ EditorRenderer.prototype = {
      */
     drawExpander: function (view) {
         var me = this;
-        var element = me.canvas.drawShape([view.x, view.y], new OG.Expander(), [view.width, view.height], null, view.id);
-        me.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
-        me.canvas.setShapeStyle(element, {cursor: "pointer"});
+        var shape = new OG.Expander();
+        shape.data = JSON.parse(JSON.stringify(view));
+        var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height], {
+            cursor: "pointer",
+            fill: "#fff",
+            'fill-opacity': 1
+        }, view.id);
 
-        if (view.data.expand) {
-            $(element).find('image').attr('href', 'common/shape/editor/collapse.svg');
-        } else {
-            $(element).find('image').attr('href', 'common/shape/editor/expand.svg');
-        }
         $(element).click(function () {
 
             //매핑 객체이면서 매핑 타켓이 아더에 존재하는 않는 경우 (가상 expander 일 경우)
@@ -3470,9 +3432,9 @@ EditorRenderer.prototype = {
      */
     bindDblClickEvent: function (element) {
         var me = this;
-        $(element).unbind('dblclick');
         $(element).bind({
             'dblclick': function () {
+                console.log('event');
                 var id = element.id;
                 var view = me.selectViewById(me._VIEWDATA, id);
                 if (!view || !view.data) {
@@ -3702,15 +3664,6 @@ EditorRenderer.prototype = {
                     return;
                 }
 
-                //  selected 가 실제 사용자가 선택한 매핑요소이고,그 여파로 부모폴더(재귀호출) 과 자식들(재귀호출은) 레코드를 생성한다.
-
-                //  폴더 매핑일 경우 부모 폴더의 selected 는 빈 스트링으로 처리한다.
-                //  폴더 매핑일 경우 자식들의 폴더(재귀호출)은 selected ’S’ 처리한다.
-                //
-                //  Ed 매핑일 경우 ed 의 부모 폴더 하나만 selected S 처리한다.
-                //  Ed 매핑일 경우 나머지 부모 폴더는 selected 빈 스트링 처리한다.
-
-
                 //매핑 데이터 생성
                 var parentData = me.selectParentById(source.id);
                 var mappingData = {
@@ -3720,7 +3673,7 @@ EditorRenderer.prototype = {
                     sourceType: source.type,
                     target: target.id,
                     position: me.Constants.POSITION.MY_IN,
-                    extData: {},
+                    extData: JSON.parse(JSON.stringify(source.extData)),
                     name: source.name,
                     parentId: parentData ? parentData.id : undefined
                 };
@@ -3728,6 +3681,7 @@ EditorRenderer.prototype = {
                 if (source.type == me.Constants.TYPE.FOLDER) {
                     mappingData.selected = true;
                 }
+
                 //드래그 된 대상 업데이트
                 me.updateData([mappingData], true);
 
@@ -3746,7 +3700,7 @@ EditorRenderer.prototype = {
                             sourceType: source.type,
                             target: target.id,
                             position: me.Constants.POSITION.MY_IN,
-                            extData: {},
+                            extData: JSON.parse(JSON.stringify(standardFolder.extData)),
                             name: source.name,
                             selected: true,
                             parentId: parentData ? parentData.id : undefined
@@ -3782,7 +3736,7 @@ EditorRenderer.prototype = {
                                 target: target.id,
                                 position: me.Constants.POSITION.MY_IN,
                                 name: child[i].name,
-                                extData: {},
+                                extData: JSON.parse(JSON.stringify(child[i].extData)),
                                 parentId: parentData ? parentData.id : undefined
                             };
                             if (child[i].type == me.Constants.TYPE.FOLDER) {
@@ -3806,7 +3760,7 @@ EditorRenderer.prototype = {
                                 target: target.id,
                                 position: me.Constants.POSITION.MY_IN,
                                 name: parents[i].name,
-                                extData: {},
+                                extData: JSON.parse(JSON.stringify(parents[i].extData)),
                                 parentId: parentData ? parentData.id : undefined
                             };
                             existMapping = me.loadByFilter({id: parents[i].id + '-' + target.id});
@@ -3893,9 +3847,6 @@ EditorRenderer.prototype = {
      * OG Tree Dom Element 에 마우스 우클릭 메뉴를 가능하게 한다.
      */
     enableShapeContextMenu: function () {
-        // 3.Save
-        //  중요. Save 시에, 데이터 변화 리스트중에서, 삭제에 관련한 항목을 먼저 실행 후, CRU 에 대한걸 처리하도록 한다.
-
         var me = this;
         $.contextMenu({
             position: function (opt, x, y) {
@@ -3931,6 +3882,12 @@ EditorRenderer.prototype = {
                     me._HANDLER.selectShape(element);
                 } else {
                     me._HANDLER.selectShape(element);
+                }
+
+                //이름 바꾸기
+                if (view.position == me.Constants.POSITION.MY_OUT ||
+                    view.position == me.Constants.POSITION.MY) {
+                    items.makeNameChange = me.makeNameChange(element, data);
                 }
 
 
@@ -4001,6 +3958,89 @@ EditorRenderer.prototype = {
         });
     }
     ,
+
+    /**
+     * 이름 변경 콘텍스트 메뉴를 생성한다.
+     * @param element
+     * @param data
+     * @return {{name: string, icon: string, callback: callback}}
+     */
+    makeNameChange: function (element, data) {
+        var editorRenderer = this;
+        return {
+            name: 'change name',
+            icon: 'name-change',
+            callback: function () {
+                //Lock 인 경우는 수정이 불가.
+                if (data.extData['c_locked_by_id'] && data.extData['c_locked_by_id'].length > 0) {
+                    toastr.error('This item is locked and can not be changed.');
+                    return;
+                }
+
+                var me = editorRenderer.canvas._HANDLER;
+                var renderer = me._RENDERER;
+                var container = renderer.getContainer(),
+                    envelope = element.shape.geom.getBoundary(),
+                    upperLeft = envelope.getUpperLeft(),
+                    left = (upperLeft.x - 1) * me._CONFIG.SCALE,
+                    top = (upperLeft.y - 1) * me._CONFIG.SCALE,
+                    width = envelope.getWidth() * me._CONFIG.SCALE,
+                    height = envelope.getHeight() * me._CONFIG.SCALE,
+                    editorId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX,
+                    labelEditor,
+                    textAlign = "center",
+                    beforeLabel,
+                    afterLabel;
+
+                // textarea
+                $(container).append("<textarea id='" + element.id + OG.Constants.LABEL_EDITOR_SUFFIX + "'></textarea>");
+                labelEditor = $("#" + editorId);
+
+                // text-align 스타일 적용
+                switch (element.shape.geom.style.get("text-anchor")) {
+                    case "start":
+                        textAlign = "left";
+                        break;
+                    case "middle":
+                        textAlign = "center";
+                        break;
+                    case "end":
+                        textAlign = "right";
+                        break;
+                    default:
+                        textAlign = "center";
+                        break;
+                }
+
+                $(labelEditor).css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
+                    left: left,
+                    top: top,
+                    width: width,
+                    height: height,
+                    "text-align": textAlign,
+                    overflow: "hidden",
+                    resize: "none"
+                }));
+                $(labelEditor).focus();
+                $(labelEditor).val(element.shape.label);
+                beforeLabel = element.shape.label;
+
+                $(labelEditor).bind({
+                    focusout: function () {
+                        afterLabel = this.value;
+                        this.parentNode.removeChild(this);
+
+                        if (beforeLabel != afterLabel) {
+                            //TODO 이름 변경 데이터를 보낸 후 성공시 아래 수행
+                            renderer.drawLabel(element, afterLabel);
+                            toastr.success('Name changed.');
+                        }
+                    }
+                });
+            }
+        }
+    },
+
     /**
      * 프로퍼티 보기 콘텍스트 메뉴를 생성한다.
      * @returns {{name: string, icon: string, callback: Function}}

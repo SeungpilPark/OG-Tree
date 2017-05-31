@@ -1728,6 +1728,7 @@ DataController.prototype = {
      */
     refreshOtherWorkflow: function (wfId) {
         var me = this;
+        wfId = me.getCurrentItemId(me.getItemType('workflow'), wfId);
         var outResult = me.getWorkflowStructure(wfId, 'OUT');
         var outResultNodes = [];
         if (outResult.getItemCount() == 1) {
@@ -1774,6 +1775,7 @@ DataController.prototype = {
     refreshMyWorkFlow: function () {
         //마이워크플로우 데이터를 불러온다.
         var me = this;
+        me.wfId = me.getCurrentItemId(me.getItemType('workflow'), me.wfId);
         var inResult = me.getWorkflowStructure(me.wfId, 'IN');
         var outResult = me.getWorkflowStructure(me.wfId, 'OUT');
 
@@ -1877,6 +1879,24 @@ DataController.prototype = {
             }
         }
     },
+    /**
+     * EDB 타입 리스트를 불러온다.
+     * @return {*|Object}
+     */
+    getEDBTypeList: function () {
+        var me = this, params = {};
+        var result = me.applyMethod('DHI_EDB_GetPolyItemTypeForEDB', me.createBody(params));
+        var array = me.convertMethodResultToJsonArray(result);
+        console.log('array', array);
+    },
+
+
+    //=============== 워크플로우 차트 ====================
+    /**
+     * 메소드 리설트를 JSON 어레이 형식으로 변환한다.
+     * @param result
+     * @return {Array}
+     */
     convertMethodResultToJsonArray: function (result) {
         var me = this;
         var nodeList = [];
@@ -1904,17 +1924,24 @@ DataController.prototype = {
         }
         return tempData;
     },
+    /**
+     * PM 자격을 조회한다.
+     * @return {*}
+     */
     checkPM: function () {
         var me = this, params = {
             owned_by_id: parent.top.thisItem.getProperty('owned_by_id')
         };
         var applyMethod = me.applyMethod('DHI_Project_CheckPMLoginUser', me.createBody(params));
-        if(applyMethod){
+        if (applyMethod) {
             return applyMethod.getResult();
-        }else{
+        } else {
             return false;
         }
     },
+    /**
+     * 챠크 맵데이터를 가져온다.
+     */
     getProjectMapData: function () {
         var inn = this.aras.newIOMInnovator();
         var item = inn.newItem('Project', "get");
@@ -1922,24 +1949,41 @@ DataController.prototype = {
         item = item.apply();
         return item.getProperty('_map_data', '');
     },
+    /**
+     * 차트 헤더 리스트를 가져온다.
+     * @return {*|Object}
+     */
     getKeyActivityList: function () {
         var me = this, params = {
             project_id: parent.top.thisItem.getProperty('id')
         };
         return me.applyMethod('DHI_Project_GetKeyActivityList', me.createBody(params));
     },
+    /**
+     * 차트 row 리스트를 가져온다.
+     * @return {*|Object}
+     */
     getEngFuncCodeList: function () {
         var me = this, params = {
             project_id: parent.top.thisItem.getProperty('id')
         };
         return me.applyMethod('DHI_Project_GetEngFuncCodeList', me.createBody(params));
     },
+    /**
+     * 챠트 액티비티 리스트를 가져온다.
+     * @return {*|Object}
+     */
     getObjActivityList: function () {
         var me = this, params = {
             project_id: parent.top.thisItem.getProperty('id')
         };
         return me.applyMethod('DHI_PROJECT_GetObjActivityList', me.createBody(params));
     },
+    /**
+     * 차트 맵 데이터를 저장한다.
+     * @param mapDataJson
+     * @return {*|Object}
+     */
     saveMapData: function (mapDataJson) {
         var me = this, params = {
             pjtid: parent.top.thisItem.getProperty('id'),
@@ -1948,6 +1992,10 @@ DataController.prototype = {
         return me.applyMethod('DHI_Project_updateMapData', me.createBody(params));
     },
 
+    /**
+     * 차트맵, 헤더, 로우, 액티비티를 가져와 조합하여 렌더러에서 사용하는 데이터 형식으로 돌려준다.
+     * @return {{chartData: {headers: *, rows: *, activities: *}, chartMap: *}}
+     */
     getChartData: function () {
         var me = this;
         var mapData = me.getProjectMapData();

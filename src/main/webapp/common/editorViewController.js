@@ -90,10 +90,16 @@ EditorViewController.prototype = {
                 });
             }
 
+            //에디터 모니터 헤더 정보를 꾸민다.
             var headerItem = me.aras.getWorkflowHeader(me.aras.wfId);
             if (headerItem.getItemCount() == 1) {
                 me.renderHeaders(headerItem, 'my');
             }
+
+            //EDB 타입 리스트를 등록한다.
+            me.aras.getEDBTypeList();
+
+            //마이 워크플로우 데이터를 렌더링한다.
             me.aras.refreshMyWorkFlow();
 
             /**
@@ -411,15 +417,10 @@ EditorViewController.prototype = {
                 });
             };
         } else {
-            if (me.mode == 'random') {
-                me.renderRandomData();
-            } else {
-                me.renderSampleData();
-            }
+            me.renderSampleData();
         }
 
         me.renderStateBox();
-
         $('#labelSwitch').click(function () {
             var swich = $(this);
             if (!swich.data('data')) {
