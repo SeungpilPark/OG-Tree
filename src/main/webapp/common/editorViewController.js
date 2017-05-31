@@ -624,8 +624,60 @@ EditorViewController.prototype = {
      */
     highLightSelectBoxWorkflow: function () {
         var me = this;
-        var forEditor = me.aras.getRelOtherPropsForEditor();
-        console.log(forEditor);
+        var list = me.aras.getRelOtherPropsForEditor();
+
+        var disciplineBox = $('#discipline');
+        var disciplineSpecBox = $('#disciplineSpec');
+        var bgBox = $('#bg');
+        var workflowSelectBox = $('#workflow-select');
+        var updateOption = function (selectBox, value) {
+            selectBox.find('option').each(function () {
+                if ($(this).attr('value') + '' == value + '') {
+                    $(this).css({
+                        background: '#1ab394',
+                        color: 'white'
+                    })
+                }
+            });
+        };
+        if (list && list.length) {
+            var bgList = [];
+            var disciplineList = [];
+            var disciplineSpecList = [];
+            var workflowIdList = [];
+            $.each(list, function (i, workflow) {
+                if (bgList.indexOf(workflow['_bg']) == -1) {
+                    bgList.push(workflow['_bg']);
+                }
+                if (disciplineList.indexOf(workflow['_discipline']) == -1) {
+                    disciplineList.push(workflow['_discipline']);
+                }
+                if (disciplineSpecList.indexOf(workflow['_discipline_spec']) == -1) {
+                    disciplineSpecList.push(workflow['_discipline_spec']);
+                }
+                if (workflowIdList.indexOf(workflow['workflow_id']) == -1) {
+                    workflowIdList.push(workflow['workflow_id']);
+                }
+            });
+            $.each(bgList, function (i, bg) {
+                updateOption(bgBox, bg);
+            });
+            $.each(disciplineList, function (i, discipline) {
+                updateOption(disciplineBox, discipline);
+            });
+            $.each(disciplineSpecList, function (i, disciplineSpec) {
+                updateOption(disciplineSpecBox, disciplineSpec);
+            });
+            $.each(workflowIdList, function (i, workflowId) {
+                updateOption(workflowSelectBox, workflowId);
+            });
+
+            disciplineBox.trigger("chosen:updated");
+            disciplineSpecBox.trigger("chosen:updated");
+            bgBox.trigger("chosen:updated");
+            workflowSelectBox.trigger("chosen:updated");
+        }
+        //background: #1ab394; color: white
     },
 
     /**
