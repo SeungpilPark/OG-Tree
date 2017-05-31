@@ -602,6 +602,10 @@ EditorViewController.prototype = {
                         $(this).css({
                             'color': '#c20000'
                         })
+                    } else {
+                        $(this).css({
+                            'color': ''
+                        })
                     }
                 });
                 workflowSelectBox.trigger("chosen:updated");
