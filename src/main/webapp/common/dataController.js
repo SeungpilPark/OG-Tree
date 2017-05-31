@@ -635,20 +635,54 @@ DataController.prototype = {
     },
     /**
      * 주어진 아이템의 depth 로 추가 생성이 가능한지 여부를 반환한다.
-     * @param depth
-     * @returns {boolean} enable
+     * @param view
+     * @param requestType
+     * @return {boolean}
      */
-    checkMaxCreateNumber: function (depth) {
+    checkMaxCreateNumber: function (view, requestType) {
+        var me = this;
         var enable = true;
-        if (this.stdYN == 'Y') {
-            if (depth >= this.stdMaxDepth) {
-                enable = false;
-                toastr.error('Max depth is ' + this.stdMaxDepth + ' in standard workflow.');
+        var depth = view.depth;
+
+        //폴더 생성시 제약사항.
+        if (requestType == me.TYPE.FOLDER) {
+            if (this.stdYN == 'Y') {
+                if (depth >= this.stdMaxDepth) {
+                    enable = false;
+                    toastr.error('Max depth is ' + this.stdMaxDepth + ' in standard workflow.');
+                }
+            } else {
+                if (depth >= this.prjMaxDepth) {
+                    enable = false;
+                    toastr.error('Max depth is ' + this.prjMaxDepth + ' in project workflow.');
+                }
             }
-        } else {
-            if (depth >= this.prjMaxDepth) {
+        }
+
+        //프로젝트 타입이 프로포셜일때는
+        //2레벨은 폴더만, 3레벨은 ED 만 가능하며 개수 제한은 없다.
+        var _project_type = parent.top.thisItem.getProperty('_project_type', '');
+        if (_project_type == 'PROPOSAL') {
+
+            //액티비티 당 1레빌은 폴더 한개만 만들 수 있다.
+            if (view.type == me.TYPE.ACTIVITY) {
+                var childs = me.tree.selectChildById(view.id);
+                if (childs && childs.length > 0) {
+                    enable = false;
+                    toastr.error('Only one folder per activity can be created in a proposal project.');
+                }
+            }
+
+            //2레벨은 폴더만 생성가능 하다.  1레벨에서 요청이 왔으며 폴더생성 요청이 아닌경우 거절.
+            if (view.depth == 1 && requestType != me.TYPE.FOLDER) {
                 enable = false;
-                toastr.error('Max depth is ' + this.prjMaxDepth + ' in project workflow.');
+                toastr.error('You can only create folders in the second level of a proposal project.');
+            }
+
+            //3레벨은 ED 생성만 가능하다. 2레벨에서 요청이 왔으며 ED 생성 요청이 아닌경우 거절.
+            if (view.depth == 2 && requestType != me.TYPE.ED) {
+                enable = false;
+                toastr.error('You can only create EDB in the third level of a proposal project.');
             }
         }
         return enable;
@@ -660,11 +694,11 @@ DataController.prototype = {
      * @param view OG-Tree view
      */
     createFolder: function (data, view) {
-        if (!this.checkMaxCreateNumber(view.depth)) {
+        var me = this;
+        if (!this.checkMaxCreateNumber(view, me.TYPE.FOLDER)) {
             return;
         }
 
-        var me = this;
         var inn = this.aras.newIOMInnovator();
         var target_rel_wf_com = '_rel_wf';
 
@@ -848,6 +882,10 @@ DataController.prototype = {
     createEd: function (data, view, edType) {
 
         var me = this;
+        if (!this.checkMaxCreateNumber(view, me.TYPE.ED)) {
+            return;
+        }
+
         var inn = this.aras.newIOMInnovator();
         var parentItemType = me.getItemType(data.type);
         var parentId = me.getCurrentItemId(parentItemType, data.id);

@@ -510,6 +510,17 @@ EditorViewController.prototype = {
                     order == 'desc');
             });
         });
+
+        // var disciplineBox = $('#discipline');
+        // var disciplineSpecBox = $('#disciplineSpec');
+        // var bgBox = $('#bg');
+        // var workflowSelectBox = $('#workflow-select');
+        //
+        //
+        // disciplineBox.chosen({width: "100%"});
+        // disciplineSpecBox.chosen({width: "100%"});
+        // bgBox.chosen({width: "100%"});
+        // workflowSelectBox.chosen({width: "100%"});
     },
     /**
      * discipline, disciplineSpec, bg, 아더 워크플로우 셀렉트 박스 이벤트를 등록한다.
@@ -584,6 +595,16 @@ EditorViewController.prototype = {
 
                 //마이 워크플로우도 함꼐 리프레쉬 해준다.
                 me.aras.refreshMyWorkFlow();
+
+                //선택된 셀렉트박스 옵션은 붉은색으로 처리한다.
+                workflowSelectBox.find('option').each(function () {
+                    if ($(this).attr('value') == wfId) {
+                        $(this).css({
+                            'color': '#c20000'
+                        })
+                    }
+                });
+                workflowSelectBox.trigger("chosen:updated");
             }
         });
 
@@ -634,11 +655,8 @@ EditorViewController.prototype = {
             selectBox.find('option').each(function () {
                 if ($(this).attr('value') + '' == value + '') {
                     $(this).css({
-                        background: '#1ab394',
-                        color: 'white'
+                        'font-weight': 'bolder'
                     });
-                    var text = $(this).text();
-                    $(this).text(text + ' (Rel.)')
                 }
             });
         };
@@ -679,7 +697,6 @@ EditorViewController.prototype = {
             bgBox.trigger("chosen:updated");
             workflowSelectBox.trigger("chosen:updated");
         }
-        //background: #1ab394; color: white
     },
 
     /**
