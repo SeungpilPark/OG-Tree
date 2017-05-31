@@ -59,9 +59,14 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
         return;
     }
 
-    //시크릿일 경우 체크박스 표현 안함.
-    if (this.data.data.extData['c_securitylevel'] == 'Secret') {
-        return;
+    //ED 이면서 c_can_change 가 false 이거나 c_securitylevel 이 Secret 일 경우 체크박스 표현 안함.
+    if (this instanceof OG.shape.Ed) {
+        if (this.data.data.extData['c_securitylevel'] == 'Secret') {
+            return;
+        }
+        if (this.data.data.extData['c_can_change'] == 'false') {
+            return;
+        }
     }
 
     this.hasCheckBox = true;
@@ -203,9 +208,9 @@ OG.shape.DIDS.prototype.onDrawShape = function () {
 
             //다른 더블클릭 이벤트 시간을 위하여 리드로우에 시간차를 둔다.
             //200 = 더블클릭하는 시간.
-            setTimeout(function(){
+            setTimeout(function () {
                 me.currentCanvas.getRenderer().redrawShape(me.currentElement);
-            },200);
+            }, 200);
         }
     });
 };

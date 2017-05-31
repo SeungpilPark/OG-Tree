@@ -2202,6 +2202,9 @@ EditorRenderer.prototype = {
             if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
                 needUpdate = true;
             }
+            if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
+                needUpdate = true;
+            }
         }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
@@ -2261,6 +2264,9 @@ EditorRenderer.prototype = {
                 needUpdate = true;
             }
             if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
                 needUpdate = true;
             }
         }
@@ -2323,6 +2329,9 @@ EditorRenderer.prototype = {
                 needUpdate = true;
             }
             if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
                 needUpdate = true;
             }
         }
