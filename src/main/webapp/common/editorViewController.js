@@ -636,7 +636,9 @@ EditorViewController.prototype = {
                     $(this).css({
                         background: '#1ab394',
                         color: 'white'
-                    })
+                    });
+                    var text = $(this).text();
+                    $(this).text(text + ' (Rel.)')
                 }
             });
         };
