@@ -581,7 +581,7 @@ EditorViewController.prototype = {
         //셀렉트 박스 구성 요소를 최초로 불러온다.
         me.aras.getSchCombo('Init', null, null, null, null, function (err, res) {
             if (res) {
-                var json = JSON.parse(data.d);
+                var json = JSON.parse(res.d);
                 if (json['rtn']) {
                     var discipline = JSON.parse(json['data']);
                     var disciplineSpec = JSON.parse(json['data1']);
