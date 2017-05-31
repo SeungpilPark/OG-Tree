@@ -3469,7 +3469,6 @@ EditorRenderer.prototype = {
         $(element).unbind('dblclick');
         $(element).bind({
             'dblclick': function () {
-                console.log('dblclick');
                 var id = element.id;
                 var view = me.selectViewById(me._VIEWDATA, id);
                 if (!view || !view.data) {

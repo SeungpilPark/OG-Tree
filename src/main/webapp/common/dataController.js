@@ -1921,7 +1921,7 @@ DataController.prototype = {
         if (!result) {
             return tempData;
         }
-        if (result.getItemCount() == 0) {
+        if (result.getItemCount() <= 0) {
             return tempData;
         }
         if (result.getItemCount() == 1) {
