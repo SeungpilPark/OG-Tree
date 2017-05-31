@@ -4102,6 +4102,7 @@ EditorRenderer.prototype = {
             name: 'create folder',
             icon: 'create-folder',
             callback: function () {
+                console.log(me.selectedView);
                 me.onMakeFolder(me.selectedData, me.selectedView);
             }
         }

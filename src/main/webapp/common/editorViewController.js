@@ -516,7 +516,16 @@ EditorViewController.prototype = {
      */
     bindSelectBoxEvent: function () {
         var me = this;
+        var disciplineBox = $('#discipline');
+        var disciplineSpecBox = $('#disciplineSpec');
+        var bgBox = $('#bg');
         var workflowSelectBox = $('#workflow-select');
+
+
+        disciplineBox.chosen({width: "100%"});
+        disciplineSpecBox.chosen({width: "100%"});
+        bgBox.chosen({width: "100%"});
+        workflowSelectBox.chosen({width: "100%"});
 
         //셀렉트박스에 option 을 구성한다.
         var addOption = function (element, label, value) {
@@ -525,9 +534,13 @@ EditorViewController.prototype = {
 
         //워크플로우 리스트를 가져온다.
         var loadWorkflowList = function () {
-            var discipline = $("#discipline").val();
-            var disciplineSpec = $("#disciplineSpec").val();
-            var bg = $("#bg").val();
+            var discipline = disciplineBox.val();
+            var disciplineSpec = disciplineSpecBox.val();
+            var bg = bgBox.val();
+
+            //기존 워크플로우 옵션 삭제 및 기본 생성자
+            workflowSelectBox.find('option').remove();
+            addOption(workflowSelectBox, '--Workflow--', '');
 
             //데이터 로드
             me.aras.getSchCombo('', discipline, disciplineSpec, bg, '', function (err, res) {
@@ -535,37 +548,33 @@ EditorViewController.prototype = {
                     var json = JSON.parse(res.d);
                     if (json['rtn']) {
                         var list = JSON.parse(json['data']);
-
-                        //기존 워크플로우 옵션 삭제 및 기본 생성자
-                        workflowSelectBox.find('option').remove();
-                        addOption(workflowSelectBox, '--Workflow--', '');
-
                         //리스트대로 옵션을 생성한다.
                         for (var key in list.data) {
                             addOption(workflowSelectBox, list.data[key]['LABEL'], list.data[key]['VALUE']);
                         }
                     }
-
-                    //리스트 갱신 후에, 마이 워크플로우와 연계된 아더 워크플로우들을 셀렉트박스 내에서 하이라이트 시킨다.
-                    me.highLightSelectBoxWorkflow();
                 }
+                workflowSelectBox.trigger("chosen:updated");
+
+                //리스트 갱신 후에, 마이 워크플로우와 연계된 아더 워크플로우들을 셀렉트박스 내에서 하이라이트 시킨다.
+                me.highLightSelectBoxWorkflow();
             });
         };
 
         //각 셀렉트 박스가 변경될 때 워크플로우를 리로드한다.
-        $('#discipline').change(function () {
+        disciplineBox.change(function () {
             loadWorkflowList();
         });
-        $('#disciplineSpec').change(function () {
+        disciplineSpecBox.change(function () {
             loadWorkflowList();
         });
-        $('#bg').change(function () {
+        bgBox.change(function () {
             loadWorkflowList();
         });
 
         //워크플로우 셀렉트박스가 변경될때 아더 워크플로우를 렌더링한다.
         workflowSelectBox.change(function () {
-            var wfId = $('#workflow-select').val();
+            var wfId = workflowSelectBox.val();
             if (wfId && wfId != '') {
                 var headerItem = me.aras.getWorkflowHeader(wfId);
                 if (headerItem.getItemCount() == 1) {
@@ -588,16 +597,20 @@ EditorViewController.prototype = {
                     var bg = JSON.parse(json['data2']);
 
                     for (var key in discipline.data) {
-                        addOption($('#discipline'), discipline.data[key].LABEL, discipline.data[key]['VALUE']);
+                        addOption(disciplineBox, discipline.data[key].LABEL, discipline.data[key]['VALUE']);
                     }
 
                     for (var key in disciplineSpec.data) {
-                        addOption($('#disciplineSpec'), disciplineSpec.data[key].LABEL, disciplineSpec.data[key]['VALUE']);
+                        addOption(disciplineSpecBox, disciplineSpec.data[key].LABEL, disciplineSpec.data[key]['VALUE']);
                     }
 
                     for (var key in bg.data) {
-                        addOption($('#bg'), bg.data[key].LABEL, bg.data[key]['VALUE']);
+                        addOption(bgBox, bg.data[key].LABEL, bg.data[key]['VALUE']);
                     }
+
+                    disciplineBox.trigger("chosen:updated");
+                    disciplineSpecBox.trigger("chosen:updated");
+                    bgBox.trigger("chosen:updated");
 
                     //최초 구성 후 워크플로우 리스트를 불러온다.
                     loadWorkflowList();
@@ -722,106 +735,6 @@ EditorViewController.prototype = {
                 me.tree.updateData(otherData);
             });
         });
-    },
-    /**
-     * Dev 모드일시 랜덤 데이터를 오픈그래프 트리에 반영한다.
-     */
-    renderRandomData: function () {
-        var me = this;
-        var otherData = me.randomData('other');
-        var myData = me.randomData('my');
-        me.tree.updateData(otherData, true);
-        me.tree.updateData(myData);
-    },
-
-    /**
-     * 오픈그래프 트리 데이터를 랜덤하게 생성한다.
-     * @param type other,my
-     * @returns {Array} json
-     */
-    randomData: function (type) {
-        var data = {};
-        var randomCount = function (min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        };
-        var randomType = function () {
-            var number = Math.floor(Math.random() * (2));
-            if (number == 0) {
-                return 'folder';
-            } else {
-                return 'ed';
-            }
-        };
-
-        //var random = randomCount() + 1;
-        for (var i = 0; i < 10; i++) {
-            console.log('=====Activity : ' + i + ' ===========');
-
-            var id = type + "-ac-" + i;
-            var activity = {
-                "type": "activity",
-                "id": id,
-                "name": type + "-ac-" + i + "-Activity",
-                "position": type,
-                "parentId": "",
-                "expand": true,
-                "extData": {}
-            };
-            if (i < 9) {
-                activity.next = type + "-ac-" + (i + 1);
-            }
-            if (i > 0) {
-                activity.prev = type + "-ac-" + (i - 1);
-            }
-            data[id] = activity;
-            var maxDepth = 7;
-            var createdData = [activity];
-            for (var c = 0; c < maxDepth; c++) {
-                var copyData = JSON.parse(JSON.stringify(createdData));
-                createdData = [];
-                for (var g = 0; g < copyData.length; g++) {
-                    var child, childId;
-                    var parent = copyData[g];
-                    var childType = randomType();
-                    if (c == 0) {
-                        childType = 'folder';
-                    }
-                    var randomChildNum = randomCount(1, 3);
-                    if (childType != 'folder') {
-                        randomChildNum = randomCount(1, 5);
-                    }
-                    for (var m = 0; m < randomChildNum; m++) {
-                        if (childType == 'folder') {
-                            childId = type + "-fd-" + i + '-' + c + '-' + g + '-' + m;
-                            child = {
-                                "type": childType,
-                                "id": childId,
-                                "name": type + "-fd-" + i + '-' + c + '-' + g + '-' + m + "-Folder",
-                                "position": type + "-out",
-                                "parentId": parent.id,
-                                "expand": true,
-                                "extData": {}
-                            };
-                            createdData.push(child);
-                            data[childId] = child;
-                        } else {
-                            childId = type + "-ed-" + i + '-' + c + '-' + g + '-' + m;
-                            child = {
-                                "type": childType,
-                                "id": childId,
-                                "name": type + "-ed-" + i + '-' + c + '-' + g + '-' + m + "-Ed",
-                                "position": type + "-out",
-                                "parentId": parent.id,
-                                "expand": true,
-                                "extData": {}
-                            };
-                            data[childId] = child;
-                        }
-                    }
-                }
-            }
-        }
-        return data;
     }
 }
 ;
