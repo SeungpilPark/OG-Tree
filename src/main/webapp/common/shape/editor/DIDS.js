@@ -8,6 +8,9 @@ OG.shape.DIDS = function (label) {
     this.DELETABLE = false;
     this.CHECKED = false;
     this.hasCheckBox = false;
+    //체크 박스와 이름변경 가능 여부
+    this.CHECKBOX = true;
+    this.CHANGE_NAME = true;
 };
 OG.shape.DIDS.prototype = new OG.shape.GeomShape();
 OG.shape.DIDS.superclass = OG.shape.GeomShape;
@@ -47,10 +50,20 @@ OG.shape.DIDS.prototype.addSelectLabel = function () {
 };
 
 OG.shape.DIDS.prototype.addCheckBox = function () {
+    //CHECKBOX 허용 안될 경우 리턴.
+    if(!this.CHECKBOX){
+        return;
+    }
     //락일 경우 체크박스 표현 안함.
     if (this.data.data.extData['c_locked_by_id'] && this.data.data.extData['c_locked_by_id'].length > 0) {
         return;
     }
+
+    //시크릿일 경우 체크박스 표현 안함.
+    if (this.data.data.extData['c_securitylevel'] == 'Secret') {
+        return;
+    }
+
     this.hasCheckBox = true;
     if (this instanceof OG.shape.Ed) {
         this.sub.push({

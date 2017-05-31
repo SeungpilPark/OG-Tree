@@ -23,6 +23,21 @@ var EditorViewController = function () {
      * @type {string}
      */
     this.mode = 'sample'; //random,sample
+
+    this.edbTypes = [
+        {
+            label: '2D & 3D Drawing',
+            name: 'CAD'
+        },
+        {
+            label: 'Document',
+            name: 'Document'
+        },
+        {
+            label: 'Engineering Data',
+            name: 'DHI_IntelliSheet'
+        }
+    ];
 };
 EditorViewController.prototype = {
     /**
@@ -30,8 +45,10 @@ EditorViewController.prototype = {
      */
     init: function () {
         var me = this;
-        me.tree = new EditorRenderer('canvas');
+        me.tree = new EditorRenderer('canvas', me);
         if (editorMode) {
+            me.tree._CONFIG.CEHCKBOX = true;
+            me.tree._CONFIG.CHANGE_NAME = true;
             me.tree._CONFIG.MOVE_SORTABLE = true;
             me.tree._CONFIG.MAPPING_ENABLE = true;
             me.tree._CONFIG.CREATE_FOLDER = true;
@@ -44,6 +61,8 @@ EditorViewController.prototype = {
             me.tree._CONFIG.AREA.rAc.display = true;
             me.tree._CONFIG.AREA.rOut.display = true;
         } else {
+            me.tree._CONFIG.CEHCKBOX = false;
+            me.tree._CONFIG.CHANGE_NAME = false;
             me.tree._CONFIG.MOVE_SORTABLE = false;
             me.tree._CONFIG.MAPPING_ENABLE = false;
             me.tree._CONFIG.CREATE_FOLDER = false;
@@ -83,11 +102,6 @@ EditorViewController.prototype = {
             if (editorMode) {
                 //셀렉트 박스 이벤트를 걸고 초기데이터를 불러온다.
                 me.bindSelectBoxEvent();
-                me.aras.getSchCombo('Init', null, null, null, null, function (err, res) {
-                    if (res) {
-                        me.renderSelectBox(res);
-                    }
-                });
             }
 
             //에디터 모니터 헤더 정보를 꾸민다.
@@ -97,7 +111,10 @@ EditorViewController.prototype = {
             }
 
             //EDB 타입 리스트를 등록한다.
-            me.aras.getEDBTypeList();
+            var edbTypeList = me.aras.getEDBTypeList();
+            if (edbTypeList) {
+                me.edbTypes = edbTypeList;
+            }
 
             //마이 워크플로우 데이터를 렌더링한다.
             me.aras.refreshMyWorkFlow();
@@ -112,7 +129,6 @@ EditorViewController.prototype = {
                     activityIds.push(activities[i].id);
                 }
                 me.aras.sortActivities(activityIds);
-
                 return false;
             };
             /**
@@ -132,6 +148,9 @@ EditorViewController.prototype = {
 
                 //아라스에서는 소스와 타겟이 반대
                 me.aras.addInRel(target, source, selectedTargetList);
+
+                //매핑 후에 워크플로우 셀렉트박스를 매핑시킨다.
+                me.highLightSelectBoxWorkflow();
                 return false;
             };
 
@@ -160,6 +179,9 @@ EditorViewController.prototype = {
                     modal.find('.close').click();
                     //아라스에서는 소스와 타겟이 반대
                     me.aras.deleteInRel(targetId, targetType, sourceId, sourceType);
+
+                    //매핑 삭제 후에 워크플로우 셀렉트박스를 매핑시킨다.
+                    me.highLightSelectBoxWorkflow();
                 });
                 modal.modal({
                     show: true
@@ -222,6 +244,9 @@ EditorViewController.prototype = {
              */
             $('#refresh').click(function () {
                 me.aras.refreshAll();
+
+                //셀렉트박스 매핑 리프레쉬
+                me.highLightSelectBoxWorkflow();
             });
 
             /**
@@ -491,25 +516,56 @@ EditorViewController.prototype = {
      */
     bindSelectBoxEvent: function () {
         var me = this;
-        var reload = function () {
-            me.aras.getSchCombo('', $("#discipline").val(), $("#disciplineSpec").val(), $("#bg").val(), '', function (err, res) {
-                me.renderOtherWorkFlowBox(res);
+        var workflowSelectBox = $('#workflow-select');
+
+        //셀렉트박스에 option 을 구성한다.
+        var addOption = function (element, label, value) {
+            element.append('<option value="' + value + '">' + label + '</option>');
+        };
+
+        //워크플로우 리스트를 가져온다.
+        var loadWorkflowList = function () {
+            var discipline = $("#discipline").val();
+            var disciplineSpec = $("#disciplineSpec").val();
+            var bg = $("#bg").val();
+
+            //데이터 로드
+            me.aras.getSchCombo('', discipline, disciplineSpec, bg, '', function (err, res) {
+                if (res) {
+                    var json = JSON.parse(res.d);
+                    if (json['rtn']) {
+                        var list = JSON.parse(json['data']);
+
+                        //기존 워크플로우 옵션 삭제 및 기본 생성자
+                        workflowSelectBox.find('option').remove();
+                        addOption(workflowSelectBox, '--Workflow--', '');
+
+                        //리스트대로 옵션을 생성한다.
+                        for (var key in list.data) {
+                            addOption(workflowSelectBox, list.data[key]['LABEL'], list.data[key]['VALUE']);
+                        }
+                    }
+
+                    //리스트 갱신 후에, 마이 워크플로우와 연계된 아더 워크플로우들을 셀렉트박스 내에서 하이라이트 시킨다.
+                    me.highLightSelectBoxWorkflow();
+                }
             });
         };
+
+        //각 셀렉트 박스가 변경될 때 워크플로우를 리로드한다.
         $('#discipline').change(function () {
-            reload();
+            loadWorkflowList();
         });
-
         $('#disciplineSpec').change(function () {
-            reload();
+            loadWorkflowList();
         });
-
         $('#bg').change(function () {
-            reload();
+            loadWorkflowList();
         });
 
-        $('#targetOtherWorkflow').change(function () {
-            var wfId = $('#targetOtherWorkflow').val();
+        //워크플로우 셀렉트박스가 변경될때 아더 워크플로우를 렌더링한다.
+        workflowSelectBox.change(function () {
+            var wfId = $('#workflow-select').val();
             if (wfId && wfId != '') {
                 var headerItem = me.aras.getWorkflowHeader(wfId);
                 if (headerItem.getItemCount() == 1) {
@@ -521,63 +577,44 @@ EditorViewController.prototype = {
                 me.aras.refreshMyWorkFlow();
             }
         });
+
+        //셀렉트 박스 구성 요소를 최초로 불러온다.
+        me.aras.getSchCombo('Init', null, null, null, null, function (err, res) {
+            if (res) {
+                var json = JSON.parse(data.d);
+                if (json['rtn']) {
+                    var discipline = JSON.parse(json['data']);
+                    var disciplineSpec = JSON.parse(json['data1']);
+                    var bg = JSON.parse(json['data2']);
+
+                    for (var key in discipline.data) {
+                        addOption($('#discipline'), discipline.data[key].LABEL, discipline.data[key]['VALUE']);
+                    }
+
+                    for (var key in disciplineSpec.data) {
+                        addOption($('#disciplineSpec'), disciplineSpec.data[key].LABEL, disciplineSpec.data[key]['VALUE']);
+                    }
+
+                    for (var key in bg.data) {
+                        addOption($('#bg'), bg.data[key].LABEL, bg.data[key]['VALUE']);
+                    }
+
+                    //최초 구성 후 워크플로우 리스트를 불러온다.
+                    loadWorkflowList();
+                }
+            }
+        });
     },
+
     /**
-     * 주어진 데이터로 discipline, disciplineSpec, bg 셀렉트 박스를 구성한다.
-     * @param data json
+     * 마이 워크플로우와 연계된 워크플로우 리스트를 셀렉트 박스 내에서 선택하여 하이라이트 시킨다.
      */
-    renderSelectBox: function (data) {
+    highLightSelectBoxWorkflow: function () {
         var me = this;
-        var json = JSON.parse(data.d);
-
-        if (json['rtn']) {
-            var discipline = JSON.parse(json['data']);
-            var disciplineSpec = JSON.parse(json['data1']);
-            var bg = JSON.parse(json['data2']);
-
-            for (var key in discipline.data) {
-                me.appendSelectBoxElement($('#discipline'), discipline.data[key].LABEL, discipline.data[key]['VALUE']);
-            }
-
-            for (var key in disciplineSpec.data) {
-                me.appendSelectBoxElement($('#disciplineSpec'), disciplineSpec.data[key].LABEL, disciplineSpec.data[key]['VALUE']);
-            }
-
-            for (var key in bg.data) {
-                me.appendSelectBoxElement($('#bg'), bg.data[key].LABEL, bg.data[key]['VALUE']);
-            }
-
-            //최초의 워크플로우 리스트를 불러와준다.
-            me.aras.getSchCombo('', $("#discipline").val(), $("#disciplineSpec").val(), $("#bg").val(), '', function (err, res) {
-                me.renderOtherWorkFlowBox(res);
-            });
-        }
+        var forEditor = me.aras.getRelOtherPropsForEditor();
+        console.log(forEditor);
     },
-    /**
-     * 주어진 데이터로 아더 워크플로우 셀렉트 박스를 구성한다.
-     * @param data json
-     */
-    renderOtherWorkFlowBox: function (data) {
-        var me = this;
-        var json = JSON.parse(data.d);
-        if (json['rtn']) {
-            var otherWorkFlows = JSON.parse(json['data']);
-            $('#targetOtherWorkflow').find('option').remove();
-            me.appendSelectBoxElement($('#targetOtherWorkflow'), '--Workflow--', '');
-            for (var key in otherWorkFlows.data) {
-                me.appendSelectBoxElement($('#targetOtherWorkflow'), otherWorkFlows.data[key]['LABEL'], otherWorkFlows.data[key]['VALUE']);
-            }
-        }
-    },
-    /**
-     * 주어진 데이터로 셀렉트 박스 내부에 option 을 생성한다.
-     * @param element 셀렉트 박스 Dom element
-     * @param label option display value
-     * @param value option value
-     */
-    appendSelectBoxElement: function (element, label, value) {
-        element.append('<option value="' + value + '">' + label + '</option>');
-    },
+
     /**
      * Html 페이지의 헤더 부분에 프로젝트 정보를 표기한다.
      * @param headerItem

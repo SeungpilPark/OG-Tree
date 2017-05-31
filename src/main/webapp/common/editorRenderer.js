@@ -5,9 +5,11 @@
  * @requires OG.*
  *
  * @param {String} container Dom Element Id
+ * @param {EditorViewController} viewController
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var EditorRenderer = function (container) {
+var EditorRenderer = function (container, viewController) {
+    this.viewController = viewController;
     this.Constants = {
         TYPE: {
             ACTIVITY: "activity",
@@ -55,6 +57,14 @@ var EditorRenderer = function (container) {
         }
     };
     this._CONFIG = {
+        /**
+         * 체크박스 생성 여부
+         */
+        CEHCKBOX: false,
+        /**
+         * 이름 변경 가능 여부
+         */
+        CHANGE_NAME: false,
         /**
          * 액티비티를 이동하여 소트시킬 수 있는 여부
          */
@@ -1985,7 +1995,7 @@ EditorRenderer.prototype = {
                 } else if (type == me.Constants.TYPE.EXPANDER_TO) {
                     me.updateExpanderLine(displayViews[i], element);
                 } else if (type == me.Constants.TYPE.ACTIVITY_REL) {
-                    me.updateActivityRelLine(displayViews[i]);
+
                 }
 
             } else {
@@ -2185,11 +2195,18 @@ EditorRenderer.prototype = {
             element.shape.label = view.name;
             needUpdate = true;
         }
+        if (customData.extData) {
+            if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
+                needUpdate = true;
+            }
+        }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
             this._RENDERER.redrawShape(element);
         }
-        //this.updateImageShapeStatus(view, element);
     },
     /**
      * 액티비티 아이템을 드로잉한다.
@@ -2206,6 +2223,10 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MOVE_SORTABLE) {
             shape.MOVABLE = false;
         }
+        //체크 박스와 이름변경 가능 여부
+        shape.CHECKBOX = me._CONFIG.CEHCKBOX;
+        shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
+
         shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
@@ -2235,6 +2256,14 @@ EditorRenderer.prototype = {
         if (customData.selected != view.selected) {
             needUpdate = true;
         }
+        if (customData.extData) {
+            if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
+                needUpdate = true;
+            }
+        }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
             this._RENDERER.redrawShape(element);
@@ -2255,6 +2284,9 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MAPPING_ENABLE) {
             shape.MOVABLE = false;
         }
+        //체크 박스와 이름변경 가능 여부
+        shape.CHECKBOX = me._CONFIG.CEHCKBOX;
+        shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
         shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
@@ -2287,6 +2319,12 @@ EditorRenderer.prototype = {
             if (customData.data.extData['c_type'] != view.data.extData['c_type']) {
                 needUpdate = true;
             }
+            if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['c_securitylevel'] != view.data.extData['c_securitylevel']) {
+                needUpdate = true;
+            }
         }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
@@ -2308,6 +2346,9 @@ EditorRenderer.prototype = {
         if (!me._CONFIG.MAPPING_ENABLE) {
             shape.MOVABLE = false;
         }
+        //체크 박스와 이름변경 가능 여부
+        shape.CHECKBOX = me._CONFIG.CEHCKBOX;
+        shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
         shape.data = JSON.parse(JSON.stringify(view));
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
@@ -2383,14 +2424,7 @@ EditorRenderer.prototype = {
             }
         }
     },
-    /**
-     * 액티비티간의 연결선을 업데이트한다.
-     * @param view OG-Tree view data
-     * @param element OG-Tree Dom Element
-     */
-    updateActivityRelLine: function (view, element) {
 
-    },
     /**
      * 액티비티간의 연결선을 드로잉한다.
      * @param view OG-Tree view data
@@ -3884,10 +3918,12 @@ EditorRenderer.prototype = {
                     me._HANDLER.selectShape(element);
                 }
 
-                //이름 바꾸기
-                if (view.position == me.Constants.POSITION.MY_OUT ||
-                    view.position == me.Constants.POSITION.MY) {
-                    items.makeNameChange = me.makeNameChange(element, data);
+                //이름 바꾸기. 에디터 모드에서만 가능.
+                if (me._CONFIG.CHANGE_NAME) {
+                    if (view.position == me.Constants.POSITION.MY_OUT ||
+                        view.position == me.Constants.POSITION.MY) {
+                        items.makeNameChange = me.makeNameChange(element, data);
+                    }
                 }
 
 
@@ -4073,50 +4109,25 @@ EditorRenderer.prototype = {
     ,
     /**
      * ED 생성 콘텍스트 메뉴를 생성한다.
-     * @returns {{name: string, icon: string, items: {cad: {name: string, icon: string, callback: Function}, dhi_c3d_output: {name: string, icon: string, callback: Function}, document: {name: string, icon: string, callback: Function}, dhi_intellisheet: {name: string, icon: string, callback: Function}, dhi_ed_kdm: {name: string, icon: string, callback: Function}}}}
+     * @return {{name: string, icon: string, items: {}}}
      */
     makeEd: function () {
         var me = this;
+        var edbTypes = me.viewController.edbTypes;
+        var items = {};
+        $.each(edbTypes, function (i, edbType) {
+            items[edbType.name] = {
+                name: edbType.label,
+                icon: 'create-ed',
+                callback: function () {
+                    me.onMakeEd(me.selectedData, me.selectedView, edbType.name);
+                }
+            };
+        });
         return {
             name: 'create ed',
             icon: 'create-ed',
-            items: {
-                cad: {
-                    name: '2D & 3D Drawing',
-                    icon: 'create-ed',
-                    callback: function () {
-                        me.onMakeEd(me.selectedData, me.selectedView, 'CAD');
-                    }
-                },
-                dhi_c3d_output: {
-                    name: '3D BOM',
-                    icon: 'create-ed',
-                    callback: function () {
-                        me.onMakeEd(me.selectedData, me.selectedView, 'DHI_C3D_OUTPUT');
-                    }
-                },
-                document: {
-                    name: 'Document',
-                    icon: 'create-ed',
-                    callback: function () {
-                        me.onMakeEd(me.selectedData, me.selectedView, 'Document');
-                    }
-                },
-                dhi_intellisheet: {
-                    name: 'Engineering Data',
-                    icon: 'create-ed',
-                    callback: function () {
-                        me.onMakeEd(me.selectedData, me.selectedView, 'DHI_IntelliSheet');
-                    }
-                },
-                dhi_ed_kdm: {
-                    name: 'Key Data',
-                    icon: 'create-ed',
-                    callback: function () {
-                        me.onMakeEd(me.selectedData, me.selectedView, 'DHI_ED_KDM');
-                    }
-                }
-            }
+            items: items
         }
     }
     ,

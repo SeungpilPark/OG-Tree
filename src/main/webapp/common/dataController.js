@@ -1757,7 +1757,7 @@ DataController.prototype = {
         me.tree.drawArea();
 
         //아더워크플로우를 그린다.
-        var wfId = $('#targetOtherWorkflow').val();
+        var wfId = $('#workflow-select').val();
         if (wfId && wfId != '') {
             var headerItem = me.getWorkflowHeader(wfId);
             if (headerItem.getItemCount() == 1) {
@@ -1887,11 +1887,28 @@ DataController.prototype = {
         var me = this, params = {};
         var result = me.applyMethod('DHI_EDB_GetPolyItemTypeForEDB', me.createBody(params));
         var array = me.convertMethodResultToJsonArray(result);
-        console.log('array', array);
+        return array;
+    },
+
+    /**
+     * 현재 워크플로우와 연계된 아더워크플로우 목록을 가져온다.
+     * @return {*|Array}
+     */
+    getRelOtherPropsForEditor: function () {
+        var me = this, params = {
+            wf_type: me.stdYN == 'Y' ? 'WFT' : 'WF',
+            my_wf_id: me.getCurrentItemId(me.getItemType('workflow'), me.wfId)
+        };
+        var result = me.applyMethod('DHI_WF_GetRelOtherPropsForEditor', me.createBody(params));
+        return me.convertMethodResultToJsonArray(result);
     },
 
 
+    //================================================
+    //================================================
     //=============== 워크플로우 차트 ====================
+    //================================================
+    //================================================
     /**
      * 메소드 리설트를 JSON 어레이 형식으로 변환한다.
      * @param result
@@ -1902,6 +1919,9 @@ DataController.prototype = {
         var nodeList = [];
         var tempData = [];
         if (!result) {
+            return tempData;
+        }
+        if (result.getItemCount() == 0) {
             return tempData;
         }
         if (result.getItemCount() == 1) {
