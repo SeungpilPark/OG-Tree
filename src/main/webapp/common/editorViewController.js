@@ -245,10 +245,16 @@ EditorViewController.prototype = {
              * 리프레쉬 버튼 클릭시
              */
             $('#refresh').click(function () {
-                me.aras.refreshAll();
+                try{
+                    me.aras.refreshAll();
 
-                //셀렉트박스 매핑 리프레쉬
-                me.highLightSelectBoxWorkflow();
+                    //셀렉트박스 매핑 리프레쉬
+                    me.highLightSelectBoxWorkflow();
+
+                    toastr.success('Refreshed!');
+                }catch (e){
+                    toastr.error('Refresh failed.');
+                }
             });
 
             /**

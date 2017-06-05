@@ -1977,7 +1977,7 @@ DataController.prototype = {
                     variable: identityId,
                     div: 'owner'
                 };
-                me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+                var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
             });
             toastr.success('Owner changed.');
             me.refreshMyWorkFlow();
@@ -1994,17 +1994,20 @@ DataController.prototype = {
      */
     updateName: function (data, view, name) {
         var me = this;
-        try{
+        try {
             var params = {
                 item_id: data.id,
                 item_type: me.getItemType(view.type),
                 variable: name,
                 div: 'name'
             };
-            me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+            var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+            console.log(result.isError());
+            console.log(result.getErrorString());
+
             toastr.success('Name changed.');
-            this.refreshOutFolder(data, view);
-        }catch (e){
+            me.refreshMyWorkFlow();
+        } catch (e) {
             toastr.error('Failed to chane name');
         }
     },
