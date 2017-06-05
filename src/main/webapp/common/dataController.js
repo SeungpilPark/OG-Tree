@@ -1978,6 +1978,12 @@ DataController.prototype = {
                     div: 'owner'
                 };
                 var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+                if (result.isError()) {
+                    toastr.error(result.getErrorString());
+                } else {
+                    toastr.success('Name changed.');
+                    me.refreshMyWorkFlow();
+                }
             });
             toastr.success('Owner changed.');
             me.refreshMyWorkFlow();
@@ -1994,21 +2000,18 @@ DataController.prototype = {
      */
     updateName: function (data, view, name) {
         var me = this;
-        try {
-            var params = {
-                item_id: data.id,
-                item_type: me.getItemType(view.type),
-                variable: name,
-                div: 'name'
-            };
-            var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
-            console.log(result.isError());
-            console.log(result.getErrorString());
-
+        var params = {
+            item_id: data.id,
+            item_type: me.getItemType(view.type),
+            variable: name,
+            div: 'name'
+        };
+        var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+        if (result.isError()) {
+            toastr.error(result.getErrorString());
+        } else {
             toastr.success('Name changed.');
             me.refreshMyWorkFlow();
-        } catch (e) {
-            toastr.error('Failed to chane name');
         }
     },
 
@@ -2143,23 +2146,7 @@ DataController.prototype = {
         var engFuncCodeList = me.getEngFuncCodeList();
         var objActivityList = me.getObjActivityList();
         if (keyActivityList.node == null && keyActivityList.nodeList == null) {
-            headers = [
-                {
-                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "label": "HBD",
-                    "_end_date": "4/17/2017 1:00:00 PM"
-                },
-                {
-                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "label": "ITB",
-                    "_end_date": "4/17/2017 1:00:00 PM"
-                },
-                {
-                    "id": "AF6C25B39E634F65AAC7D7FD5FE606D6",
-                    "label": "P&ID",
-                    "_end_date": "4/17/2017 1:00:00 PM"
-                }
-            ]
+            headers = []
         } else {
             headers = me.convertMethodResultToJsonArray(keyActivityList);
         }
