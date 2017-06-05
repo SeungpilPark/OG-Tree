@@ -49,6 +49,7 @@ EditorViewController.prototype = {
         if (editorMode) {
             me.tree._CONFIG.CEHCKBOX = true;
             me.tree._CONFIG.CHANGE_NAME = true;
+            me.tree._CONFIG.CHANGE_OWNER = true;
             me.tree._CONFIG.MOVE_SORTABLE = true;
             me.tree._CONFIG.MAPPING_ENABLE = true;
             me.tree._CONFIG.CREATE_FOLDER = true;
@@ -63,6 +64,7 @@ EditorViewController.prototype = {
         } else {
             me.tree._CONFIG.CEHCKBOX = false;
             me.tree._CONFIG.CHANGE_NAME = false;
+            me.tree._CONFIG.CHANGE_OWNER = false;
             me.tree._CONFIG.MOVE_SORTABLE = false;
             me.tree._CONFIG.MAPPING_ENABLE = false;
             me.tree._CONFIG.CREATE_FOLDER = false;
@@ -357,6 +359,22 @@ EditorViewController.prototype = {
                     return;
                 }
 
+                //Active 상태가 아닌 워크플로우는 Pick ED 금지
+                if (me.aras.thisItem.getProperty('state') != 'Active') {
+                    toastr.error('Pick ed is possible only in active workflow.');
+                    return;
+                }
+
+                //견적 상태일 경우 Pick ED 는 2레벨 폴더에서만 동작 가능.
+                var _project_type = me.aras.thisItem.getProperty('_project_type', '');
+                if (_project_type == 'PROPOSAL') {
+                    if (view.depth != 2) {
+                        toastr.error('You can only pick ED in the second level folder of a proposal project.');
+                        return;
+                    }
+                }
+
+
                 var dt;
                 var getData = function () {
                     var pickEdNumber = $('#pickEdNumber').val();
@@ -441,6 +459,99 @@ EditorViewController.prototype = {
                     show: true
                 });
             };
+
+            /**
+             * 체크박스 선택된 오브젝트의 소유권 바꾸기 클릭시
+             * @param checkedList
+             */
+            me.tree.onOwnerChange = function(checkedList){
+                var dt;
+                var dataSet = me.aras.getProjectMember();
+                console.log(dataSet);
+                // var getData = function () {
+                //     var pickEdNumber = $('#pickEdNumber').val();
+                //     var pickEdName = $('#pickEdName').val();
+                //     var dataSet = me.aras.getPickEd(pickEdNumber, pickEdName);
+                //     for (var i = 0; i < dataSet.length; i++) {
+                //         dataSet[i]['label'] =
+                //             '<i class="fa fa-search-plus"></i>&nbsp;<a href="Javascript:void(0)" name="statusBtn">' + dataSet[i]['name'] + '</a>';
+                //         dataSet[i]['ed_type'] = dataSet[i]['ed_type'] ? dataSet[i]['ed_type'] : '';
+                //         dataSet[i]['rel_project'] = dataSet[i]['rel_project'] ? dataSet[i]['rel_project'] : '';
+                //         dataSet[i]['state'] = dataSet[i]['state'] ? dataSet[i]['state'] : '';
+                //         dataSet[i]['class'] = dataSet[i]['class'] ? dataSet[i]['class'] : '';
+                //     }
+                //     return dataSet;
+                // };
+
+                // if (!me.pickEdGrid) {
+                //     dt = new uengineDT($('#pickEdGrid'),
+                //         {
+                //             select: true,
+                //             columns: [
+                //                 {
+                //                     data: 'label', title: 'Name', defaultContent: '',
+                //                     event: {
+                //                         click: function (key, value, rowValue, rowIdx, td) {
+                //                             me.aras.showPropertyWindow(me.tree.Constants.TYPE.ED, rowValue['id']);
+                //                         }
+                //                     }
+                //                 },
+                //                 {data: 'ed_type', title: 'Type', defaultContent: ''},
+                //                 {data: 'rel_project', title: 'Project', defaultContent: ''},
+                //                 {data: 'state', title: 'State', defaultContent: ''},
+                //                 {data: 'class', title: 'Class', defaultContent: ''}
+                //             ],
+                //             pageLength: 10,
+                //             info: true,
+                //             responsive: true,
+                //             dom: '<"html5buttons"B>lTfgitp',
+                //             buttons: [
+                //                 {extend: 'copy'},
+                //                 {extend: 'csv'},
+                //                 {extend: 'excel', title: 'ExampleFile'},
+                //                 {extend: 'pdf', title: 'ExampleFile'},
+                //                 {
+                //                     extend: 'print',
+                //                     customize: function (win) {
+                //                         $(win.document.body).addClass('white-bg');
+                //                         $(win.document.body).css('font-size', '10px');
+                //
+                //                         $(win.document.body).find('table')
+                //                             .addClass('compact')
+                //                             .css('font-size', 'inherit');
+                //                     }
+                //                 }
+                //             ]
+                //         });
+                //     me.pickEdGrid = dt;
+                // }
+                //
+                // me.pickEdGrid.renderGrid(getData());
+                //
+                // var modal = $('#pickEdModal');
+                // modal.find('[name=search]').unbind('click');
+                // modal.find('[name=action]').unbind('click');
+                // modal.find('[name=action]').bind('click', function () {
+                //     modal.find('.close').click();
+                //     var folderItem = me.aras.getItemById(me.aras.TYPE.FOLDER, data.id);
+                //     var edItems = [];
+                //     var selected = me.pickEdGrid.getDt().rows({selected: true}).data();
+                //     for (var i = 0; i < selected.length; i++) {
+                //         var edItem = me.aras.getItemById(me.aras.TYPE.ED, selected[i].id);
+                //         edItems.push(edItem);
+                //     }
+                //     if (edItems.length) {
+                //         me.aras.addPickEDOutRelation(edItems, folderItem, data, view);
+                //     }
+                // });
+                // modal.find('[name=search]').bind('click', function () {
+                //     me.pickEdGrid.renderGrid(getData());
+                // });
+                // modal.modal({
+                //     show: true
+                // });
+            }
+
         } else {
             me.renderSampleData();
         }

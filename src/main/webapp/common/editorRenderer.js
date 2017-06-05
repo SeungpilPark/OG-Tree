@@ -66,6 +66,10 @@ var EditorRenderer = function (container, viewController) {
          */
         CHANGE_NAME: false,
         /**
+         * 오우너 변경 가능 여부
+         */
+        CHANGE_OWNER: false,
+        /**
          * 액티비티를 이동하여 소트시킬 수 있는 여부
          */
         MOVE_SORTABLE: false,
@@ -2231,6 +2235,8 @@ EditorRenderer.prototype = {
         shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
 
         shape.data = JSON.parse(JSON.stringify(view));
+        me.bindCheckBoxClickEvent(shape);
+
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
                 'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
@@ -2294,6 +2300,7 @@ EditorRenderer.prototype = {
         shape.CHECKBOX = me._CONFIG.CEHCKBOX;
         shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
         shape.data = JSON.parse(JSON.stringify(view));
+        me.bindCheckBoxClickEvent(shape);
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
                 'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
@@ -2359,6 +2366,7 @@ EditorRenderer.prototype = {
         shape.CHECKBOX = me._CONFIG.CEHCKBOX;
         shape.CHANGE_NAME = me._CONFIG.CHANGE_NAME;
         shape.data = JSON.parse(JSON.stringify(view));
+        me.bindCheckBoxClickEvent(shape);
         var element = me.canvas.drawShape([view.x, view.y], shape, [view.width, view.height],
             {
                 'font-size': me._CONFIG.DEFAULT_STYLE.FONT_SIZE,
@@ -3467,6 +3475,43 @@ EditorRenderer.prototype = {
         $(element).bind('mouseout', function () {
             $('.og-tooltip').remove();
         });
+    },
+    /**
+     * shape 의 체크박스 클릭시 하위의 모든 아이템도 적용되도록 한다.
+     * @param shape
+     */
+    bindCheckBoxClickEvent: function (shape) {
+        var editorRenderer = this;
+        shape.onDrawShape = function () {
+            var me = this;
+            //체크 박스 이벤트
+            $(me.currentElement).click(function (event) {
+                if (me.hasCheckBox) {
+                    if (me.CHECKED) {
+                        me.CHECKED = false;
+                    } else {
+                        me.CHECKED = true;
+                    }
+
+                    //다른 더블클릭 이벤트 시간을 위하여 리드로우에 시간차를 둔다.
+                    //200 = 더블클릭하는 시간.
+                    setTimeout(function () {
+                        me.currentCanvas.getRenderer().redrawShape(me.currentElement);
+
+                        //하위의 모든 엘리먼트를 구한다.
+                        var childElement;
+                        var childViews = editorRenderer.selectRecursiveChildViewsById(editorRenderer._VIEWDATA, shape.data.id);
+                        $.each(childViews, function (i, childView) {
+                            childElement = me.currentCanvas.getElementById(childView.id);
+                            if (childElement && childElement.shape.hasCheckBox) {
+                                childElement.shape.CHECKED = me.CHECKED;
+                                me.currentCanvas.getRenderer().redrawShape(childElement);
+                            }
+                        })
+                    }, 200);
+                }
+            });
+        };
     }
     ,
     /**
@@ -3935,6 +3980,13 @@ EditorRenderer.prototype = {
                     }
                 }
 
+                //오우너 바꾸기. 체크박스가 표시된 오브젝트만 가능.
+                if (me._CONFIG.CHANGE_OWNER) {
+                    if (element.shape.hasCheckBox && element.shape.CHECKED) {
+                        items.makeOwnerChange = me.makeOwnerChange(element, data);
+                    }
+                }
+
 
                 //폴더,ED 생성 및 삭제
                 if (view.position == me.Constants.POSITION.MY || view.position == me.Constants.POSITION.MY_OUT) {
@@ -4004,6 +4056,29 @@ EditorRenderer.prototype = {
     }
     ,
 
+    /**
+     * 소유자 변경 콘텍스트 메뉴를 생성한다.
+     * @param element
+     * @param data
+     * @return {{name: string, icon: string, callback: callback}}
+     */
+    makeOwnerChange: function (element, data) {
+        var me = this;
+        return {
+            name: 'change owner',
+            icon: 'name-change',
+            callback: function () {
+                var allShapes = me.canvas.getAllShapes();
+                var checkedList = [];
+                $.each(allShapes, function (i, ele) {
+                    if (ele.shape && ele.shape.hasCheckBox && ele.shape.CHECKED) {
+                        checkedList.push(ele.shape.data.data)
+                    }
+                });
+                me.onOwnerChange(checkedList);
+            }
+        }
+    },
     /**
      * 이름 변경 콘텍스트 메뉴를 생성한다.
      * @param element
@@ -4076,9 +4151,7 @@ EditorRenderer.prototype = {
                         this.parentNode.removeChild(this);
 
                         if (beforeLabel != afterLabel) {
-                            //TODO 이름 변경 데이터를 보낸 후 성공시 아래 수행
-                            renderer.drawLabel(element, afterLabel);
-                            toastr.success('Name changed.');
+                            editorRenderer.onNameChange(data, afterLabel);
                         }
                     }
                 });
@@ -4223,6 +4296,14 @@ EditorRenderer.prototype = {
     ,
     onListRelation: function (data, view) {
 
+    }
+    ,
+    onOwnerChange: function (checkedList) {
+        console.log(checkedList);
+    }
+    ,
+    onNameChange: function (data, afterLabel) {
+        console.log(data, afterLabel);
     }
     ,
     /**

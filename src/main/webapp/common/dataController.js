@@ -1941,6 +1941,17 @@ DataController.prototype = {
         return me.convertMethodResultToJsonArray(result);
     },
 
+    /**
+     * 현재 워크플로우의 프로젝트 멤버 목록을 가져온다.
+     */
+    getProjectMember: function () {
+        var me = this, params = {
+            pjt_id: parent.top.thisItem.getProperty('_rel_project', '')
+        };
+        var result = me.applyMethod('DHI_getProjectMember', me.createBody(params));
+        return result;
+    },
+
 
     //================================================
     //================================================
