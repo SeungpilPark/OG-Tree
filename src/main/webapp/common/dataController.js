@@ -1993,14 +1993,20 @@ DataController.prototype = {
      * @param name
      */
     updateName: function (data, view, name) {
-        var me = this, params = {
-            item_id: data.id,
-            item_type: me.getItemType(view.type),
-            variable: name,
-            div: 'name'
-        };
-        me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
-        this.refreshOutFolder(data, view);
+        var me = this;
+        try{
+            var params = {
+                item_id: data.id,
+                item_type: me.getItemType(view.type),
+                variable: name,
+                div: 'name'
+            };
+            me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+            toastr.success('Name changed.');
+            this.refreshOutFolder(data, view);
+        }catch (e){
+            toastr.error('Failed to chane name');
+        }
     },
 
 

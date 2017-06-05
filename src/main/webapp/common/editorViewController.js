@@ -510,7 +510,7 @@ EditorViewController.prototype = {
                 var modal = $('#memberModal');
                 modal.find('[name=action]').unbind('click');
                 modal.find('[name=action]').bind('click', function () {
-                    var selected = me.pickEdGrid.getDt().rows({selected: true}).data();
+                    var selected = me.memberGrid.getDt().rows({selected: true}).data();
                     if (!selected || !selected.length) {
                         toastr.error('Please select a project member.');
                         return true;
