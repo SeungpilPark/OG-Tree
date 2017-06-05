@@ -44,7 +44,7 @@ var ChartRenderer = function (container, viewController, editMode) {
     // Canvas
     this.canvas = new OG.Canvas(container, [this._CONTAINER.width(), this._CONFIG.CONTAINER_HEIGHT], 'white');
 
-    if(this.editMode){
+    if (this.editMode) {
         this.canvas.initConfig({
             selectable: true,
             dragSelectable: true,
@@ -64,7 +64,7 @@ var ChartRenderer = function (container, viewController, editMode) {
             checkBridgeEdge: true,
             autoHistory: false
         });
-    }else{
+    } else {
         this.canvas.initConfig({
             selectable: true,
             dragSelectable: true,
@@ -1083,8 +1083,13 @@ ChartRenderer.prototype = {
             $(me.currentElement).bind('mouseover', function (event) {
                 var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
                 var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
+                var allEdges = me.currentCanvas.getAllEdges();
                 var edges = prevEdges.concat(nextEdges);
+                var edgeIds = [];
+
+                //도형과 연결된 선분인 경우 하이라이트 처리.
                 $.each(edges, function (i, edge) {
+                    edgeIds.push(edge.id);
                     me.currentCanvas.setShapeStyle(edge, {
                         "stroke": "RGB(66,139,202)",
                         "stroke-width": "3",
@@ -1098,15 +1103,27 @@ ChartRenderer.prototype = {
                         }
                     });
                 });
+
+                //도형과 연결된 선분이 아닌경우 흐리게 처리한다.
+                var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+                defaultStyle['opacity'] = '0.3';
+                defaultStyle['marker'] = null;
+                $.each(allEdges, function (c, otherEdge) {
+                    if(edgeIds.indexOf(otherEdge.id) == -1){
+                        me.currentCanvas.setShapeStyle(otherEdge, defaultStyle);
+                    }
+                })
             });
             $(me.currentElement).bind('mouseout', function () {
-                var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
-                var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
-                var edges = prevEdges.concat(nextEdges);
-                var style = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
-                style.marker = null;
-                $.each(edges, function (i, edge) {
-                    me.currentCanvas.setShapeStyle(edge, style);
+                //var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
+                //var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
+                //var edges = prevEdges.concat(nextEdges);
+                var allEdges = me.currentCanvas.getAllEdges();
+                var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+                defaultStyle['opacity'] = '1';
+                defaultStyle.marker = null;
+                $.each(allEdges, function (i, edge) {
+                    me.currentCanvas.setShapeStyle(edge, defaultStyle);
                 });
             });
 
