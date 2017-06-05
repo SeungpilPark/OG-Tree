@@ -103,17 +103,6 @@
                                 <div class="form-group col-md-4">
                                     <select id="discipline" name="discipline" class="chosen-select">
                                         <option value="" selected>--Discipline--</option>
-                                        <!--<option style="color: #c20000;font-weight: bolder" value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option style="font-weight: bolder" value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
-                                        <!--<option value="" selected>&#45;&#45;Discipline&#45;&#45;</option>-->
                                     </select>
                                 </div>
 
@@ -281,7 +270,8 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span
                             class="sr-only">Close</span></button>
                     <h4 class="modal-title">List Relations</h4>
                 </div>
@@ -300,7 +290,8 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span
                             class="sr-only">Close</span></button>
                     <h4 class="modal-title">Pick Ed List</h4>
                 </div>
@@ -329,12 +320,34 @@
         </div>
     </div>
 
+    <div class="modal fade" id="memberModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Project Member List</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="memberGrid" class="table table-hover" width="100%"></table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" name="action">Change Owner</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="deleteConfirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span
                             class="sr-only">Close</span></button>
                     <h4 class="modal-title">Delete Confirm</h4>
                 </div>

@@ -3976,7 +3976,7 @@ EditorRenderer.prototype = {
                 if (me._CONFIG.CHANGE_NAME) {
                     if (view.position == me.Constants.POSITION.MY_OUT ||
                         view.position == me.Constants.POSITION.MY) {
-                        items.makeNameChange = me.makeNameChange(element, data);
+                        items.makeNameChange = me.makeNameChange(element, data, view);
                     }
                 }
 
@@ -4083,9 +4083,10 @@ EditorRenderer.prototype = {
      * 이름 변경 콘텍스트 메뉴를 생성한다.
      * @param element
      * @param data
+     * @param view
      * @return {{name: string, icon: string, callback: callback}}
      */
-    makeNameChange: function (element, data) {
+    makeNameChange: function (element, data, view) {
         var editorRenderer = this;
         return {
             name: 'change name',
@@ -4151,7 +4152,7 @@ EditorRenderer.prototype = {
                         this.parentNode.removeChild(this);
 
                         if (beforeLabel != afterLabel) {
-                            editorRenderer.onNameChange(data, afterLabel);
+                            editorRenderer.onNameChange(data, view, afterLabel);
                         }
                     }
                 });
@@ -4299,11 +4300,11 @@ EditorRenderer.prototype = {
     }
     ,
     onOwnerChange: function (checkedList) {
-        console.log(checkedList);
+
     }
     ,
-    onNameChange: function (data, afterLabel) {
-        console.log(data, afterLabel);
+    onNameChange: function (data, view, afterLabel) {
+
     }
     ,
     /**

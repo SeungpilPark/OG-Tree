@@ -1949,7 +1949,58 @@ DataController.prototype = {
             pjt_id: parent.top.thisItem.getProperty('_rel_project', '')
         };
         var result = me.applyMethod('DHI_getProjectMember', me.createBody(params));
-        return result;
+        var data = [];
+        for (var i = 0; i < result.getItemCount(); i++) {
+            data.push({
+                id: result.getItemByIndex(i).getProperty("related_id/Item/owned_by_id", ""),
+                name: result.getItemByIndex(i).getProperty("related_id/Item/_emp_nm", ""),
+                team: result.getItemByIndex(i).getProperty("related_id/Item/_team/Item/_org_full_nm", ""),
+                email: result.getItemByIndex(i).getProperty("related_id/Item/email", ""),
+                part: result.getItemByIndex(i).getProperty("related_id/Item/_org_nm", "")
+            });
+        }
+        return data;
+    },
+
+    /**
+     * 체크된 리스트에 대하여 담당자를 변경한다.
+     * @param checkedList
+     * @param identityId
+     */
+    updateOwner: function (checkedList, identityId) {
+        var me = this;
+        try {
+            $.each(checkedList, function (i, data) {
+                var params = {
+                    item_id: data.id,
+                    item_type: me.getItemType(data.type),
+                    variable: identityId,
+                    div: 'owner'
+                };
+                me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+            });
+            toastr.success('Owner changed.');
+            me.refreshMyWorkFlow();
+        } catch (e) {
+            toastr.error('Failed to chane owner');
+        }
+    },
+
+    /**
+     * 오브젝트의 이름을 변경한다.
+     * @param data
+     * @param view
+     * @param name
+     */
+    updateName: function (data, view, name) {
+        var me = this, params = {
+            item_id: data.id,
+            item_type: me.getItemType(view.type),
+            variable: name,
+            div: 'name'
+        };
+        me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+        this.refreshOutFolder(data, view);
     },
 
 

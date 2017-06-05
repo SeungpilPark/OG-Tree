@@ -464,93 +464,74 @@ EditorViewController.prototype = {
              * 체크박스 선택된 오브젝트의 소유권 바꾸기 클릭시
              * @param checkedList
              */
-            me.tree.onOwnerChange = function(checkedList){
+            me.tree.onOwnerChange = function (checkedList) {
                 var dt;
                 var dataSet = me.aras.getProjectMember();
-                console.log(dataSet);
-                // var getData = function () {
-                //     var pickEdNumber = $('#pickEdNumber').val();
-                //     var pickEdName = $('#pickEdName').val();
-                //     var dataSet = me.aras.getPickEd(pickEdNumber, pickEdName);
-                //     for (var i = 0; i < dataSet.length; i++) {
-                //         dataSet[i]['label'] =
-                //             '<i class="fa fa-search-plus"></i>&nbsp;<a href="Javascript:void(0)" name="statusBtn">' + dataSet[i]['name'] + '</a>';
-                //         dataSet[i]['ed_type'] = dataSet[i]['ed_type'] ? dataSet[i]['ed_type'] : '';
-                //         dataSet[i]['rel_project'] = dataSet[i]['rel_project'] ? dataSet[i]['rel_project'] : '';
-                //         dataSet[i]['state'] = dataSet[i]['state'] ? dataSet[i]['state'] : '';
-                //         dataSet[i]['class'] = dataSet[i]['class'] ? dataSet[i]['class'] : '';
-                //     }
-                //     return dataSet;
-                // };
+                if (!me.memberGrid) {
+                    dt = new uengineDT($('#memberGrid'),
+                        {
+                            select: {
+                                style: 'single'
+                            },
+                            columns: [
+                                {data: 'name', title: 'Name', defaultContent: ''},
+                                {data: 'team', title: 'Team', defaultContent: ''},
+                                {data: 'email', title: 'Email', defaultContent: ''},
+                                {data: 'part', title: 'Team with Part', defaultContent: ''},
+                                {data: 'id', title: 'ID', defaultContent: ''}
+                            ],
+                            pageLength: 10,
+                            info: true,
+                            responsive: true,
+                            dom: '<"html5buttons"B>lTfgitp',
+                            buttons: [
+                                {extend: 'copy'},
+                                {extend: 'csv'},
+                                {extend: 'excel', title: 'ExampleFile'},
+                                {extend: 'pdf', title: 'ExampleFile'},
+                                {
+                                    extend: 'print',
+                                    customize: function (win) {
+                                        $(win.document.body).addClass('white-bg');
+                                        $(win.document.body).css('font-size', '10px');
 
-                // if (!me.pickEdGrid) {
-                //     dt = new uengineDT($('#pickEdGrid'),
-                //         {
-                //             select: true,
-                //             columns: [
-                //                 {
-                //                     data: 'label', title: 'Name', defaultContent: '',
-                //                     event: {
-                //                         click: function (key, value, rowValue, rowIdx, td) {
-                //                             me.aras.showPropertyWindow(me.tree.Constants.TYPE.ED, rowValue['id']);
-                //                         }
-                //                     }
-                //                 },
-                //                 {data: 'ed_type', title: 'Type', defaultContent: ''},
-                //                 {data: 'rel_project', title: 'Project', defaultContent: ''},
-                //                 {data: 'state', title: 'State', defaultContent: ''},
-                //                 {data: 'class', title: 'Class', defaultContent: ''}
-                //             ],
-                //             pageLength: 10,
-                //             info: true,
-                //             responsive: true,
-                //             dom: '<"html5buttons"B>lTfgitp',
-                //             buttons: [
-                //                 {extend: 'copy'},
-                //                 {extend: 'csv'},
-                //                 {extend: 'excel', title: 'ExampleFile'},
-                //                 {extend: 'pdf', title: 'ExampleFile'},
-                //                 {
-                //                     extend: 'print',
-                //                     customize: function (win) {
-                //                         $(win.document.body).addClass('white-bg');
-                //                         $(win.document.body).css('font-size', '10px');
-                //
-                //                         $(win.document.body).find('table')
-                //                             .addClass('compact')
-                //                             .css('font-size', 'inherit');
-                //                     }
-                //                 }
-                //             ]
-                //         });
-                //     me.pickEdGrid = dt;
-                // }
-                //
-                // me.pickEdGrid.renderGrid(getData());
-                //
-                // var modal = $('#pickEdModal');
-                // modal.find('[name=search]').unbind('click');
-                // modal.find('[name=action]').unbind('click');
-                // modal.find('[name=action]').bind('click', function () {
-                //     modal.find('.close').click();
-                //     var folderItem = me.aras.getItemById(me.aras.TYPE.FOLDER, data.id);
-                //     var edItems = [];
-                //     var selected = me.pickEdGrid.getDt().rows({selected: true}).data();
-                //     for (var i = 0; i < selected.length; i++) {
-                //         var edItem = me.aras.getItemById(me.aras.TYPE.ED, selected[i].id);
-                //         edItems.push(edItem);
-                //     }
-                //     if (edItems.length) {
-                //         me.aras.addPickEDOutRelation(edItems, folderItem, data, view);
-                //     }
-                // });
-                // modal.find('[name=search]').bind('click', function () {
-                //     me.pickEdGrid.renderGrid(getData());
-                // });
-                // modal.modal({
-                //     show: true
-                // });
-            }
+                                        $(win.document.body).find('table')
+                                            .addClass('compact')
+                                            .css('font-size', 'inherit');
+                                    }
+                                }
+                            ]
+                        });
+                    me.memberGrid = dt;
+                }
+
+                me.memberGrid.renderGrid(dataSet);
+
+                var modal = $('#memberModal');
+                modal.find('[name=action]').unbind('click');
+                modal.find('[name=action]').bind('click', function () {
+                    var selected = me.pickEdGrid.getDt().rows({selected: true}).data();
+                    if (!selected || !selected.length) {
+                        toastr.error('Please select a project member.');
+                        return true;
+                    }
+                    modal.find('.close').click();
+                    me.aras.updateOwner(checkedList, selected(0)['id']);
+                });
+                modal.modal({
+                    show: true
+                });
+            };
+
+            /**
+             * 선택된 오브젝트의 이름 변경 시도시
+             * @param data
+             * @param view
+             * @param name
+             */
+            me.tree.onNameChange = function (data, view, name) {
+                me.aras.updateName(data, view, name);
+            };
 
         } else {
             me.renderSampleData();
