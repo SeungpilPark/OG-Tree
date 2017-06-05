@@ -516,7 +516,7 @@ EditorViewController.prototype = {
                         return true;
                     }
                     modal.find('.close').click();
-                    me.aras.updateOwner(checkedList, selected(0)['id']);
+                    me.aras.updateOwner(checkedList, selected[0]['id']);
                 });
                 modal.modal({
                     show: true
