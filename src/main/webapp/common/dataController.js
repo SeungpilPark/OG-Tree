@@ -1969,26 +1969,30 @@ DataController.prototype = {
      */
     updateOwner: function (checkedList, identityId) {
         var me = this;
-        try {
-            $.each(checkedList, function (i, data) {
-                var params = {
-                    item_id: data.id,
-                    item_type: me.getItemType(data.type),
-                    variable: identityId,
-                    div: 'owner'
-                };
-                var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
-                if (result.isError()) {
-                    toastr.error(result.getErrorString());
-                } else {
-                    toastr.success('Name changed.');
-                    me.refreshMyWorkFlow();
-                }
-            });
+        var failCount = 0;
+        var successCount = 0;
+        $.each(checkedList, function (i, data) {
+            var params = {
+                item_id: data.id,
+                item_type: me.getItemType(data.type),
+                variable: identityId,
+                div: 'owner'
+            };
+            var result = me.applyMethod('DHI_WF_SetOwnerAndNameForEditor', me.createBody(params));
+            if (result.isError()) {
+                toastr.error('Fail : ' + data.name + '\n' + result.getErrorString());
+                failCount++;
+            } else {
+                successCount++;
+            }
+        });
+        //실패가 없을시 성공메세지
+        if (failCount == 0) {
             toastr.success('Owner changed.');
+        }
+        //성공이 하나라도 있다면 초기화
+        if (successCount > 0) {
             me.refreshMyWorkFlow();
-        } catch (e) {
-            toastr.error('Failed to chane owner');
         }
     },
 
