@@ -1024,11 +1024,15 @@ EditorRenderer.prototype = {
                 diffY = targetActivityView.y - (me._CONFIG.SHAPE_SIZE.FOLDER_HEIGHT / 2);
                 for (var l = 0, lenl = loaded.length; l < lenl; l++) {
                     if (loaded[l].targetActivity == targetActivity['id']) {
-                        diffY = diffY + loaded[l].sourceInHeight;// + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
-                        totalInHeight = totalInHeight + loaded[l].sourceInHeight;// + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
+                        if (loaded[l].type == 'mirror') {
+                            diffY = diffY + loaded[l].sourceInHeight + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
+                            totalInHeight = totalInHeight + loaded[l].sourceInHeight + me._CONFIG.SHAPE_SIZE.ACTIVITY_HEIGHT + me._CONFIG.SHAPE_SIZE.ACTIVITY_MARGIN;
+                        } else {
+                            diffY = diffY + loaded[l].sourceInHeight;
+                            totalInHeight = totalInHeight + loaded[l].sourceInHeight;
+                        }
                     }
                 }
-
                 isLoad = false;
                 for (var l = 0, lenl = loaded.length; l < lenl; l++) {
                     if (loaded[l].sourceActivity == rootMapping['parentId'] &&
@@ -1089,6 +1093,7 @@ EditorRenderer.prototype = {
                     }
                     //sourceInHeight 를 포함하여 읽어들인 리스트에 추가한다.
                     loaded.push({
+                        type: 'standalone',
                         sourceActivity: rootMapping['parentId'],
                         targetActivity: targetActivity['id'],
                         sourceInHeight: standaloneViewData.totalHeight
@@ -1246,6 +1251,7 @@ EditorRenderer.prototype = {
 
                     //sourceInHeight 를 포함하여 읽어들인 리스트에 추가한다.
                     loaded.push({
+                        type: 'mirror',
                         sourceActivity: sourceActivity['id'],
                         targetActivity: targetActivity['id'],
                         sourceInHeight: sourceInHeight
