@@ -366,6 +366,8 @@ EditorViewController.prototype = {
                 }
 
                 //Active 상태가 아닌 워크플로우는 Pick ED 금지
+                //수정: 폴더의 탑 액티비티의 상태를 보는것으로 변경하기.
+                //커런트를 한번 돌리기.
                 if (me.aras.thisItem.getProperty('state') != 'Active') {
                     toastr.error('Pick ed is possible only in active workflow.');
                     return;

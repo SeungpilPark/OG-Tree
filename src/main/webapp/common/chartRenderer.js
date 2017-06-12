@@ -301,14 +301,24 @@ ChartRenderer.prototype = {
             return null;
         }
         var selected;
+        var relSelected;
+        var activityId = activity['cur_wfa'];
+        var relActivityId = activity['ref_wfa'];
         $.each(rows, function (i, row) {
-            var activityId = activity['tot_wfa'];
             for (var column in row) {
                 var values = row[column];
                 if (typeof values == 'object') {
                     $.each(values, function (v, value) {
-                        if (activityId == value['tot_wfa']) {
+                        if (activityId == value['cur_wfa']) {
                             selected = {
+                                data: value,
+                                column: column,
+                                dataIndex: i,
+                                contentIndex: v
+                            }
+                        }
+                        if (relActivityId == value['cur_wfa']) {
+                            relSelected = {
                                 data: value,
                                 column: column,
                                 dataIndex: i,
@@ -319,7 +329,7 @@ ChartRenderer.prototype = {
                 }
             }
         });
-        return selected;
+        return selected ? selected : relSelected;
     },
 
     /**
@@ -331,12 +341,22 @@ ChartRenderer.prototype = {
         var me = this;
         var allShapes = me.canvas.getAllShapes();
         var selected;
+        var relSelected;
         $.each(allShapes, function (i, element) {
-            if (element.shape.data && element.shape.data['tot_wfa'] == activityId) {
-                selected = element;
+            if (element.shape.data) {
+                if (element.shape.data['cur_wfa'] == activityId) {
+                    selected = element;
+                }
+                if (element.shape.data['ref_wfa'] == activityId) {
+                    relSelected = element;
+                }
             }
         });
-        return selected;
+        if (selected) {
+            return selected;
+        } else {
+            return relSelected;
+        }
     },
 
     /**
@@ -360,7 +380,7 @@ ChartRenderer.prototype = {
                 if (fromShape && fromShape.shape.data) {
                     me.canvas.getRenderer().disconnectOneWay(edge, 'from');
                     connection.from = fromTerminal;
-                    connection.fromActivity = fromShape.shape.data['tot_wfa'];
+                    connection.fromActivity = fromShape.shape.data['cur_wfa'];
                 }
             }
 
@@ -370,7 +390,7 @@ ChartRenderer.prototype = {
                 if (toShape && toShape.shape.data) {
                     me.canvas.getRenderer().disconnectOneWay(edge, 'to');
                     connection.to = toTerminal;
-                    connection.toActivity = toShape.shape.data['tot_wfa'];
+                    connection.toActivity = toShape.shape.data['cur_wfa'];
                 }
             }
 
@@ -414,8 +434,8 @@ ChartRenderer.prototype = {
                 me.existActivitySize = {};
                 var existActivities = me.canvas.getElementsByShapeId('OG.shape.bpmn.A_Task');
                 $.each(existActivities, function (i, activity) {
-                    if (activity.shape.data && activity.shape.data['tot_wfa']) {
-                        var id = activity.shape.data['tot_wfa'];
+                    if (activity.shape.data && activity.shape.data['cur_wfa']) {
+                        var id = activity.shape.data['cur_wfa'];
                         me.existActivitySize[id] = {
                             width: me.canvas.getBoundary(activity).getWidth(),
                             height: me.canvas.getBoundary(activity).getHeight()
@@ -577,8 +597,11 @@ ChartRenderer.prototype = {
             }
 
             //기존 데이터의 칼럼을 찾지 못했다면, 신규 액티비티이며, 칼럼은 옵션칼럼 의 1번 인덱스로 잡는다.
-            if (!column) {
+            if (!column && options.columns[1]) {
                 column = options.columns[1].data;
+            }
+            if (!column) {
+                return;
             }
 
             //해당 팀의 칼럼에 액티비티를 추가한다.
@@ -587,7 +610,7 @@ ChartRenderer.prototype = {
             }
 
             //existActivitySize 에서 해당 액티비티의 삭제 전 사이즈를 구한다.
-            var beforeSize = me.existActivitySize[activity['tot_wfa']];
+            var beforeSize = me.existActivitySize[activity['cur_wfa']];
             if (beforeSize) {
                 //activity['width'] = beforeSize['width'];
                 //activity['height'] = beforeSize['height'];

@@ -17220,6 +17220,13 @@ OG.shape.component.DataTable = function () {
 
     //옵션데이터
     this.options = {
+        /**
+         * 컨텐트 외부 드래그 가능 여부
+         */
+        enableMoveOutSide: false,
+        /**
+         * 리사이즈 방향
+         */
         resizeAxis: 'X',
         /**
          * 셀 콘텐트 axis 무브
@@ -18637,15 +18644,24 @@ OG.shape.component.DataTable.prototype.drawCellContent = function (cellView, inf
         }
         //콘텐트 이동시 처리
         contentElement.shape.onAddToGroup = function (groupElement, element) {
-            //그룹이 소속된 테이블이 아닐 경우, 셀에 자신의 정보를 삭제한 후, 등록된 이벤트 핸들러들을 스스로 초기화시킨다.
+            //그룹이 소속된 테이블이 아닐 경우
             if (groupElement.id != me.currentElement.id) {
-                me.removeCellContent(element, true);
-                element.shape.onRemoveShape = function () {
-                };
-                element.shape.onAddToGroup = function () {
-                };
-                element.shape.onResize = function () {
-                };
+
+                //외부 드래그 허용이 아닌경우 테이블 그룹에 다시 추가 후 셀을 다시 그린다.
+                if (!me.options.enableMoveOutSide) {
+                    me.currentElement.appendChild(contentElement);
+                    me.redrawCell(cellView);
+                }
+                else {
+                    //셀에 자신의 정보를 삭제한 후, 등록된 이벤트 핸들러들을 스스로 초기화시킨다.
+                    me.removeCellContent(element, true);
+                    element.shape.onRemoveShape = function () {
+                    };
+                    element.shape.onAddToGroup = function () {
+                    };
+                    element.shape.onResize = function () {
+                    };
+                }
             }
         }
         //콘텐트 리사이즈시 처리
