@@ -370,8 +370,9 @@ EditorViewController.prototype = {
                     'activity',
                     me.aras.getCurrentItemId(me.aras.getItemType('activity'), view.root)
                 );
-                if (!currentActivityItem || currentActivityItem.getProperty('state') != 'Active') {
-                    toastr.error('Pick ed is possible only in active state activity.');
+                if (currentActivityItem.getProperty('state') != 'Active') {
+                    toastr.error('Pick ed is possible only in active state activity. ' +
+                        'Current state is ' + currentActivityItem.getProperty('state') + '.');
                     return;
                 }
 

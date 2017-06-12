@@ -738,7 +738,7 @@ DataController.prototype = {
 
         //폴더 기본 정보 설정
         if (data.type == me.TYPE.ACTIVITY) {
-            // 액티비티 선택시
+            //액티비티 에서 폴더를 생성할시
             if (workflowItem.getItemCount() == 1) {
                 newItem.setProperty('_eng_func_structure', workflowItem.getProperty('_eng_func_structure', ''));
                 newItem.setProperty('_eng_func_code', workflowItem.getProperty('_eng_func_code', ''));
@@ -752,10 +752,15 @@ DataController.prototype = {
 
                 newItem.setProperty("_parent_type", parentItemType);
                 newItem.setProperty("_parent_id", parentId);
+
+                //_proposal_activity 상속
+                if(workflowItem.getProperty('_project_type', '') == 'PROPOSAL'){
+                    newItem.setProperty("_proposal_activity", workflowItem.getProperty('_proposal_activity', ''));
+                }
             }
 
         } else if (data.type == me.TYPE.FOLDER) {
-            // 폴더 선택 시
+            // 폴더에서 폴더를 생성할시
             if (parentItem.getItemCount() == 1) {
                 newItem.setProperty('_eng_func_structure', parentItem.getProperty('_eng_func_structure', ''));
                 newItem.setProperty('_eng_func_code', parentItem.getProperty('_eng_func_code', ''));
@@ -783,6 +788,11 @@ DataController.prototype = {
 
                 newItem.setProperty("_parent_type", parentItemType);
                 newItem.setProperty("_parent_id", parentId);
+
+                //_proposal_activity 상속
+                if(parentItem.getProperty('_project_type', '') == 'PROPOSAL'){
+                    newItem.setProperty("_proposal_activity", parentItem.getProperty('_proposal_activity', ''));
+                }
             }
         }
 
@@ -895,7 +905,7 @@ DataController.prototype = {
         parentItem.setProperty("id", parentId);
         parentItem = parentItem.apply();
 
-        // ED 추가 메소드 호출
+        // ED 속성값 상속받기
         var edItem = inn.newItem(edType, "add");
         edItem.setProperty("_p_id", data.extData['fs_id']);
 
@@ -926,6 +936,11 @@ DataController.prototype = {
 
         edItem.setProperty("_parent_type", parentItemType);
         edItem.setProperty("_parent_id", parentId);
+
+        //_proposal_activity 상속
+        if(parentItem.getProperty('_project_type', '') == 'PROPOSAL'){
+            edItem.setProperty("_proposal_activity", parentItem.getProperty('_proposal_activity', ''));
+        }
 
         // STD
         if (me.stdYN == 'Y')            // STD
