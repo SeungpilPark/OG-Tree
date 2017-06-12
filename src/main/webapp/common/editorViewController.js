@@ -366,7 +366,10 @@ EditorViewController.prototype = {
                 }
 
                 //Root 액티비티의 상태가 Active 가 아닌 경우는 Pick ED 금지
-                var currentActivityItem = me.aras.getCurrentItem(me.aras.getItemType('activity'), view.root);
+                var currentActivityItem = me.aras.getItemById(
+                    'activity',
+                    me.aras.getCurrentItemId(me.aras.getItemType('activity'), view.root)
+                );
                 if (!currentActivityItem || currentActivityItem.getProperty('state') != 'Active') {
                     toastr.error('Pick ed is possible only in active state activity.');
                     return;

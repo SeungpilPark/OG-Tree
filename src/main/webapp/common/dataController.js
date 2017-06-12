@@ -369,7 +369,7 @@ DataController.prototype = {
     },
     /**
      * 타입과 아이디와 매칭된 데이터를 반환한다.
-     * @param type
+     * @param type "workflow","activity","folder","ed"
      * @param id
      * @returns {Object} Aras Item
      */
@@ -520,26 +520,6 @@ DataController.prototype = {
             throw new Error("");
         } else {
             return item.getProperty('item_id');
-        }
-    },
-    /**
-     * 주어진 아이템의 아이디로 현재 아이템을 리턴한다.
-     * @param itemType
-     * @param id
-     * @returns {Object} Aras Item
-     */
-    getCurrentItem: function (itemType, id) {
-        var me = this;
-        var params = {
-            item_id: id,
-            item_type: itemType
-        };
-        var item = me.applyMethod('DHI_getCurrentItemID', me.createBody(params));
-        if (!item || !item.getProperty('item_id') || item.getProperty('item_id') == '') {
-            toastr.error('A node has been deleted by someone. Please refresh.');
-            throw new Error("");
-        } else {
-            return item;
         }
     },
     /**
