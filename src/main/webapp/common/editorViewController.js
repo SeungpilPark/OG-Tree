@@ -245,14 +245,14 @@ EditorViewController.prototype = {
              * 리프레쉬 버튼 클릭시
              */
             $('#refresh').click(function () {
-                try{
+                try {
                     me.aras.refreshAll();
 
                     //셀렉트박스 매핑 리프레쉬
                     me.highLightSelectBoxWorkflow();
 
                     toastr.success('Refreshed!');
-                }catch (e){
+                } catch (e) {
                     toastr.error('Refresh failed.');
                 }
             });
@@ -365,11 +365,10 @@ EditorViewController.prototype = {
                     return;
                 }
 
-                //Active 상태가 아닌 워크플로우는 Pick ED 금지
-                //수정: 폴더의 탑 액티비티의 상태를 보는것으로 변경하기.
-                //커런트를 한번 돌리기.
-                if (me.aras.thisItem.getProperty('state') != 'Active') {
-                    toastr.error('Pick ed is possible only in active workflow.');
+                //Root 액티비티의 상태가 Active 가 아닌 경우는 Pick ED 금지
+                var currentActivityItem = me.aras.getCurrentItem(me.aras.getItemType('activity'), view.root);
+                if (!currentActivityItem || currentActivityItem.getProperty('state') != 'Active') {
+                    toastr.error('Pick ed is possible only in active state activity.');
                     return;
                 }
 
