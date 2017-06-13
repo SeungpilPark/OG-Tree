@@ -256,6 +256,7 @@ ChartRenderer.prototype = {
                 var shape = new OG.A_Task(me.labelSubstring(contentData['cur_wfa_name']));
                 var color = me.getColorFromState(contentData['cur_state']);
                 color = color ? color : '#fff';
+                contentData['color'] = color;
                 shape.data = JSON.parse(JSON.stringify(contentData));
 
                 result.contents.push({
@@ -1093,6 +1094,23 @@ ChartRenderer.prototype = {
 
         OG.shape.bpmn.A_Task.prototype.createSubShape = function () {
             this.sub = [];
+            if (this.data && (this.data['cur_check_alarm'] == "1" || this.data['cur_check_alarm'] == 1)) {
+                this.sub = [
+                    {
+                        shape: new OG.CircleShape('A'),
+                        width: '20px',
+                        height: '20px',
+                        left: '-10px',
+                        top: '-10px',
+                        style: {
+                            'fill': this.data['color'],
+                            'fill-opacity': 1,
+                            'stroke': '#000',
+                            'stroke-width': '1'
+                        }
+                    }
+                ];
+            }
             return this.sub;
         };
 
@@ -1101,9 +1119,9 @@ ChartRenderer.prototype = {
             this.contextMenu = {
                 'property': {
                     name: '정보보기', callback: function () {
-                        if (me.data && me.data['cur_wfa_config_id']) {
+                        if (me.data && me.data['cur_rel_wf']) {
                             if (chartRenderer.viewController.aras) {
-                                chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
+                                chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);
                             }
                         }
                     }
@@ -1148,9 +1166,6 @@ ChartRenderer.prototype = {
                 })
             });
             $(me.currentElement).bind('mouseout', function () {
-                //var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
-                //var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
-                //var edges = prevEdges.concat(nextEdges);
                 var allEdges = me.currentCanvas.getAllEdges();
                 var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
                 defaultStyle['opacity'] = '1';
