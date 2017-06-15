@@ -578,6 +578,10 @@ ChartRenderer.prototype = {
 
         //기존 데이터 테이블에 있는 액티비티를 재구성한다.
         $.each(activities, function (a, activity) {
+            //cur_wfa 가 없는것은 표현하지 않는다.
+            if (!activity['cur_wfa']) {
+                return;
+            }
             var rowByCode = me.getDataRowByCode(activity['cur_eng_func_code'], rowData, rowIndexMapByCode);
             var column, isExist = false, contentIndex = -1;
 
