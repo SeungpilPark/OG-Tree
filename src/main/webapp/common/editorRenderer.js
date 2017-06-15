@@ -743,6 +743,8 @@ EditorRenderer.prototype = {
                 depth = 0;
             }
 
+            //console.log(object);
+
             var child = me.selectChildById(object['id']);
             var view = {
                 data: JSON.parse(JSON.stringify(object))

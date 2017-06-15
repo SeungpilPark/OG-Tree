@@ -809,6 +809,8 @@ DataController.prototype = {
 
             arasWindow.top.commandEventHandlers['afterunlock'] = [];
             arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
+
+            //afterlock 추가하기.
         });
     },
     /**
@@ -1214,7 +1216,7 @@ DataController.prototype = {
             body += "<related_id>" + delId + "</related_id>";
             var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM", body);
 
-            if (result) {
+            if (result.getProperty('res_code') == '0000') {
                 relType = me.getRelType(parentData.type, data.type, 'out');
                 existRelItem = inn.newItem(relType, 'get');
                 existRelItem.setProperty("source_id", parentId);
