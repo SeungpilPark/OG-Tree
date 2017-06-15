@@ -579,8 +579,10 @@ DataController.prototype = {
      * 주어진 타입과 아이디로 아라스의 아이템 상세정보창을 띄운다
      * @param type "workflow","activity","folder","ed"
      * @param id
+     * @param data optional
+     * @param view optional
      */
-    showPropertyWindow: function (type, id) {
+    showPropertyWindow: function (type, id, data, view) {
         var me = this;
         var itemType = me.getItemType(type);
         var inn = this.aras.newIOMInnovator();
@@ -588,7 +590,22 @@ DataController.prototype = {
         item.setProperty('id', me.getCurrentItemId(me.getItemType(type), id));
         item = item.apply();
 
-        this.aras.uiShowItemEx(item.node, undefined, true);
+        var asyncResult = this.aras.uiShowItemEx(item.node, undefined, true);
+        //마이 아웃 데이터일 경우
+        if (view && (view.position == me.tree.Constants.POSITION.MY || view.position == me.tree.Constants.POSITION.MY_OUT)) {
+            asyncResult.then(function (arasWindow) {
+                var EventBottomSave = {};
+                EventBottomSave.window = window;
+                EventBottomSave.handler = function () {
+                    me.refreshOutFolder(data, view)
+                };
+                arasWindow.top.commandEventHandlers['afterunlock'] = [];
+                arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
+
+                arasWindow.top.commandEventHandlers['afterlock'] = [];
+                arasWindow.top.commandEventHandlers['afterlock'].push(EventBottomSave);
+            });
+        }
     },
     /**
      * 주어진 액티비티 아이디 배열에 따라 아라스 액티비티 아이템을 소팅한다.
@@ -754,7 +771,7 @@ DataController.prototype = {
                 newItem.setProperty("_parent_id", parentId);
 
                 //_proposal_activity 상속
-                if(workflowItem.getProperty('_project_type', '') == 'PROPOSAL'){
+                if (workflowItem.getProperty('_project_type', '') == 'PROPOSAL') {
                     newItem.setProperty("_proposal_activity", workflowItem.getProperty('_proposal_activity', ''));
                 }
             }
@@ -790,7 +807,7 @@ DataController.prototype = {
                 newItem.setProperty("_parent_id", parentId);
 
                 //_proposal_activity 상속
-                if(parentItem.getProperty('_project_type', '') == 'PROPOSAL'){
+                if (parentItem.getProperty('_project_type', '') == 'PROPOSAL') {
                     newItem.setProperty("_proposal_activity", parentItem.getProperty('_proposal_activity', ''));
                 }
             }
@@ -806,11 +823,6 @@ DataController.prototype = {
             };
             arasWindow.top.commandEventHandlers['aftersave'] = [];
             arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
-
-            arasWindow.top.commandEventHandlers['afterunlock'] = [];
-            arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
-
-            //afterlock 추가하기.
         });
     },
     /**
@@ -940,7 +952,7 @@ DataController.prototype = {
         edItem.setProperty("_parent_id", parentId);
 
         //_proposal_activity 상속
-        if(parentItem.getProperty('_project_type', '') == 'PROPOSAL'){
+        if (parentItem.getProperty('_project_type', '') == 'PROPOSAL') {
             edItem.setProperty("_proposal_activity", parentItem.getProperty('_proposal_activity', ''));
         }
 
@@ -966,11 +978,6 @@ DataController.prototype = {
                 };
                 arasWindow.top.commandEventHandlers["aftersave"] = [];
                 arasWindow.top.commandEventHandlers["aftersave"].push(EventBottomSave);
-
-                arasWindow.top.commandEventHandlers["afterunlock"] = [];
-                arasWindow.top.commandEventHandlers["afterunlock"].push(EventBottomSave);
-
-                //alert('test');
             },
             function (obj) {
                 toastr.error('Failed to create Edb');
@@ -1288,9 +1295,6 @@ DataController.prototype = {
             };
             arasWindow.top.commandEventHandlers['aftersave'] = [];
             arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
-
-            arasWindow.top.commandEventHandlers['afterunlock'] = [];
-            arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
         });
     },
     /**

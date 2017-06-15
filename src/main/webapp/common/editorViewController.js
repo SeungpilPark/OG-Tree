@@ -214,7 +214,7 @@ EditorViewController.prototype = {
                     id = data.id;
                     type = data.type;
                 }
-                me.aras.showPropertyWindow(type, id);
+                me.aras.showPropertyWindow(type, id, data, view);
             };
             /**
              * Ed 생성 콘텍스트 클릭시
