@@ -1223,6 +1223,7 @@ DataController.prototype = {
             body += "<related_id>" + delId + "</related_id>";
             var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM", body);
 
+            console.log('result.toString() : ', result.toString());
             if (result.getProperty('res_code') == '0000') {
                 relType = me.getRelType(parentData.type, data.type, 'out');
                 existRelItem = inn.newItem(relType, 'get');
