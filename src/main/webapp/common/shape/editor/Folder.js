@@ -32,6 +32,7 @@ OG.shape.Folder.prototype.createSubShape = function () {
             opacity = 0.3;
         }
     }
+    console.log(color);
     this.sub = [
         {
             shape: new OG.SvgShape(xml),

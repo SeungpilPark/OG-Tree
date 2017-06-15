@@ -743,8 +743,6 @@ EditorRenderer.prototype = {
                 depth = 0;
             }
 
-            //console.log(object);
-
             var child = me.selectChildById(object['id']);
             var view = {
                 data: JSON.parse(JSON.stringify(object))
@@ -973,6 +971,16 @@ EditorRenderer.prototype = {
             //expand 상태라면 자식의 수만큼 루프
             if (child.length && object.expand) {
                 for (var c = 0, lenc = child.length; c < lenc; c++) {
+                    //c_locked_by_id 항목이 있거나, 부모중에 c_locked_by_id 가 있다면 하위 객체들은 lock 을 상속받는다.
+                    if (object.position == me.Constants.POSITION.MY || object.position == me.Constants.POSITION.MY_OUT) {
+                        if ((object.extData && object.extData['c_locked_by_id'] && object.extData['c_locked_by_id'].length > 0)
+                            || (object.extData && object.extData['locked_by_parent'])) {
+                            child[c].extData['locked_by_parent'] = true;
+                        } else {
+                            child[c].extData['locked_by_parent'] = false;
+                        }
+                    }
+
                     //parentView 로 보내는 것이 실제 부모가 보내지는 것이 아니라 next 순서로 보내진다.
                     getViewData(child[c], depth + 1, view, child);
                 }
@@ -2060,141 +2068,7 @@ EditorRenderer.prototype = {
         }
         return str;
     },
-    /**
-     * 이미지 Shape 의 컬러와 스트로크를 스테이터스에 따라 변경한다.
-     * @param view OG-Tree view data
-     * @param element OG-Tree Dom Element
-     */
-    updateImageShapeStatus: function (view, element) {
-        var me = this;
-        var color = view['color'];
-        var stroke = view['stroke'];
 
-        /**
-         * svg 의 path 들에 컬러와 stroke 를 적용시킨다.
-         * @param $svg
-         * @param color
-         * @param stroke
-         */
-        var applyPathStyle = function ($svg, color, stroke) {
-            $svg.find('path').each(function () {
-                //컬러가 없지만 선색상은 변경해야 하는경우
-                if (!color && stroke) {
-                    color = '#fff';
-                }
-                //컬러 입히기
-                if (color) {
-                    var ignoreColor = false;
-                    if ($(this).attr('class')) {
-                        if ($(this).attr('class').indexOf('ignoreColor') != -1) {
-                            ignoreColor = true;
-                        }
-                    }
-                    if (!ignoreColor) {
-                        $(this).css('fill', color);
-                    }
-                }
-                //라인 색 입히기
-                if (stroke) {
-                    var ignoreStroke = false;
-                    if ($(this).attr('class')) {
-                        if ($(this).attr('class').indexOf('ignoreStroke') != -1) {
-                            ignoreStroke = true;
-                        }
-                    }
-                    if (!ignoreStroke) {
-                        $(this).css('stroke', stroke);
-                    }
-                }
-
-            });
-        };
-        var createNewSvg = function (imgURL, attributes) {
-            $.get(imgURL, function (data) {
-                var $svg = $(data).find('svg');
-                $svg = $svg.removeAttr('xmlns:a');
-
-                $.each(attributes, function () {
-                    $svg.attr(this.name, this.value);
-                });
-                applyPathStyle($svg, color, stroke);
-
-                // Replace IMG with SVG
-                var rElement = me._RENDERER._getREleById(element.id);
-                if (rElement) {
-                    var childNodes = rElement.node.childNodes;
-                    for (var i = childNodes.length - 1; i >= 0; i--) {
-                        if (childNodes[i].tagName == 'IMAGE' || childNodes[i].tagName == 'image') {
-                            me._RENDERER._remove(me._RENDERER._getREleById(childNodes[i].id));
-                        }
-                    }
-                }
-                $(element).append($svg);
-            }, 'xml');
-        };
-        if (!color || color == 'none' || color == '') {
-            color = undefined;
-        }
-        if (!stroke || stroke == 'none' || stroke == '') {
-            stroke = undefined;
-        }
-        if (color || stroke) {
-            var $img = $(element).find('image');
-            var imgURL = $img.attr('href');
-            var attributes = $img.prop("attributes");
-            var $svg = $(element).find('svg');
-            //이미지만 존재할 경우
-            if (imgURL && attributes && !$svg.length) {
-                createNewSvg(imgURL, attributes);
-            }
-            //이미지가 없고 svg 가 존재할 경우
-            else if (!imgURL && $svg.length) {
-                applyPathStyle($svg, color, stroke);
-            }
-            //이미지와 svg 둘 다 있을 경우
-            else if (imgURL && attributes && $svg.length) {
-                if ($svg.length && attributes) {
-                    // Remove Duplicate SVG
-                    if ($svg.length > 1) {
-                        $svg.remove();
-                        createNewSvg(imgURL, attributes);
-                    } else {
-                        $.each(attributes, function () {
-                            $svg.attr(this.name, this.value);
-                        });
-                        applyPathStyle($svg, color, stroke);
-
-                        // Remove IMG
-                        var rElement = me._RENDERER._getREleById(element.id);
-                        if (rElement) {
-                            var childNodes = rElement.node.childNodes;
-                            for (var i = childNodes.length - 1; i >= 0; i--) {
-                                if (childNodes[i].tagName == 'IMAGE' || childNodes[i].tagName == 'image') {
-                                    me._RENDERER._remove(me._RENDERER._getREleById(childNodes[i].id));
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-
-            }
-        }
-    },
-
-    /**
-     * 매핑시 셀렉트 된 아이템에 S 마크를 붙인다.
-     * @param view OG-Tree view data
-     */
-    drawMappingLabel: function (view) {
-        var id = view.id + this.Constants.PREFIX.SELECTED_LABEL, size, offset, shape;
-        if (view.selected) {
-            size = [12, 14];
-            offset = [view.x + 10, view.y - 19];
-            shape = new OG.SLabel();
-            this.canvas.drawShape(offset, shape, size, null, id);
-        }
-    },
     /**
      * 액티비티 아이템을 업데이트 한다.
      * @param view OG-Tree view data
@@ -2207,7 +2081,10 @@ EditorRenderer.prototype = {
             element.shape.label = view.name;
             needUpdate = true;
         }
-        if (customData.extData) {
+        if (customData.data && customData.data.extData) {
+            if (customData.data.extData['locked_by_parent'] != view.data.extData['locked_by_parent']) {
+                needUpdate = true;
+            }
             if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
                 needUpdate = true;
             }
@@ -2273,7 +2150,10 @@ EditorRenderer.prototype = {
         if (customData.selected != view.selected) {
             needUpdate = true;
         }
-        if (customData.extData) {
+        if (customData.data && customData.data.extData) {
+            if (customData.data.extData['locked_by_parent'] != view.data.extData['locked_by_parent']) {
+                needUpdate = true;
+            }
             if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
                 needUpdate = true;
             }
@@ -2336,8 +2216,11 @@ EditorRenderer.prototype = {
             element.shape.label = view.name;
             needUpdate = true;
         }
-        if (customData.extData) {
+        if (customData.data && customData.data.extData) {
             if (customData.data.extData['c_type'] != view.data.extData['c_type']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['locked_by_parent'] != view.data.extData['locked_by_parent']) {
                 needUpdate = true;
             }
             if (customData.data.extData['c_locked_by_id'] != view.data.extData['c_locked_by_id']) {
@@ -3465,9 +3348,22 @@ EditorRenderer.prototype = {
             var view = me.selectViewById(me._VIEWDATA, element.id);
             if (view) {
                 var text = view.tooltip ? view.tooltip : view.name;
+                text = '<div>' + text + '</div>';
+
+                //마이 - 인 일 경우 c_team, c_workflow 표시
+                var c_team = '';
+                var c_workflow = '';
+                if (view.position == me.Constants.POSITION.MY_IN) {
+                    if (view.data.extData['c_team']) {
+                        c_team = '<div>' + view.data.extData['c_team'] + '</div>';
+                    }
+                    if (view.data.extData['c_workflow']) {
+                        c_workflow = '<div>' + view.data.extData['c_workflow'] + '</div>';
+                    }
+                }
                 var tooltip =
                     $('<div class="og-tooltip ui-tooltip ui-widget ui-corner-all" id="' + element.id + '-tooltip">' +
-                        '<div class="ui-tooltip-content">' + text + '</div>' +
+                        '<div class="ui-tooltip-content">' + c_team + c_workflow + text + '</div>' +
                         '</div>');
                 tooltip.css({
                     position: 'absolute',
@@ -4115,6 +4011,8 @@ EditorRenderer.prototype = {
                     top = (upperLeft.y - 1) * me._CONFIG.SCALE,
                     width = envelope.getWidth() * me._CONFIG.SCALE,
                     height = envelope.getHeight() * me._CONFIG.SCALE,
+                    centerX = envelope.getCentroid().x,
+                    centerY = envelope.getCentroid().y,
                     editorId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX,
                     labelEditor,
                     textAlign = "center",
@@ -4142,13 +4040,14 @@ EditorRenderer.prototype = {
                 }
 
                 $(labelEditor).css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
-                    left: left,
-                    top: top,
-                    width: width,
-                    height: height,
+                    left: (centerX - 35) * me._CONFIG.SCALE, //left,
+                    top: top + height, //top,
+                    width: 70 * me._CONFIG.SCALE,//width,
+                    height: 30 * me._CONFIG.SCALE,//height,
                     "text-align": textAlign,
                     overflow: "hidden",
-                    resize: "none"
+                    resize: "none",
+                    'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
                 }));
                 $(labelEditor).focus();
                 $(labelEditor).val(element.shape.label);

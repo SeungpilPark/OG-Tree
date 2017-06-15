@@ -613,17 +613,6 @@ EditorViewController.prototype = {
                     order == 'desc');
             });
         });
-
-        // var disciplineBox = $('#discipline');
-        // var disciplineSpecBox = $('#disciplineSpec');
-        // var bgBox = $('#bg');
-        // var workflowSelectBox = $('#workflow-select');
-        //
-        //
-        // disciplineBox.chosen({width: "100%"});
-        // disciplineSpecBox.chosen({width: "100%"});
-        // bgBox.chosen({width: "100%"});
-        // workflowSelectBox.chosen({width: "100%"});
     },
     /**
      * discipline, disciplineSpec, bg, 아더 워크플로우 셀렉트 박스 이벤트를 등록한다.

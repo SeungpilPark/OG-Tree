@@ -591,7 +591,7 @@ DataController.prototype = {
         item = item.apply();
 
         var asyncResult = this.aras.uiShowItemEx(item.node, undefined, true);
-        //마이 아웃 데이터일 경우
+        //마이 데이터일 경우는 lock / unlock 시 반응.
         if (view && (view.position == me.tree.Constants.POSITION.MY || view.position == me.tree.Constants.POSITION.MY_OUT)) {
             asyncResult.then(function (arasWindow) {
                 var EventBottomSave = {};
@@ -1223,7 +1223,6 @@ DataController.prototype = {
             body += "<related_id>" + delId + "</related_id>";
             var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM", body);
 
-            console.log('result.getResult()' , result.getResult());
             if (result.getResult() == '0000') {
                 relType = me.getRelType(parentData.type, data.type, 'out');
                 existRelItem = inn.newItem(relType, 'get');

@@ -54,6 +54,12 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
     if (!this.CHECKBOX) {
         return;
     }
+
+    //부모중 락이 있는 경우 체크박스 표현 안함.
+    if (this.data.data.extData['locked_by_parent']) {
+        return;
+    }
+
     //락일 경우 체크박스 표현 안함.
     if (this.data.data.extData['c_locked_by_id'] && this.data.data.extData['c_locked_by_id'].length > 0) {
         return;
@@ -139,7 +145,7 @@ OG.shape.DIDS.prototype.addTopLabel = function () {
             align: 'center',
             top: '-5px',
             style: {
-                'font-size': '7px',
+                'font-size': '9px',
                 'font-color': '#8d8d8d'
             }
         });
@@ -153,9 +159,9 @@ OG.shape.DIDS.prototype.addTopLabel = function () {
             width: '300%',
             height: '10px',
             align: 'center',
-            top: '-12px',
+            top: '-13px',
             style: {
-                'font-size': '7px',
+                'font-size': '9px',
                 'font-color': '#8d8d8d'
             }
         });
