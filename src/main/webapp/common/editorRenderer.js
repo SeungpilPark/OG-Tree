@@ -261,7 +261,7 @@ var EditorRenderer = function (container, viewController) {
             /**
              * 폴더 마진
              */
-            FOLDER_MARGIN: 40,
+            FOLDER_MARGIN: 54,
             /**
              * ED 가로
              */
@@ -273,7 +273,7 @@ var EditorRenderer = function (container, viewController) {
             /**
              * ED 마진
              */
-            ED_MARGIN: 40,
+            ED_MARGIN: 54,
             /**
              * Expand 버튼과 부모사이의 간격
              */
