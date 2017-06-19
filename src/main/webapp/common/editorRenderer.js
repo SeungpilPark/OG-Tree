@@ -4012,8 +4012,12 @@ EditorRenderer.prototype = {
                             hasCheck = false;
                         }
                     }
-                    if (object.CHECKED && hasCheck) {
-                        checkedList.push(object)
+                    if (hasCheck) {
+                        //뷰데이터의 CHECKED 가 표시되었을 때
+                        var view = me.selectViewById(me._VIEWDATA, object.id);
+                        if(view.CHECKED){
+                            checkedList.push(object);
+                        }
                     }
                 }
                 me.onOwnerChange(checkedList);

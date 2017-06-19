@@ -486,7 +486,7 @@ EditorViewController.prototype = {
                             },
                             columns: [
                                 {data: 'name', title: 'Name', defaultContent: ''},
-                                {data: 'team', title: 'Team', defaultContent: ''},
+                                {data: 'team', title: 'Team', defaultContent: '', width: '20%'},
                                 {data: 'email', title: 'Email', defaultContent: ''},
                                 {data: 'part', title: 'Team with Part', defaultContent: ''}
                                 //{data: 'id', title: 'ID', defaultContent: ''}
