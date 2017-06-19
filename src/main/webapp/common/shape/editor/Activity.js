@@ -6,7 +6,6 @@ OG.shape.Activity = function (label) {
     this.label = label;
     this.CONNECTABLE = false;
     this.DELETABLE = false;
-    this.CHECKED = false;
 };
 OG.shape.Activity.prototype = new OG.shape.DIDS();
 OG.shape.Activity.superclass = OG.shape.DIDS;

@@ -6,7 +6,6 @@ OG.shape.DIDS = function (label) {
     this.label = label;
     this.CONNECTABLE = false;
     this.DELETABLE = false;
-    this.CHECKED = false;
     this.hasCheckBox = false;
     //체크 박스와 이름변경 가능 여부
     this.CHECKBOX = true;
@@ -91,7 +90,7 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
                 'r': '2'
             }
         });
-        if (this.CHECKED) {
+        if (this.data.data.CHECKED) {
             this.sub.push({
                 shape: new OG.ImageShape('common/shape/editor/check-image.png'),
                 width: '12px',
@@ -115,7 +114,7 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
                 'r': '2'
             }
         });
-        if (this.CHECKED) {
+        if (this.data.data.CHECKED) {
             this.sub.push({
                 shape: new OG.ImageShape('common/shape/editor/check-image.png'),
                 width: '12px',
@@ -206,10 +205,10 @@ OG.shape.DIDS.prototype.onDrawShape = function () {
     //체크 박스 이벤트
     $(me.currentElement).click(function (event) {
         if (me.hasCheckBox) {
-            if (me.CHECKED) {
-                me.CHECKED = false;
+            if (me.data.data.CHECKED) {
+                me.data.data.CHECKED = false;
             } else {
-                me.CHECKED = true;
+                me.data.data.CHECKED = true;
             }
 
             //다른 더블클릭 이벤트 시간을 위하여 리드로우에 시간차를 둔다.

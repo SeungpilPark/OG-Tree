@@ -6,7 +6,6 @@ OG.shape.Folder = function (label) {
     this.label = label;
     this.CONNECTABLE = false;
     this.DELETABLE = false;
-    this.CHECKED = false;
 };
 OG.shape.Folder.prototype = new OG.shape.DIDS();
 OG.shape.Folder.superclass = OG.shape.DIDS;
@@ -32,7 +31,6 @@ OG.shape.Folder.prototype.createSubShape = function () {
             opacity = 0.3;
         }
     }
-    console.log(color);
     this.sub = [
         {
             shape: new OG.SvgShape(xml),

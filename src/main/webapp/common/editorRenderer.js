@@ -142,7 +142,7 @@ var EditorRenderer = function (container, viewController) {
             /**
              * Area 의 Top Margin
              */
-            TOP_MARGIN: 30,
+            TOP_MARGIN: 40,
             /**
              * 아더 - 액티비티 Area 라벨 및 디스플레이 여부
              */
@@ -3391,10 +3391,19 @@ EditorRenderer.prototype = {
             //체크 박스 이벤트
             $(me.currentElement).click(function (event) {
                 if (me.hasCheckBox) {
-                    if (me.CHECKED) {
-                        me.CHECKED = false;
+
+                    //데이터, 뷰데이터, shape 의 데이터 모두 CHECKED 를 업데이트 해주도록 한다.
+                    //shape 이 가지고 있는 데이터를 기준으로 이벤트를 제어한다. (me.data.data.CHECKED)
+                    var data = editorRenderer.selectById(me.currentElement.id);
+                    var view = editorRenderer.selectViewById(editorRenderer._VIEWDATA, me.currentElement.id);
+                    if (me.data.data.CHECKED) {
+                        data.CHECKED = false;
+                        view.data.CHECKED = false;
+                        me.data.data.CHECKED = false;
                     } else {
-                        me.CHECKED = true;
+                        data.CHECKED = true;
+                        view.data.CHECKED = true;
+                        me.data.data.CHECKED = true;
                     }
 
                     //다른 더블클릭 이벤트 시간을 위하여 리드로우에 시간차를 둔다.
@@ -3403,12 +3412,15 @@ EditorRenderer.prototype = {
                         me.currentCanvas.getRenderer().redrawShape(me.currentElement);
 
                         //하위의 모든 엘리먼트를 구한다.
-                        var childElement;
-                        var childViews = editorRenderer.selectRecursiveChildViewsById(editorRenderer._VIEWDATA, shape.data.id);
-                        $.each(childViews, function (i, childView) {
-                            childElement = me.currentCanvas.getElementById(childView.id);
+                        var childElement, childView;
+                        var childDatas = editorRenderer.selectRecursiveChildById(shape.data.id);
+                        $.each(childDatas, function (i, childData) {
+                            childView = editorRenderer.selectViewById(editorRenderer._VIEWDATA, childData.id);
+                            childData.CHECKED = data.CHECKED;
+                            childView.data.CHECKED = data.CHECKED;
+                            childElement = me.currentCanvas.getElementById(childData.id);
                             if (childElement && childElement.shape.hasCheckBox) {
-                                childElement.shape.CHECKED = me.CHECKED;
+                                childElement.shape.data.data.CHECKED = data.CHECKED;
                                 me.currentCanvas.getRenderer().redrawShape(childElement);
                             }
                         })
@@ -3842,6 +3854,11 @@ EditorRenderer.prototype = {
         var me = this;
         $.contextMenu({
             position: function (opt, x, y) {
+                var containerRight = me._CONTAINER.offset().left + me._CONTAINER.width();
+                if ((x + 150) > containerRight) {
+                    x = containerRight - 150;
+                }
+
                 opt.$menu.css({top: y + 10, left: x + 10});
             },
             selector: '#' + me._RENDERER.getRootElement().id + ' [_type=SHAPE]',
@@ -4043,7 +4060,7 @@ EditorRenderer.prototype = {
                     left: (centerX - 35) * me._CONFIG.SCALE, //left,
                     top: top + height, //top,
                     width: 70 * me._CONFIG.SCALE,//width,
-                    height: 30 * me._CONFIG.SCALE,//height,
+                    height: 46 * me._CONFIG.SCALE,//height,
                     "text-align": textAlign,
                     overflow: "hidden",
                     resize: "none",
@@ -4092,7 +4109,6 @@ EditorRenderer.prototype = {
             name: 'create folder',
             icon: 'create-folder',
             callback: function () {
-                console.log(me.selectedView);
                 me.onMakeFolder(me.selectedData, me.selectedView);
             }
         }

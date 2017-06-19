@@ -6,7 +6,6 @@ OG.shape.Ed = function (label) {
     this.label = label;
     this.CONNECTABLE = false;
     this.DELETABLE = false;
-    this.CHECKED = false;
 };
 OG.shape.Ed.prototype = new OG.shape.DIDS();
 OG.shape.Ed.superclass = OG.shape.DIDS;

@@ -1018,7 +1018,7 @@ ChartRenderer.prototype = {
             "es-US": "M/d/yyyy"
         };
 
-        var l = navigator.language ? navigator.language : navigator['userLanguage'], y = d.getFullYear(), m = d.getMonth() + 1, d = d.getDate();
+        var l = navigator.languages ? navigator.languages[0] : (navigator.userLanguage || navigator.language), y = d.getFullYear(), m = d.getMonth() + 1, d = d.getDate();
         var f = (l in formats) ? formats[l] : "MM/dd/yyyy";
 
         function z(s) {

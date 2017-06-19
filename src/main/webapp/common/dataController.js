@@ -1996,9 +1996,15 @@ DataController.prototype = {
         var failCount = 0;
         var successCount = 0;
         $.each(checkedList, function (i, data) {
+            var edbType;
+            if (data.type == me.TYPE.ED) {
+                if (data.extData['ebd_type_name'] && data.extData['ebd_type_name'].length > 0) {
+                    edbType = data.extData['ebd_type_name'];
+                }
+            }
             var params = {
                 item_id: data.id,
-                item_type: me.getItemType(data.type),
+                item_type: edbType ? edbType : me.getItemType(data.type),
                 variable: identityId,
                 div: 'owner'
             };
@@ -2028,9 +2034,15 @@ DataController.prototype = {
      */
     updateName: function (data, view, name) {
         var me = this;
+        var edbType;
+        if (data.type == me.TYPE.ED) {
+            if (data.extData['ebd_type_name'] && data.extData['ebd_type_name'].length > 0) {
+                edbType = data.extData['ebd_type_name'];
+            }
+        }
         var params = {
             item_id: data.id,
-            item_type: me.getItemType(view.type),
+            item_type: edbType ? edbType : me.getItemType(data.type),
             variable: name,
             div: 'name'
         };
