@@ -3989,14 +3989,12 @@ EditorRenderer.prototype = {
             name: 'change owner',
             icon: 'name-change',
             callback: function () {
-                var allShapes = me.canvas.getAllShapes();
                 var checkedList = [];
-                $.each(allShapes, function (i, ele) {
-                    if (ele.shape && ele.shape.hasCheckBox && ele.shape.CHECKED) {
-                        checkedList.push(ele.shape.data.data)
+                for (var i in me._STORAGE) {
+                    if (me._STORAGE[i].CHECKED) {
+                        checkedList.push(me._STORAGE[i])
                     }
-                });
-                me.onOwnerChange(checkedList);
+                }
             }
         }
     },

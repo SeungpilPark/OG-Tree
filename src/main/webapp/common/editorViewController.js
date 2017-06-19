@@ -488,8 +488,8 @@ EditorViewController.prototype = {
                                 {data: 'name', title: 'Name', defaultContent: ''},
                                 {data: 'team', title: 'Team', defaultContent: ''},
                                 {data: 'email', title: 'Email', defaultContent: ''},
-                                {data: 'part', title: 'Team with Part', defaultContent: ''},
-                                {data: 'id', title: 'ID', defaultContent: ''}
+                                {data: 'part', title: 'Team with Part', defaultContent: ''}
+                                //{data: 'id', title: 'ID', defaultContent: ''}
                             ],
                             pageLength: 10,
                             info: true,
