@@ -3903,7 +3903,7 @@ EditorRenderer.prototype = {
 
                 //오우너 바꾸기. 체크박스가 표시된 오브젝트만 가능.
                 if (me._CONFIG.CHANGE_OWNER) {
-                    if (element.shape.hasCheckBox && element.shape.CHECKED) {
+                    if (element.shape.hasCheckBox && element.shape.data.data.CHECKED) {
                         items.makeOwnerChange = me.makeOwnerChange(element, data);
                     }
                 }
