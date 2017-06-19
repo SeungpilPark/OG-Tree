@@ -2082,6 +2082,9 @@ EditorRenderer.prototype = {
             needUpdate = true;
         }
         if (customData.data && customData.data.extData) {
+            if (customData.data.CHECKED != view.data.CHECKED) {
+                needUpdate = true;
+            }
             if (customData.data.extData['locked_by_parent'] != view.data.extData['locked_by_parent']) {
                 needUpdate = true;
             }
@@ -2151,6 +2154,9 @@ EditorRenderer.prototype = {
             needUpdate = true;
         }
         if (customData.data && customData.data.extData) {
+            if (customData.data.CHECKED != view.data.CHECKED) {
+                needUpdate = true;
+            }
             if (customData.data.extData['locked_by_parent'] != view.data.extData['locked_by_parent']) {
                 needUpdate = true;
             }
@@ -2217,6 +2223,9 @@ EditorRenderer.prototype = {
             needUpdate = true;
         }
         if (customData.data && customData.data.extData) {
+            if (customData.data.CHECKED != view.data.CHECKED) {
+                needUpdate = true;
+            }
             if (customData.data.extData['c_type'] != view.data.extData['c_type']) {
                 needUpdate = true;
             }
@@ -3392,7 +3401,7 @@ EditorRenderer.prototype = {
             $(me.currentElement).click(function (event) {
                 if (me.hasCheckBox) {
 
-                    //데이터, 뷰데이터, shape 의 데이터 모두 CHECKED 를 업데이트 해주도록 한다.
+                    //뷰, shape, 오리지널 데이터 모두 CHECKED 를 업데이트 해주도록 한다.
                     //shape 이 가지고 있는 데이터를 기준으로 이벤트를 제어한다. (me.data.data.CHECKED)
                     var data = editorRenderer.selectById(me.currentElement.id);
                     var view = editorRenderer.selectViewById(editorRenderer._VIEWDATA, me.currentElement.id);
@@ -3415,9 +3424,17 @@ EditorRenderer.prototype = {
                         var childElement, childView;
                         var childDatas = editorRenderer.selectRecursiveChildById(shape.data.id);
                         $.each(childDatas, function (i, childData) {
-                            childView = editorRenderer.selectViewById(editorRenderer._VIEWDATA, childData.id);
+
+                            //오리지널 데이터 업데이트
                             childData.CHECKED = data.CHECKED;
-                            childView.data.CHECKED = data.CHECKED;
+
+                            //자식 뷰가 있다면 CHECKED 업데이트
+                            childView = editorRenderer.selectViewById(editorRenderer._VIEWDATA, childData.id);
+                            if (childView) {
+                                childView.data.CHECKED = data.CHECKED;
+                            }
+
+                            //자식 엘리먼트가 있다면 엘리먼트의 데이터 CHECKED 업데이트
                             childElement = me.currentCanvas.getElementById(childData.id);
                             if (childElement && childElement.shape.hasCheckBox) {
                                 childElement.shape.data.data.CHECKED = data.CHECKED;
@@ -3992,32 +4009,28 @@ EditorRenderer.prototype = {
                 var checkedList = [], object;
                 for (var i in me._STORAGE) {
                     object = me._STORAGE[i];
-                    var hasCheck = true;
+                    var hasCheckBox = true;
                     //부모중 락이 있는 경우 체크박스 표현 안함.
                     if (object.extData['locked_by_parent']) {
-                        hasCheck = false;
+                        hasCheckBox = false;
                     }
 
                     //락일 경우 체크박스 표현 안함.
                     if (object.extData['c_locked_by_id'] && object.extData['c_locked_by_id'].length > 0) {
-                        hasCheck = false;
+                        hasCheckBox = false;
                     }
 
                     //ED 이면서 c_can_change 가 false 이거나 c_securitylevel 이 Secret 일 경우 체크박스 표현 안함.
                     if (object.type == me.Constants.TYPE.ED) {
                         if (object.extData['c_securitylevel'] == 'Secret') {
-                            hasCheck = false;
+                            hasCheckBox = false;
                         }
                         if (object.extData['c_can_change'] == 'false') {
-                            hasCheck = false;
+                            hasCheckBox = false;
                         }
                     }
-                    if (hasCheck) {
-                        //뷰데이터의 data 가 CHECKED 가 표시되었을 때
-                        var view = me.selectViewById(me._VIEWDATA, object.id);
-                        if(view.data.CHECKED){
-                            checkedList.push(object);
-                        }
+                    if (hasCheckBox && object.CHECKED) {
+                        checkedList.push(object);
                     }
                 }
                 me.onOwnerChange(checkedList);
