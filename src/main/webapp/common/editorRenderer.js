@@ -3989,10 +3989,31 @@ EditorRenderer.prototype = {
             name: 'change owner',
             icon: 'name-change',
             callback: function () {
-                var checkedList = [];
+                var checkedList = [], object;
                 for (var i in me._STORAGE) {
-                    if (me._STORAGE[i].CHECKED) {
-                        checkedList.push(me._STORAGE[i])
+                    object = me._STORAGE[i];
+                    var hasCheck = true;
+                    //부모중 락이 있는 경우 체크박스 표현 안함.
+                    if (object.extData['locked_by_parent']) {
+                        hasCheck = false;
+                    }
+
+                    //락일 경우 체크박스 표현 안함.
+                    if (object.extData['c_locked_by_id'] && object.extData['c_locked_by_id'].length > 0) {
+                        hasCheck = false;
+                    }
+
+                    //ED 이면서 c_can_change 가 false 이거나 c_securitylevel 이 Secret 일 경우 체크박스 표현 안함.
+                    if (object.type == me.Constants.TYPE.ED) {
+                        if (object.extData['c_securitylevel'] == 'Secret') {
+                            hasCheck = false;
+                        }
+                        if (object.extData['c_can_change'] == 'false') {
+                            hasCheck = false;
+                        }
+                    }
+                    if (object.CHECKED && hasCheck) {
+                        checkedList.push(object)
                     }
                 }
                 me.onOwnerChange(checkedList);
