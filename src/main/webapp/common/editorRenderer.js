@@ -4013,9 +4013,9 @@ EditorRenderer.prototype = {
                         }
                     }
                     if (hasCheck) {
-                        //뷰데이터의 CHECKED 가 표시되었을 때
+                        //뷰데이터의 data 가 CHECKED 가 표시되었을 때
                         var view = me.selectViewById(me._VIEWDATA, object.id);
-                        if(view.CHECKED){
+                        if(view.data.CHECKED){
                             checkedList.push(object);
                         }
                     }
