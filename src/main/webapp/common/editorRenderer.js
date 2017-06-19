@@ -2426,7 +2426,7 @@ EditorRenderer.prototype = {
             }
             //그 외의 경우
             else {
-                var data = view.data;
+                var data = me.selectById(view.data.id);
                 if (!data.expand) {
                     data.expand = true;
                 } else {
