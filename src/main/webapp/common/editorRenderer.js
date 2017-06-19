@@ -3995,6 +3995,7 @@ EditorRenderer.prototype = {
                         checkedList.push(me._STORAGE[i])
                     }
                 }
+                return checkedList;
             }
         }
     },
