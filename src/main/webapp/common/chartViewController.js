@@ -54,9 +54,10 @@ ChartViewController.prototype = {
         me.renderer = new ChartRenderer('canvas', me, this.editMode);
         me.renderer.init();
 
-        //에디트 모드가 아닐경우 save 숨김
+        //에디트 모드가 아닐경우 save,alignment 숨김
         if (!this.editMode) {
             $('#save').hide();
+            $('#alignment').hide();
         }
 
         me.renderStateBox();
@@ -106,19 +107,27 @@ ChartViewController.prototype = {
             }
         });
 
+        $('#alignment').click(function () {
+            me.renderer.lineAlignment();
+        });
+
         me.startRender();
     },
     startRender: function () {
         var me = this;
-        if (parent.top.aras) {
-            var data = me.aras.getChartData();
-            me.renderer.render(data.chartData, data.chartMap);
+        blockStart();
+        setTimeout(function(){
+            if (parent.top.aras) {
+                var data = me.aras.getChartData();
+                me.renderer.render(data.chartData, data.chartMap);
 
-        } else {
-            me.getSampleData(function (chartData, chartMap) {
-                me.renderer.render(chartData, chartMap);
-            });
-        }
+            } else {
+                me.getSampleData(function (chartData, chartMap) {
+                    me.renderer.render(chartData, chartMap);
+                });
+            }
+            blockStop();
+        },100);
     },
     /**
      * common/state.json 에 저장된 스테이터스 데이터를 불러와 스테이터스 박스를 구성한다.

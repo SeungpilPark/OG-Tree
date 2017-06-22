@@ -221,14 +221,14 @@
     {
       "tot_wfa": "P-BA-2004-00-001",
       "cur_rel_project": "41288901F225472CA37E9B5C6FB207C5",
-      "cur_wfa": "Z14345-P-BA-2004-00-000-6",
+      "cur_wfa": "Z14345-P-BA-2004-00-000-6123",
       "cur_wfa_name": "DL 자료 접수 6",
       "cur_state": "In Planning",
       "cur_wfa_config_id": "687FE7856D5C471682AAF0130B3C5403",
       "cur_eng_func_code": "P-BA-2000",
       "cur_check_alarm": 0,
       "ref_rel_project": "NULL",
-      "ref_wfa": "NULL",
+      "ref_wfa": "Z14345-P-BA-2004-00-000-6",
       "ref_wfa_config_id": "NULL",
       "tot_wfa_label": "BLR) Building Enclosure(P-BA-2004-00-001)",
       "cur_rel_fw": "41288901F225472CA37E9B5C6FB207C5"

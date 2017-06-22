@@ -10,7 +10,8 @@ var blockStart = function(msg){
                 opacity: .5,
                 color: '#fff'
             },
-            message:  '<h1>'+msg+'</h1>'
+            message:  '<h1>'+msg+'</h1>',
+            fadeIn:  0
         });
     }else{
         $.blockUI({

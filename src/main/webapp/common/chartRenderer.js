@@ -474,7 +474,7 @@ ChartRenderer.prototype = {
             axis: 'X',
             pageLength: 100,
             currentPage: 1,
-            columnHeight: 30,
+            columnHeight: 50,
             columnWidth: 160,
             columnStyle: {
                 'font-color': '#fff',
@@ -484,7 +484,8 @@ ChartRenderer.prototype = {
                 'border-bottom': {
                     'stroke': '#616063',
                     'stroke-width': '4'
-                }
+                },
+                'font-size': '12px'
             },
             rowDividingLine: {
                 'stroke': '#abaaad',
@@ -726,6 +727,7 @@ ChartRenderer.prototype = {
         var edgeEnd = new Date();
         var drawEdgeTime = edgeEnd.getTime() - edgeStart.getTime();
 
+        //alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
         console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
 
         var boundary = me.canvas.getBoundary(newTableElement);
@@ -741,13 +743,14 @@ ChartRenderer.prototype = {
             containerHeight = boundary.getHeight() + 30;
         }
         this._CONTAINER.height(containerHeight);
+    },
+    lineAlignment: function () {
+        var me = this;
+        var allEdges = me.canvas.getAllEdges();
+        $.each(allEdges, function (i, edge) {
+            me.canvas.reconnect(edge);
+        });
     }
-
-
-    //========================================================================//
-    //=========================Start Storage Query============================//
-    //========================================================================//
-
 
     //========================================================================//
     //=================================Utils==================================//
@@ -765,7 +768,8 @@ ChartRenderer.prototype = {
         } else {
             return label;
         }
-    },
+    }
+    ,
     /**
      * 주어진 스트링이 빈값인지를 확인한다.
      * @param value String
@@ -1059,16 +1063,69 @@ ChartRenderer.prototype = {
         f = f.replace(/dd/, z(d));
         f = f.replace(/d/, d);
         return f;
-    },
+    }
+    ,
 
-    //========================================================================//
-    //=================================Event==================================//
-    //========================================================================//
+//========================================================================//
+//=================================Event==================================//
+//========================================================================//
     /**
      * 캔버스가 처음 렌더링 될 시 필요한 이벤트들을 바인딩한다.
      */
     bindEvent: function () {
         var chartRenderer = this;
+        var canvas = this.canvas;
+
+        var highLightSelectedEdges = function () {
+            var allEdges = canvas.getAllEdges();
+
+            var edges = [], edgeIds = [];
+            $.each(canvas._HANDLER.selectedElements, function (i, selectedElement) {
+                var prevEdges = canvas.getPrevEdges(selectedElement);
+                var nextEdges = canvas.getNextEdges(selectedElement);
+                edges = edges.concat(prevEdges);
+                edges = edges.concat(nextEdges);
+            });
+
+            var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+
+            //선택된 도형이 없을 경우 모두 정상 처리한다.
+            if (!edges.length) {
+                defaultStyle['opacity'] = '1';
+                defaultStyle['marker'] = null;
+                $.each(allEdges, function (d, edge) {
+                    canvas.setShapeStyle(edge, defaultStyle);
+                });
+                return;
+            }
+
+            //도형과 연결된 선분인 경우 하이라이트 처리.
+            $.each(edges, function (i, edge) {
+                edgeIds.push(edge.id);
+                canvas.setShapeStyle(edge, {
+                    "stroke": "RGB(66,139,202)",
+                    "stroke-width": "3",
+                    "stroke-dasharray": "",
+                    "opacity": "0.7",
+                    'marker': {
+                        'end': {
+                            'id': 'OG.marker.ArrowMarker',
+                            'size': [2, 2]
+                        }
+                    }
+                });
+            });
+
+            //도형과 연결된 선분이 아닌경우 흐리게 처리한다.
+            defaultStyle['opacity'] = '0.3';
+            defaultStyle['marker'] = null;
+            $.each(allEdges, function (c, otherEdge) {
+                if (edgeIds.indexOf(otherEdge.id) == -1) {
+                    canvas.setShapeStyle(otherEdge, defaultStyle);
+                }
+            })
+        };
+
         /**
          * @class
          * @extends OG.shape.GeomShape
@@ -1174,59 +1231,17 @@ ChartRenderer.prototype = {
                     }
                 }
             });
+            highLightSelectedEdges();
         };
         OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
             var me = this;
             me.currentCanvas.setShapeStyle(me.currentElement, {
                 stroke: '#000'
-            })
+            });
+            highLightSelectedEdges();
         };
         OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
             var me = this;
-            $(me.currentElement).bind('mouseover', function (event) {
-                var prevEdges = me.currentCanvas.getPrevEdges(me.currentElement);
-                var nextEdges = me.currentCanvas.getNextEdges(me.currentElement);
-                var allEdges = me.currentCanvas.getAllEdges();
-                var edges = prevEdges.concat(nextEdges);
-                var edgeIds = [];
-
-                //도형과 연결된 선분인 경우 하이라이트 처리.
-                $.each(edges, function (i, edge) {
-                    edgeIds.push(edge.id);
-                    me.currentCanvas.setShapeStyle(edge, {
-                        "stroke": "RGB(66,139,202)",
-                        "stroke-width": "3",
-                        "stroke-dasharray": "",
-                        "opacity": "0.7",
-                        'marker': {
-                            'end': {
-                                'id': 'OG.marker.ArrowMarker',
-                                'size': [2, 2]
-                            }
-                        }
-                    });
-                });
-
-                //도형과 연결된 선분이 아닌경우 흐리게 처리한다.
-                var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
-                defaultStyle['opacity'] = '0.3';
-                defaultStyle['marker'] = null;
-                $.each(allEdges, function (c, otherEdge) {
-                    if (edgeIds.indexOf(otherEdge.id) == -1) {
-                        me.currentCanvas.setShapeStyle(otherEdge, defaultStyle);
-                    }
-                })
-            });
-            $(me.currentElement).bind('mouseout', function () {
-                var allEdges = me.currentCanvas.getAllEdges();
-                var defaultStyle = JSON.parse(JSON.stringify(chartRenderer.canvas._CONFIG.DEFAULT_STYLE.EDGE));
-                defaultStyle['opacity'] = '1';
-                defaultStyle.marker = null;
-                $.each(allEdges, function (i, edge) {
-                    me.currentCanvas.setShapeStyle(edge, defaultStyle);
-                });
-            });
-
             $(me.currentElement).bind({
                 'dblclick': function () {
                     if (me.data && me.data['cur_rel_wf']) {
@@ -1319,8 +1334,6 @@ ChartRenderer.prototype = {
                                 } else {
                                     toastr.error('This column can not be deleted.');
                                 }
-                                //console.log('cellView.cellIndex', cellView.cellIndex);
-                                //table.shape.removeColumn(cellView.cellIndex);
                             }
                         }
                     };
@@ -1330,7 +1343,8 @@ ChartRenderer.prototype = {
                 return {};
             }
         };
-    },
+    }
+    ,
     loadJSON: function (json) {
         var elements = [];
         var canvas = this.canvas;
@@ -1560,5 +1574,6 @@ ChartRenderer.prototype = {
         return elements;
     }
 
-};
+}
+;
 ChartRenderer.prototype.constructor = ChartRenderer;
