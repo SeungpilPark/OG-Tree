@@ -11002,7 +11002,20 @@ OG.shape.IShape.prototype = {
     onPasteShape: function (copied, pasted) {
 
     },
-    onAddToGroup: function (groupElement, element) {
+    /**
+     * 자신에게 도형들이 그룹으로 들어왔을때의 이벤트
+     * @param groupElement
+     * @param elements
+     */
+    onAddToGroup: function (groupElement, elements, eventOffset) {
+
+    },
+    /**
+     * 자신이 그룹속으로 들어갔을 때의 이벤트
+     * @param groupElement
+     * @param element
+     */
+    onAddedToGroup: function(groupElement, element, eventOffset){
 
     },
     onSelectShape: function () {
@@ -17191,11 +17204,29 @@ OG.shape.component.DataTable = function () {
             }
 
             if (contentData.type == 'activity') {
+                var shape = new OG.A_Task(contentData.value);
+                shape.CONNECTABLE = true;
+                shape.GROUP_COLLAPSIBLE = false;
+                shape.DELETABLE = false;
+                shape.LABEL_EDITABLE = false;
+                shape.RESIZABLE = false;
+                shape.onSelectShape = function(){
+                    var me = this;
+                    me.currentCanvas.setShapeStyle(me.currentElement,{
+                        stroke: '#ff0100'
+                    })
+                }
+                shape.onDeSelectShape = function(){
+                    var me = this;
+                    me.currentCanvas.setShapeStyle(me.currentElement,{
+                        stroke: '#000'
+                    })
+                }
                 result.contents.push({
                     /**
                      * 도형 shape
                      */
-                    shape: new OG.A_Task(contentData.value),
+                    shape: shape,
                     /**
                      * 도형 가로 (number,px,%)
                      */
@@ -17388,6 +17419,54 @@ OG.shape.component.DataTable = function () {
                 defaultContent: '',
                 renderer: renderer
             },
+            {
+                data: '49_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '48_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '47_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '46_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '45_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },{
+                data: '44_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '43_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+            {
+                data: '42_',
+                title: 'P&ID\n50',
+                defaultContent: '',
+                renderer: renderer
+            },
+
             {
                 data: '40_',
                 title: 'Plot Plan\n40',
@@ -17660,49 +17739,84 @@ OG.shape.component.DataTable.prototype.emptyCell = function (cellView, preventRe
 /**
  * 주어진 컨텐트 엘리먼트를 셀에 추가시킨다.
  * @param cellView
- * @param contentElement
- * @param value
+ * @param contentElementsWithValue [{element:element,value:value}]
  */
-OG.shape.component.DataTable.prototype.addCellContent = function (cellView, contentElement, value) {
-    var me = this;
-    var boundary = me.currentCanvas.getBoundary(contentElement);
-    if (contentElement && contentElement.nodeType == 1 && me.currentCanvas.getRenderer().isShape(contentElement)) {
-        var data = me.getCellInformation(cellView);
-        if (!data.contents) {
-            data.contents = [];
-            me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'] = [];
-        }
+OG.shape.component.DataTable.prototype.addCellContent = function (cellView, contentElementsWithValue) {
+    var me = this, contentElement, isExist, beforeIndex, newIndex, boundary, value;
+    var data = me.getCellInformation(cellView);
+    if (!data.contents) {
+        data.contents = [];
+        me.data.viewData.rows[data.rowIndex].cells[data.column]['contents'] = [];
+    }
 
-        if (!data.contentsPosition) {
-            data.contentsPosition = {}
-        }
-        if (!data.contentsPosition['arrangement']) {
-            data.contentsPosition['arrangement'] = 'horizontal';
-        }
-        //신규 컨텐트의 센터와 기존 컨텐트의 센터들 사이간의 위치 인덱스를 구한다.
-        var isExist = false;
-        var beforeIndex = 0;
-        var newIndex = 0;
-        $.each(data.contentElements, function (i, existContent) {
-            if (existContent.id == contentElement.id) {
-                isExist = true;
-                beforeIndex = i;
-            }
-            //가로 방향 정렬일경우 x 포지션 비교
-            if (data.contentsPosition['arrangement'] == 'horizontal') {
-                var x = me.currentCanvas.getBoundary(existContent).getCentroid().x;
-                if (x < boundary.getCentroid().x) {
-                    newIndex = i + 1;
+    if (!data.contentsPosition) {
+        data.contentsPosition = {}
+    }
+    if (!data.contentsPosition['arrangement']) {
+        data.contentsPosition['arrangement'] = 'horizontal';
+    }
+
+    var mergeToComparePosition = function (myElement, contentElementsWithValue) {
+        var list = [], compareElement;
+        for (var i = 0; i < contentElementsWithValue.length; i++) {
+            compareElement = contentElementsWithValue[i].element;
+            if (compareElement && compareElement.nodeType == 1 && me.currentCanvas.getRenderer().isShape(compareElement)) {
+                if (myElement.id != compareElement.id) {
+                    list.push(compareElement);
                 }
             }
-            //세로 방향 정렬일경우 y 포지션 비교
-            else {
-                var y = me.currentCanvas.getBoundary(existContent).getCentroid().y;
-                if (y < boundary.getCentroid().y) {
-                    newIndex = i + 1;
+        }
+        for (var g = 0; g < data.contentElements.length; g++) {
+            list.push(data.contentElements[g]);
+        }
+        return list;
+    }
+    var elementsToAdd = [];
+    for (var i = 0; i < contentElementsWithValue.length; i++) {
+        contentElement = contentElementsWithValue[i].element;
+        if (contentElement && contentElement.nodeType == 1 && me.currentCanvas.getRenderer().isShape(contentElement)) {
+            //신규 컨텐트의 센터와 기존 컨텐트의 센터들 사이간의 위치 인덱스를 구한다.
+            isExist = false;
+            beforeIndex = 0;
+            newIndex = 0;
+            boundary = me.currentCanvas.getBoundary(contentElement);
+            var mergedElements = mergeToComparePosition(contentElement, contentElementsWithValue);
+            $.each(mergedElements, function (i, existContent) {
+                if (existContent.id == contentElement.id) {
+                    isExist = true;
+                    beforeIndex = i;
                 }
-            }
-        })
+                //가로 방향 정렬일경우 x 포지션 비교
+                if (data.contentsPosition['arrangement'] == 'horizontal') {
+                    var x = me.currentCanvas.getBoundary(existContent).getCentroid().x;
+                    if (x < boundary.getCentroid().x) {
+                        newIndex = i + 1;
+                    }
+                }
+                //세로 방향 정렬일경우 y 포지션 비교
+                else {
+                    var y = me.currentCanvas.getBoundary(existContent).getCentroid().y;
+                    if (y < boundary.getCentroid().y) {
+                        newIndex = i + 1;
+                    }
+                }
+            })
+            elementsToAdd.push({
+                element: contentElement,
+                value: contentElementsWithValue[i].value,
+                isExist: isExist,
+                beforeIndex: beforeIndex,
+                newIndex: newIndex
+            });
+        }
+    }
+
+    for (var c = 0; c < elementsToAdd.length; c++) {
+        isExist = elementsToAdd[c].isExist;
+        beforeIndex = elementsToAdd[c].beforeIndex;
+        newIndex = elementsToAdd[c].newIndex;
+        value = elementsToAdd[c].value;
+        contentElement = elementsToAdd[c].element;
 
         //신규 컨텐트를 추가하는 경우
         if (!isExist) {
@@ -18643,7 +18757,7 @@ OG.shape.component.DataTable.prototype.drawCellContent = function (cellView, inf
             me.removeCellContent(contentElement);
         }
         //콘텐트 이동시 처리
-        contentElement.shape.onAddToGroup = function (groupElement, element) {
+        contentElement.shape.onAddedToGroup = function (groupElement, element) {
             //그룹이 소속된 테이블이 아닐 경우
             if (groupElement.id != me.currentElement.id) {
 
@@ -18657,7 +18771,7 @@ OG.shape.component.DataTable.prototype.drawCellContent = function (cellView, inf
                     me.removeCellContent(element, true);
                     element.shape.onRemoveShape = function () {
                     };
-                    element.shape.onAddToGroup = function () {
+                    element.shape.onAddedToGroup = function () {
                     };
                     element.shape.onResize = function () {
                     };
@@ -18787,7 +18901,6 @@ OG.shape.component.DataTable.prototype.drawCell = function (cellView, ignoreRend
     if (useRenderData) {
         me.drawCellContent(cellView, info, renderData);
     }
-    //
     me.reconnectEdgesToContent(cellView);
 }
 
@@ -18889,51 +19002,81 @@ OG.shape.component.DataTable.prototype.createContextMenu = function () {
 /**
  * 어떠한 도형이 사용자의 행위로 테이블로 끌어당겨졌을 경우
  * @param groupElement
- * @param element
+ * @param elements
  */
-OG.shape.component.DataTable.prototype.onAddToGroup = function (groupElement, element) {
+OG.shape.component.DataTable.prototype.onAddToGroup = function (groupElement, elements, eventOffset) {
     //해당 엘리먼트가 등록된 셀을 조회한다.
     //있다면, 기존셀에서 현재셀로 콘텐트를 이동한다.
     //없다면, 신규 콘텐트로 등록한다.
     var me = this;
     var beforeCell;
-    var dropCell, dropCellData;
+    var dropCell, dropElements;
     if (groupElement.id == me.currentElement.id) {
-        //콘텐트를 가지고 있던 기존 셀을 구한다.
-        beforeCell = me.getCellViewFromContent(element);
 
-        //콘텐트의 중심을 포함한 셀을 찾는다.
-        var centroid = me.currentCanvas.getBoundary(element).getCentroid();
-        dropCell = me.getCellViewFromOffset([centroid.x, centroid.y]);
-        if (dropCell && dropCell.type == 'column') {
-            dropCell = null;
+        //셀 컨텐트를 부여하고 난 이후에 dropCell 이 달라지기 때문에 미리 배정을 한다.
+        var dropCellMap = {};
+        var noneDropCellList = [];
+        for (var b = 0; b < elements.length; b++) {
+            //셀이 이동되었을 경우 셀 무시
+            if (elements[b].shape instanceof OG.Cell) {
+                continue;
+            }
+
+            //콘텐트의 중심을 포함한 셀을 찾는다.
+            //var centroid = me.currentCanvas.getBoundary(elements[b]).getCentroid();
+            //var toDropCell = me.getCellViewFromOffset([centroid.x, centroid.y]);
+            var toDropCell = me.getCellViewFromOffset([eventOffset.x, eventOffset.y]);
+            if (toDropCell && toDropCell.type == 'column') {
+                toDropCell = null;
+            }
+            if (toDropCell) {
+                var rowIndex = toDropCell.rowIndex;
+                var cellIndex = toDropCell.cellIndex;
+                var dropKey = rowIndex + '_' + cellIndex + '_';
+                if (dropCellMap[dropKey]) {
+                    dropCellMap[dropKey]['elements'].push(elements[b]);
+                } else {
+                    dropCellMap[dropKey] = {
+                        dropCell: toDropCell,
+                        elements: [elements[b]]
+                    }
+                }
+            } else {
+                noneDropCellList.push(elements[b]);
+            }
         }
 
-        //드랍셀이 없고 이전 셀도 없다면 콘텐트를 테이블 밖으로 빼야 한다.
-        //이 경우는 외부에서 드랍되었는데 칼럼으로 떨어진 경우다.
-        if (!dropCell && !beforeCell) {
-            me.currentCanvas.addToGroup(me.currentCanvas.getRootGroup(), [element]);
-            return;
-        }
-        //드랍셀이 없고 이전 셀이 있다면 원복시킨다.
-        //이 경우는 테이블 내에서 이동시켰는데 칼럼으로 떨어진 경우다.
-        if (!dropCell && beforeCell) {
-            me.redrawCell(beforeCell);
-            return;
+        //드랍셀이 없는 엘리먼트를 먼저 처리한다.
+        for (var i = 0; i < noneDropCellList.length; i++) {
+            //콘텐트를 가지고 있던 기존 셀을 구한다.
+            beforeCell = me.getCellViewFromContent(noneDropCellList[i]);
+
+            //드랍셀이 없고 이전 셀도 없다면 콘텐트를 테이블 밖으로 빼야 한다.
+            //이 경우는 외부에서 드랍되었는데 칼럼으로 떨어진 경우다.
+            if (!beforeCell) {
+                me.currentCanvas.addToGroup(me.currentCanvas.getRootGroup(), [noneDropCellList[i]]);
+                continue;
+            }
+            //드랍셀이 없고 이전 셀이 있다면 원복시킨다.
+            //이 경우는 테이블 내에서 이동시켰는데 칼럼으로 떨어진 경우다.
+            if (beforeCell) {
+                me.redrawCell(beforeCell);
+                continue;
+            }
         }
 
-        //드랍셀과 이전 셀이 있다면, addCellContent 처리한다.
-        //이 경우는 테이블 내에서 이동시켰을 경우이다.
-        if (dropCell && beforeCell) {
-            me.addCellContent(dropCell, element);
-            return;
-        }
-
-        //드랍셀만 있다면, updateCell 을 한다.
-        //이 경우는 외부에서 드랍되었을 경우이다.
-        if (dropCell && !beforeCell) {
-            me.addCellContent(dropCell, element);
-            return;
+        //드랍셀이 있는 경우의 처리.
+        for (var key in dropCellMap) {
+            dropCell = dropCellMap[key]['dropCell'];
+            dropElements = dropCellMap[key]['elements'];
+            var elementsWithValues = [];
+            for (var d = 0; d < dropElements.length; d++) {
+                elementsWithValues.push({
+                    element: dropElements[d],
+                    value: null
+                })
+            }
+            me.addCellContent(dropCell, elementsWithValues);
         }
     }
 }
@@ -19620,7 +19763,7 @@ OG.renderer.IRenderer.prototype = {
      * @param {Element} groupElement
      * @param {Element[]} elements
      */
-    addToGroup: function (groupElement, elements) {
+    addToGroup: function (groupElement, elements, eventOffset) {
         throw new OG.NotImplementedException();
     },
 
@@ -24378,13 +24521,13 @@ OG.renderer.RaphaelRenderer.prototype.ungroup = function (groupElements) {
  * @param {Element[]} elements
  * @override
  */
-OG.renderer.RaphaelRenderer.prototype.addToGroup = function (groupElement, elements) {
+OG.renderer.RaphaelRenderer.prototype.addToGroup = function (groupElement, elements, eventOffset) {
     for (var i = 0, leni = elements.length; i < leni; i++) {
         groupElement.appendChild(elements[i]);
-        if (groupElement.shape && groupElement.shape.onAddToGroup) {
-            groupElement.shape.onAddToGroup(groupElement, elements[i]);
-        }
-        elements[i].shape.onAddToGroup(groupElement, elements[i]);
+        elements[i].shape.onAddedToGroup(groupElement, elements[i], eventOffset);
+    }
+    if (groupElement.shape && groupElement.shape.onAddToGroup) {
+        groupElement.shape.onAddToGroup(groupElement, elements, eventOffset);
     }
 };
 
@@ -25438,8 +25581,11 @@ OG.renderer.RaphaelRenderer.prototype.drawConnectGuide = function (element) {
  */
 OG.renderer.RaphaelRenderer.prototype.removeConnectGuide = function (element) {
     var me = this;
-    var rElement = me._getREleById(OG.Util.isElement(element) ? element.id : element),
-        bBox = me._getREleById(rElement.id + OG.Constants.CONNECT_GUIDE_SUFFIX.BBOX);
+    var rElement = me._getREleById(OG.Util.isElement(element) ? element.id : element);
+    if (!rElement) {
+        return;
+    }
+    var bBox = me._getREleById(rElement.id + OG.Constants.CONNECT_GUIDE_SUFFIX.BBOX);
     $(me.getSpots(element)).each(function (index, spot) {
         me._remove(me._getREleById(spot.id));
     })
@@ -28871,7 +29017,7 @@ OG.handler.EventHandler.prototype = {
                     // group target 이 있는 경우 grouping 처리
                     if (groupTarget && OG.Util.isElement(groupTarget)) {
                         // grouping
-                        renderer.addToGroup(groupTarget, eleArray);
+                        renderer.addToGroup(groupTarget, eleArray, eventOffset);
                         renderer.remove(groupTarget.id + OG.Constants.DROP_OVER_BBOX_SUFFIX);
                         $(root).removeData("groupTarget");
                     } else {
@@ -28885,11 +29031,11 @@ OG.handler.EventHandler.prototype = {
                             if (!parentNode) {
                                 parentNode = ele.parentNode;
                             }
-                            if (parentNode.id !== root.id) {
+                            if (parentNode && parentNode.id !== root.id) {
                                 addToGroupArray.push(ele);
                             }
                         });
-                        renderer.addToGroup(root, addToGroupArray);
+                        renderer.addToGroup(root, addToGroupArray, eventOffset);
                     }
 
                     $.each(me._getSelectedElement(), function (idx, selected) {
@@ -30679,6 +30825,51 @@ OG.handler.EventHandler.prototype = {
         });
     },
 
+    makeRotate: function(){
+        var me = this;
+
+        return {
+            'rotate': {
+                name: '회전',
+                items: {
+                    'rotate_select': {
+                        name: '선택',
+                        type: 'select',
+                        options: {
+                            '0': '0',
+                            '45': '45',
+                            '90': '90',
+                            '135': '135',
+                            '180': '180',
+                            '-45': '-45',
+                            '-90': '-90',
+                            '-135': '-135',
+                            '-180': '-180'
+                        },
+                        selected: '0',
+                        events: {
+                            change: function (e) {
+                                me.rotateSelectedShape(e.target.value);
+                            }
+                        }
+                    },
+                    'sep8_8_1': '---------',
+                    'rotate_custom': {
+                        name: '직접입력',
+                        type: 'text',
+                        events: {
+                            keyup: function (e) {
+                                if (e.target.value !== '') {
+                                    me.rotateSelectedShape(e.target.value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
     makeFillColor: function () {
         var me = this;
 
@@ -31556,6 +31747,7 @@ OG.handler.EventHandler.prototype = {
                 items: this.mergeContextMenu(
                     this.makeFillColor(),
                     this.makeFillOpacity(),
+                    this.makeRotate(),
                     this.makeLineStyle(),
                     this.makeLineColor(),
                     this.makeLineWidth()
@@ -31692,7 +31884,6 @@ OG.handler.EventHandler.prototype = {
      * @param {Element} element Shape 엘리먼트
      */
     selectShape: function (element, event, param) {
-
         var me = this, guide, root = me._RENDERER.getRootGroup();
 
         //단일 선택 다중 선택 여부 판단
@@ -32857,6 +33048,9 @@ OG.handler.EventHandler.prototype = {
             if (renderer.isEdge(ele)) {
                 return;
             }
+            if(ele.shape && !ele.shape.MOVABLE){
+                return;
+            }
             connectCheckShapes.push(ele);
             if (renderer.isGroup(ele)) {
                 $.each(renderer.getInnerShapesOfGroup(ele), function (idx, innerShape) {
@@ -32886,10 +33080,11 @@ OG.handler.EventHandler.prototype = {
             renderer.remove(item.box);
 
             // 이동
-            renderer.move(ele, [dx, dy], excludeEdgeId);
+            if(ele.shape && ele.shape.MOVABLE){
+                renderer.move(ele, [dx, dy], excludeEdgeId);
+                eleArray.push(ele);
+            }
             renderer.drawGuide(ele);
-
-            eleArray.push(ele);
         });
 
         return eleArray;

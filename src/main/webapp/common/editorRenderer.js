@@ -4054,7 +4054,7 @@ EditorRenderer.prototype = {
                 if (data.extData['c_locked_by_id'] && data.extData['c_locked_by_id'].length > 0) {
                     toastr.error('This item is locked and can not be changed.');
                     return;
-                }
+                }ch
 
                 var me = editorRenderer.canvas._HANDLER;
                 var renderer = me._RENDERER;
@@ -4068,6 +4068,7 @@ EditorRenderer.prototype = {
                     centerX = envelope.getCentroid().x,
                     centerY = envelope.getCentroid().y,
                     editorId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX,
+                    buttonId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX + 'aaa',
                     labelEditor,
                     textAlign = "center",
                     beforeLabel,
@@ -4075,7 +4076,9 @@ EditorRenderer.prototype = {
 
                 // textarea
                 $(container).append("<textarea id='" + element.id + OG.Constants.LABEL_EDITOR_SUFFIX + "'></textarea>");
+                //$(container).append('<button id="' + buttonId + '">BBCD</button>');
                 labelEditor = $("#" + editorId);
+                //var labelButton = $("#" + buttonId);
 
                 // text-align 스타일 적용
                 switch (element.shape.geom.style.get("text-anchor")) {
@@ -4103,6 +4106,16 @@ EditorRenderer.prototype = {
                     resize: "none",
                     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
                 }));
+                // $(labelButton).css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
+                //     left: (centerX - 35) * me._CONFIG.SCALE, //left,
+                //     top: top + height + 200, //top,
+                //     width: 70 * me._CONFIG.SCALE,//width,
+                //     height: 46 * me._CONFIG.SCALE,//height,
+                //     "text-align": textAlign,
+                //     overflow: "hidden",
+                //     resize: "none",
+                //     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
+                // }));
                 $(labelEditor).focus();
                 $(labelEditor).val(element.shape.label);
                 beforeLabel = element.shape.label;

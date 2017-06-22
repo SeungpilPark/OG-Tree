@@ -107,6 +107,7 @@ var ChartRenderer = function (container, viewController, editMode) {
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
     this.existJson = null;
+    this.loadElements = null;
     this.existActivitySize = {};
 };
 ChartRenderer.prototype = {
@@ -364,38 +365,43 @@ ChartRenderer.prototype = {
      * 화면의 Edge 를 연결 해제하고, 재연결 정보를 저장한다.
      */
     keepEdges: function () {
+        var getActivityFromTerminal = function (terminal) {
+            var selected = null;
+            var shapeId = terminal.substring(0, terminal.indexOf(OG.Constants.TERMINAL));
+            $.each(me.loadElements, function (i, activity) {
+                if (activity.id == shapeId && activity.shape instanceof OG.A_Task) {
+                    selected = activity;
+                }
+            });
+            return selected;
+        };
+
         var me = this;
-        var allEdges = me.canvas.getAllEdges();
-        var edge, fromShape, toShape, fromXY, toXY, connections = [], connection;
-        $.each(allEdges, function (i, edge) {
-            var fromTerminal = $(edge).attr("_from");
-            var toTerminal = $(edge).attr("_to");
-            var direction;
-            connection = {
-                edgeId: edge.id
-            };
+        var edge, fromActivity, toActivity, connections = [], connection;
+        $.each(me.loadElements, function (i, edge) {
+            if (edge.shape instanceof OG.EdgeShape) {
+                var fromTerminal = edge['_from'];
+                var toTerminal = edge['_to'];
+                var direction;
+                connection = edge;
 
-            if (fromTerminal) {
-                fromShape = me.canvas.getRenderer()._getShapeFromTerminal(fromTerminal);
-                fromXY = me.canvas.getRenderer()._getPositionFromTerminal(fromTerminal);
-                if (fromShape && fromShape.shape.data) {
-                    me.canvas.getRenderer().disconnectOneWay(edge, 'from');
-                    connection.from = fromTerminal;
-                    connection.fromActivity = fromShape.shape.data['cur_wfa'];
+                if (fromTerminal) {
+                    fromActivity = getActivityFromTerminal(fromTerminal);
+                    if (fromActivity && fromActivity.shape.data) {
+                        connection.from = fromTerminal;
+                        connection.fromActivity = fromActivity.shape.data['cur_wfa'];
+                    }
                 }
-            }
 
-            if (toTerminal) {
-                toShape = me.canvas.getRenderer()._getShapeFromTerminal(toTerminal);
-                toXY = me.canvas.getRenderer()._getPositionFromTerminal(toTerminal);
-                if (toShape && toShape.shape.data) {
-                    me.canvas.getRenderer().disconnectOneWay(edge, 'to');
-                    connection.to = toTerminal;
-                    connection.toActivity = toShape.shape.data['cur_wfa'];
+                if (toTerminal) {
+                    toActivity = getActivityFromTerminal(toTerminal);
+                    if (toActivity && toActivity.shape.data) {
+                        connection.to = toTerminal;
+                        connection.toActivity = toActivity.shape.data['cur_wfa'];
+                    }
                 }
+                connections.push(connection);
             }
-
-            connections.push(connection);
         });
         return connections;
     },
@@ -409,6 +415,8 @@ ChartRenderer.prototype = {
      * @param existJson
      */
     render: function (chartData, existJson) {
+        var parseStart = new Date();
+
         var me = this;
         var dataTable;
         var existTableData;
@@ -421,35 +429,42 @@ ChartRenderer.prototype = {
         //기존 json 정보가 있을 경우 로드 한 후, 데이터 테이블을 얻어온다.
         if (existJson) {
             me.existJson = existJson;
-            me.canvas.loadJSON(existJson);
-            var tables = me.canvas.getElementsByShapeId('OG.shape.component.DataTable');
-            if (tables && tables.length) {
-                tableElement = tables[0];
+            me.loadElements = me.loadJSON(existJson);
+
+            $.each(me.loadElements, function (i, element) {
+                if (element.shape.SHAPE_ID == 'OG.shape.component.DataTable') {
+                    tableElement = element;
+                }
+            });
+
+            if (tableElement) {
                 dataTable = tableElement.shape;
                 existTableData = JSON.parse(JSON.stringify(dataTable.data.tableData));
                 existViewData = JSON.parse(JSON.stringify(dataTable.data.viewData));
-                //Edge 들의 연결을 모두 해제하고, from,to 의 액티비티 연결정보를 저장하고있는다.
-                me.connections = me.keepEdges();
 
-                //기존 A_Task 를 모두 삭제한다.
+                //기존 A_Task 의 정보를 담는다.
                 me.existActivitySize = {};
-                var existActivities = me.canvas.getElementsByShapeId('OG.shape.bpmn.A_Task');
-                $.each(existActivities, function (i, activity) {
-                    if (activity.shape.data && activity.shape.data['cur_wfa']) {
-                        var id = activity.shape.data['cur_wfa'];
-                        me.existActivitySize[id] = {
-                            width: me.canvas.getBoundary(activity).getWidth(),
-                            height: me.canvas.getBoundary(activity).getHeight()
+                $.each(me.loadElements, function (i, activity) {
+                    if (activity.shape.SHAPE_ID == 'OG.shape.bpmn.A_Task') {
+                        if (activity.shape.data && activity.shape.data['cur_wfa']) {
+                            var id = activity.shape.data['cur_wfa'];
+                            me.existActivitySize[id] = {
+                                width: activity.width,
+                                height: activity.height
+                            }
                         }
                     }
-                    me.canvas.removeShape(activity);
                 });
 
+                //Edge 들의 from,to 액티비티 연결정보를 저장하고있는다.
+                me.connections = me.keepEdges();
+
+            } else {
+                dataTable = new OG.DataTable();
             }
         } else {
             dataTable = new OG.DataTable();
         }
-
         dataTable.MOVABLE = false;
 
         //옵션데이터
@@ -509,7 +524,8 @@ ChartRenderer.prototype = {
                         'border-left': {
                             'stroke': '#abaaad',
                             'stroke-width': '1'
-                        }
+                        },
+                        'font-size': '11px'
                     }
                 }
             ]
@@ -661,24 +677,27 @@ ChartRenderer.prototype = {
 
         dataTable.setOptions(options);
         dataTable.setData(rowData);
-        if (!existJson) {
-            tableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
-        }
-        dataTable.draw();
+        var newTableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
 
+        var parseEnd = new Date();
+        var parseTime = parseEnd.getTime() - parseStart.getTime();
+
+
+        var start = new Date();
+        dataTable.draw();
+        var end = new Date();
+        var drawTime = end.getTime() - start.getTime();
+
+
+        var edgeStart = new Date();
         //연결 정보를 이어나간다.
         if (existJson && me.connections && me.connections.length) {
             $.each(me.connections, function (i, connection) {
-                var edgeId = connection.edgeId;
+                //var edgeId = connection.id;
                 var fromTerminal = connection.from;
                 var fromActivity = connection.fromActivity;
                 var toTerminal = connection.to;
                 var toActivity = connection.toActivity;
-
-                var edge = me.canvas.getElementById(edgeId);
-                if (!edge) {
-                    return;
-                }
 
                 var fromShape, toShape;
                 if (fromActivity) {
@@ -687,9 +706,9 @@ ChartRenderer.prototype = {
                 if (toActivity) {
                     toShape = me.getElementByActivityId(toActivity);
                 }
-                //둘 중 하나라도 없다면 삭제한다.
+
+                //둘 중 하나라도 없다면 무시한다.
                 if (!fromShape || !toShape) {
-                    me.canvas.removeShape(edge);
                     return;
                 }
 
@@ -698,15 +717,22 @@ ChartRenderer.prototype = {
 
                 var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
                 var toReplace = toTerminal.replace(beforeToId, toShape.id);
+                var edge = me.canvas.drawShape(null, connection.shape, null, connection.style, connection.id);
                 me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
             });
             me.connections = [];
         }
 
-        var boundary = me.canvas.getBoundary(tableElement);
+        var edgeEnd = new Date();
+        var drawEdgeTime = edgeEnd.getTime() - edgeStart.getTime();
+
+        console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
+
+        var boundary = me.canvas.getBoundary(newTableElement);
 
 
         //캔버스 사이즈 조정
+        this.setScale(1);
         this.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
 
         //컨테이너 높이 조정
@@ -1133,6 +1159,28 @@ ChartRenderer.prototype = {
             };
             return this.contextMenu;
         };
+        OG.shape.bpmn.A_Task.prototype.onSelectShape = function () {
+            var me = this;
+            me.currentCanvas.setShapeStyle(me.currentElement, {
+                stroke: '#ff0100'
+            });
+            //자신의 라인이 아닌 모든 도형은 deselect 한다.
+            var allShapes = me.currentCanvas.getAllShapes();
+            $.each(allShapes, function (i, element) {
+                if (element.shape.data && element.shape.data['cur_eng_func_code']) {
+                    if (element.shape.data['cur_eng_func_code'] != me.currentElement.shape.data['cur_eng_func_code'] &&
+                        $(element).attr('_selected') == 'true') {
+                        me.currentCanvas._HANDLER.deselectShape(element);
+                    }
+                }
+            });
+        };
+        OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
+            var me = this;
+            me.currentCanvas.setShapeStyle(me.currentElement, {
+                stroke: '#000'
+            })
+        };
         OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
             var me = this;
             $(me.currentElement).bind('mouseover', function (event) {
@@ -1181,7 +1229,7 @@ ChartRenderer.prototype = {
 
             $(me.currentElement).bind({
                 'dblclick': function () {
-                    if (me.data && me.data['cur_wfa_config_id']) {
+                    if (me.data && me.data['cur_rel_wf']) {
                         if (chartRenderer.viewController.aras) {
                             chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);
                         }
@@ -1282,6 +1330,234 @@ ChartRenderer.prototype = {
                 return {};
             }
         };
+    },
+    loadJSON: function (json) {
+        var elements = [];
+        var canvas = this.canvas;
+        canvas.fastLoadingON();
+        var canvasWidth, canvasHeight, rootGroup, canvasScale,
+            minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE,
+            i, cell, shape, id, parent, shapeType, shapeId, x, y, width, height, style, geom, from, to,
+            fromEdge, toEdge, label, fromLabel, toLabel, angle, value, data, dataExt, elementMap, loopType, taskType, swimlane, textList;
+
+        canvas._RENDERER.clear();
+        var renderer = canvas._RENDERER;
+        if (json && json.opengraph && json.opengraph.cell && OG.Util.isArray(json.opengraph.cell)) {
+            canvasWidth = json.opengraph['@width'];
+            canvasHeight = json.opengraph['@height'];
+            canvasScale = json.opengraph['@scale'];
+
+            data = json.opengraph['@data'];
+            dataExt = json.opengraph['@dataExt'];
+            if (data) {
+                rootGroup = canvas.getRootGroup();
+                rootGroup.data = OG.JSON.decode(unescape(data));
+            }
+            if (dataExt) {
+                rootGroup = canvas.getRootGroup();
+                rootGroup.dataExt = OG.JSON.decode(unescape(dataExt));
+            }
+
+            cell = json.opengraph.cell;
+            var totalCount = cell.length;
+            var cellCount = 0;
+
+            for (var i = 0, leni = cell.length; i < leni; i++) {
+                elementMap = {};
+                id = cell[i]['@id'];
+                parent = cell[i]['@parent'];
+                swimlane = cell[i]['@swimlane'];
+                shapeType = cell[i]['@shapeType'];
+                shapeId = cell[i]['@shapeId'];
+                x = parseInt(cell[i]['@x'], 10);
+                y = parseInt(cell[i]['@y'], 10);
+                width = parseInt(cell[i]['@width'], 10);
+                height = parseInt(cell[i]['@height'], 10);
+                style = unescape(cell[i]['@style']);
+                geom = unescape(cell[i]['@geom']);
+
+                from = cell[i]['@from'];
+                to = cell[i]['@to'];
+                fromEdge = cell[i]['@fromEdge'];
+                toEdge = cell[i]['@toEdge'];
+                label = cell[i]['@label'];
+                fromLabel = cell[i]['@fromLabel'];
+                toLabel = cell[i]['@toLabel'];
+                angle = cell[i]['@angle'];
+                value = cell[i]['@value'];
+                data = cell[i]['@data'];
+                textList = cell[i]['@textList'];
+                dataExt = cell[i]['@dataExt'];
+                loopType = cell[i]['@loopType'];
+                taskType = cell[i]['@taskType'];
+
+                label = label ? unescape(label) : label;
+
+                minX = (minX > (x - width / 2)) ? (x - width / 2) : minX;
+                minY = (minY > (y - height / 2)) ? (y - height / 2) : minY;
+                maxX = (maxX < (x + width / 2)) ? (x + width / 2) : maxX;
+                maxY = (maxY < (y + height / 2)) ? (y + height / 2) : maxY;
+
+                switch (shapeType) {
+                    case OG.Constants.SHAPE_TYPE.GEOM:
+                    case OG.Constants.SHAPE_TYPE.GROUP:
+                        shape = eval('new ' + shapeId + '()');
+                        if (label) {
+                            shape.label = label;
+                        }
+                        if (data) {
+                            shape.data = OG.JSON.decode(unescape(data));
+                        }
+                        if (textList) {
+                            shape.textList = OG.JSON.decode(unescape(textList));
+                        }
+                        elementMap = {
+                            x: x,
+                            y: y,
+                            shape: shape,
+                            width: width,
+                            height: height,
+                            style: OG.JSON.decode(style),
+                            id: id,
+                            parent: parent
+                        };
+                        break;
+                    case OG.Constants.SHAPE_TYPE.EDGE:
+                        var list = JSON.parse('[' + value + ']');
+                        var fromto = JSON.stringify(list[0]) + ',' + JSON.stringify(list[list.length - 1]);
+                        shape = eval('new ' + shapeId + '(' + fromto + ')');
+                        if (label) {
+                            shape.label = label;
+                        }
+                        if (data) {
+                            shape.data = OG.JSON.decode(unescape(data));
+                        }
+                        if (textList) {
+                            shape.textList = OG.JSON.decode(unescape(textList));
+                        }
+                        if (fromLabel) {
+                            shape.fromLabel = unescape(fromLabel);
+                        }
+                        if (toLabel) {
+                            shape.toLabel = unescape(toLabel);
+                        }
+                        if (geom) {
+                            geom = OG.JSON.decode(geom);
+                            if (geom.type === OG.Constants.GEOM_NAME[OG.Constants.GEOM_TYPE.POLYLINE]) {
+                                geom = new OG.geometry.PolyLine(geom.vertices);
+                                shape.geom = geom;
+                            } else if (geom.type === OG.Constants.GEOM_NAME[OG.Constants.GEOM_TYPE.CURVE]) {
+                                geom = new OG.geometry.Curve(geom.controlPoints);
+                                shape.geom = geom;
+                            }
+                        }
+                        elementMap = {
+                            shape: shape,
+                            style: OG.JSON.decode(style),
+                            id: id,
+                            parent: parent
+                        };
+                        break;
+                    case OG.Constants.SHAPE_TYPE.HTML:
+                        shape = eval('new ' + shapeId + '()');
+                        if (value) {
+                            shape.html = unescape(value);
+                        }
+                        if (label) {
+                            shape.label = label;
+                        }
+                        if (data) {
+                            shape.data = OG.JSON.decode(unescape(data));
+                        }
+                        if (textList) {
+                            shape.textList = OG.JSON.decode(unescape(textList));
+                        }
+                        elementMap = {
+                            x: x,
+                            y: y,
+                            shape: shape,
+                            width: width,
+                            height: height,
+                            angle: angle,
+                            style: OG.JSON.decode(style),
+                            id: id,
+                            parent: parent
+                        };
+                        break;
+                    case OG.Constants.SHAPE_TYPE.IMAGE:
+                        shape = eval('new ' + shapeId + '(\'' + value + '\')');
+                        if (label) {
+                            shape.label = label;
+                        }
+                        if (data) {
+                            shape.data = OG.JSON.decode(unescape(data));
+                        }
+                        if (textList) {
+                            shape.textList = OG.JSON.decode(unescape(textList));
+                        }
+                        elementMap = {
+                            x: x,
+                            y: y,
+                            shape: shape,
+                            width: width,
+                            height: height,
+                            angle: angle,
+                            style: OG.JSON.decode(style),
+                            id: id,
+                            parent: parent
+                        };
+                        break;
+                    case OG.Constants.SHAPE_TYPE.TEXT:
+                        shape = eval('new ' + shapeId + '()');
+                        if (value) {
+                            shape.text = unescape(value);
+                        }
+                        if (data) {
+                            shape.data = OG.JSON.decode(unescape(data));
+                        }
+                        if (textList) {
+                            shape.textList = OG.JSON.decode(unescape(textList));
+                        }
+                        elementMap = {
+                            x: x,
+                            y: y,
+                            shape: shape,
+                            width: width,
+                            height: height,
+                            angle: angle,
+                            style: OG.JSON.decode(style),
+                            id: id,
+                            parent: parent
+                        };
+                        break;
+                }
+
+                if (from) {
+                    elementMap['_from'] = from;
+                }
+                if (to) {
+                    elementMap['_to'] = to;
+                }
+                if (fromEdge) {
+                    elementMap['_fromedge'] = fromEdge;
+                }
+                if (toEdge) {
+                    elementMap['_toedge'] = toEdge;
+                }
+
+                if (data) {
+                    elementMap.data = OG.JSON.decode(unescape(data));
+                }
+                if (dataExt) {
+                    elementMap.dataExt = OG.JSON.decode(unescape(dataExt));
+                }
+                cellCount++;
+
+                elements.push(elementMap);
+            }
+            canvas.fastLoadingOFF();
+        }
+        return elements;
     }
 
 };
