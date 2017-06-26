@@ -4142,7 +4142,7 @@ EditorRenderer.prototype = {
                             labelEditor.remove();
                             saveButton.remove();
                             cancelButton.remove();
-                        }, 100);
+                        }, 200);
                     }
                 });
             }
