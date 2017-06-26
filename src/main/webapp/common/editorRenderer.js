@@ -3374,10 +3374,16 @@ EditorRenderer.prototype = {
                     $('<div class="og-tooltip ui-tooltip ui-widget ui-corner-all" id="' + element.id + '-tooltip">' +
                         '<div class="ui-tooltip-content">' + c_team + c_workflow + text + '</div>' +
                         '</div>');
+
+                var bodyWidth = $('body').width();
+                var tooltipLeft = event.pageX + 15;
+                if((tooltipLeft + 150) > bodyWidth){
+                    tooltipLeft = bodyWidth - 150;
+                }
                 tooltip.css({
                     position: 'absolute',
-                    'top': event.pageY,
-                    'left': event.pageX + 15,
+                    'top': event.pageY + 15,
+                    'left': tooltipLeft,
                     'background-color': '#333',
                     'color': 'whitesmoke',
                     'font-size': '12px'
