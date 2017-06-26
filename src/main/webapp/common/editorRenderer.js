@@ -4102,14 +4102,14 @@ EditorRenderer.prototype = {
                     left: copyCss.left,
                     top: copyCss.top + copyCss.height + (5 * me._CONFIG.SCALE),
                     width: (copyCss.width / 2) - 1,
-                    height: 15 * me._CONFIG.SCALE,//height,
+                    height: 20 * me._CONFIG.SCALE,//height,
                     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
                 }));
                 cancelButton.css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
                     left: copyCss.left + (copyCss.width / 2),
                     top: copyCss.top + copyCss.height + (5 * me._CONFIG.SCALE),
                     width: (copyCss.width / 2) - 1,
-                    height: 15 * me._CONFIG.SCALE,//height,
+                    height: 20 * me._CONFIG.SCALE,//height,
                     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
                 }));
 
@@ -4121,9 +4121,7 @@ EditorRenderer.prototype = {
                     saveButton.remove();
                     cancelButton.remove();
 
-                    if (beforeLabel != afterLabel) {
-                        editorRenderer.onNameChange(data, view, afterLabel);
-                    }
+                    editorRenderer.onNameChange(data, view, afterLabel);
                 });
 
                 cancelButton.click(function(){
