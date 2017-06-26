@@ -469,6 +469,7 @@ ChartRenderer.prototype = {
 
         //옵션데이터
         var options = {
+            moveAxis: 'X',
             resizeAxis: 'X',
             columnEditable: false,
             axis: 'X',
@@ -476,6 +477,7 @@ ChartRenderer.prototype = {
             currentPage: 1,
             columnHeight: 50,
             columnWidth: 160,
+            columnMinWidth: 100,
             columnStyle: {
                 'font-color': '#fff',
                 'fill': '#abaaad',
@@ -618,7 +620,16 @@ ChartRenderer.prototype = {
                 }
             }
 
-            //기존 데이터의 칼럼을 찾지 못했다면, 신규 액티비티이며, 칼럼은 옵션칼럼 의 1번 인덱스로 잡는다.
+            //기존 데이터의 칼럼을 찾지 못했다면, 신규 액티비티이며, cur_proposal_activity 과 header 리스트의 id를 매핑한다.
+            if(!column){
+                $.each(headers, function(h, header){
+                    if(activity['cur_proposal_activity'] && (header.id == activity['cur_proposal_activity'])){
+                        column = header.label;
+                    }
+                })
+            }
+
+            //cur_proposal_activity 로 칼럼을 찾지 못하였다면, 칼럼은 옵션칼럼 의 1번 인덱스로 잡는다.
             if (!column && options.columns[1]) {
                 column = options.columns[1].data;
             }
@@ -693,6 +704,10 @@ ChartRenderer.prototype = {
         var edgeStart = new Date();
         //연결 정보를 이어나간다.
         if (existJson && me.connections && me.connections.length) {
+            var defaultStyle = JSON.parse(JSON.stringify(me.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+            defaultStyle['opacity'] = '1';
+            defaultStyle['marker'] = null;
+
             $.each(me.connections, function (i, connection) {
                 //var edgeId = connection.id;
                 var fromTerminal = connection.from;
@@ -718,7 +733,7 @@ ChartRenderer.prototype = {
 
                 var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
                 var toReplace = toTerminal.replace(beforeToId, toShape.id);
-                var edge = me.canvas.drawShape(null, connection.shape, null, connection.style, connection.id);
+                var edge = me.canvas.drawShape(null, connection.shape, null, defaultStyle, connection.id);
                 me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
             });
             me.connections = [];
@@ -727,7 +742,7 @@ ChartRenderer.prototype = {
         var edgeEnd = new Date();
         var drawEdgeTime = edgeEnd.getTime() - edgeStart.getTime();
 
-        alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
+        //alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
         //console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
 
         var boundary = me.canvas.getBoundary(newTableElement);
