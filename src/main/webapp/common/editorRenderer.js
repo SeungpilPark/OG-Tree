@@ -3918,14 +3918,6 @@ EditorRenderer.prototype = {
                     }
                 }
 
-                //오우너 바꾸기. 체크박스가 표시된 오브젝트만 가능.
-                if (me._CONFIG.CHANGE_OWNER) {
-                    if (element.shape.hasCheckBox && element.shape.data.data.CHECKED) {
-                        items.makeOwnerChange = me.makeOwnerChange(element, data);
-                    }
-                }
-
-
                 //폴더,ED 생성 및 삭제
                 if (view.position == me.Constants.POSITION.MY || view.position == me.Constants.POSITION.MY_OUT) {
                     var enableCreateEd = true;
@@ -3993,50 +3985,41 @@ EditorRenderer.prototype = {
         });
     }
     ,
-
     /**
-     * 소유자 변경 콘텍스트 메뉴를 생성한다.
-     * @param element
-     * @param data
-     * @return {{name: string, icon: string, callback: callback}}
+     * 체크박스에 체크된 리스트를 가져온다.
      */
-    makeOwnerChange: function (element, data) {
+    getCheckedList: function () {
         var me = this;
-        return {
-            name: 'change owner',
-            icon: 'name-change',
-            callback: function () {
-                var checkedList = [], object;
-                for (var i in me._STORAGE) {
-                    object = me._STORAGE[i];
-                    var hasCheckBox = true;
-                    //부모중 락이 있는 경우 체크박스 표현 안함.
-                    if (object.extData['locked_by_parent']) {
-                        hasCheckBox = false;
-                    }
+        var checkedList = [], object;
+        for (var i in me._STORAGE) {
+            object = me._STORAGE[i];
+            var hasCheckBox = true;
+            //부모중 락이 있는 경우 체크박스 표현 안함.
+            if (object.extData['locked_by_parent']) {
+                hasCheckBox = false;
+            }
 
-                    //락일 경우 체크박스 표현 안함.
-                    if (object.extData['c_locked_by_id'] && object.extData['c_locked_by_id'].length > 0) {
-                        hasCheckBox = false;
-                    }
+            //락일 경우 체크박스 표현 안함.
+            if (object.extData['c_locked_by_id'] && object.extData['c_locked_by_id'].length > 0) {
+                hasCheckBox = false;
+            }
 
-                    //ED 이면서 c_can_change 가 false 이거나 c_securitylevel 이 Secret 일 경우 체크박스 표현 안함.
-                    if (object.type == me.Constants.TYPE.ED) {
-                        if (object.extData['c_securitylevel'] == 'Secret') {
-                            hasCheckBox = false;
-                        }
-                        if (object.extData['c_can_change'] == 'false') {
-                            hasCheckBox = false;
-                        }
-                    }
-                    if (hasCheckBox && object.CHECKED) {
-                        checkedList.push(object);
-                    }
+            //ED 이면서 c_can_change 가 false 이거나 c_securitylevel 이 Secret 일 경우 체크박스 표현 안함.
+            if (object.type == me.Constants.TYPE.ED) {
+                if (object.extData['c_securitylevel'] == 'Secret') {
+                    hasCheckBox = false;
                 }
-                me.onOwnerChange(checkedList);
+                if (object.extData['c_can_change'] == 'false') {
+                    hasCheckBox = false;
+                }
+            }
+            if (hasCheckBox && object.CHECKED) {
+                checkedList.push(object);
             }
         }
+        return checkedList;
     },
+
     /**
      * 이름 변경 콘텍스트 메뉴를 생성한다.
      * @param element
@@ -4054,8 +4037,7 @@ EditorRenderer.prototype = {
                 if (data.extData['c_locked_by_id'] && data.extData['c_locked_by_id'].length > 0) {
                     toastr.error('This item is locked and can not be changed.');
                     return;
-                }ch
-
+                }
                 var me = editorRenderer.canvas._HANDLER;
                 var renderer = me._RENDERER;
                 var container = renderer.getContainer(),
@@ -4068,7 +4050,8 @@ EditorRenderer.prototype = {
                     centerX = envelope.getCentroid().x,
                     centerY = envelope.getCentroid().y,
                     editorId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX,
-                    buttonId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX + 'aaa',
+                    saveId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX + 'save',
+                    cancelId = element.id + OG.Constants.LABEL_EDITOR_SUFFIX + 'cancel',
                     labelEditor,
                     textAlign = "center",
                     beforeLabel,
@@ -4076,9 +4059,12 @@ EditorRenderer.prototype = {
 
                 // textarea
                 $(container).append("<textarea id='" + element.id + OG.Constants.LABEL_EDITOR_SUFFIX + "'></textarea>");
-                //$(container).append('<button id="' + buttonId + '">BBCD</button>');
+                $(container).append('<button id="' + saveId + '">save</button>');
+                $(container).append('<button id="' + cancelId + '">cancel</button>');
+
                 labelEditor = $("#" + editorId);
-                //var labelButton = $("#" + buttonId);
+                var saveButton = $("#" + saveId);
+                var cancelButton = $("#" + cancelId);
 
                 // text-align 스타일 적용
                 switch (element.shape.geom.style.get("text-anchor")) {
@@ -4096,7 +4082,7 @@ EditorRenderer.prototype = {
                         break;
                 }
 
-                $(labelEditor).css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
+                var labelEditorCss = OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
                     left: (centerX - 35) * me._CONFIG.SCALE, //left,
                     top: top + height, //top,
                     width: 70 * me._CONFIG.SCALE,//width,
@@ -4105,29 +4091,54 @@ EditorRenderer.prototype = {
                     overflow: "hidden",
                     resize: "none",
                     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
+                });
+
+                labelEditor.css(labelEditorCss);
+                labelEditor.focus();
+                labelEditor.val(element.shape.label);
+
+                var copyCss = JSON.parse(JSON.stringify(labelEditorCss));
+                saveButton.css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
+                    left: copyCss.left,
+                    top: copyCss.top + copyCss.height + (5 * me._CONFIG.SCALE),
+                    width: (copyCss.width / 2) - 1,
+                    height: 15 * me._CONFIG.SCALE,//height,
+                    'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
                 }));
-                // $(labelButton).css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
-                //     left: (centerX - 35) * me._CONFIG.SCALE, //left,
-                //     top: top + height + 200, //top,
-                //     width: 70 * me._CONFIG.SCALE,//width,
-                //     height: 46 * me._CONFIG.SCALE,//height,
-                //     "text-align": textAlign,
-                //     overflow: "hidden",
-                //     resize: "none",
-                //     'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
-                // }));
-                $(labelEditor).focus();
-                $(labelEditor).val(element.shape.label);
+                cancelButton.css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
+                    left: copyCss.left + (copyCss.width / 2),
+                    top: copyCss.top + copyCss.height + (5 * me._CONFIG.SCALE),
+                    width: (copyCss.width / 2) - 1,
+                    height: 15 * me._CONFIG.SCALE,//height,
+                    'font-size': editorRenderer._CONFIG.DEFAULT_STYLE.FONT_SIZE * me._CONFIG.SCALE
+                }));
+
                 beforeLabel = element.shape.label;
 
-                $(labelEditor).bind({
-                    focusout: function () {
-                        afterLabel = this.value;
-                        this.parentNode.removeChild(this);
+                saveButton.click(function () {
+                    afterLabel = labelEditor.val();
+                    labelEditor.remove();
+                    saveButton.remove();
+                    cancelButton.remove();
 
-                        if (beforeLabel != afterLabel) {
-                            editorRenderer.onNameChange(data, view, afterLabel);
-                        }
+                    if (beforeLabel != afterLabel) {
+                        editorRenderer.onNameChange(data, view, afterLabel);
+                    }
+                });
+
+                cancelButton.click(function(){
+                    labelEditor.remove();
+                    saveButton.remove();
+                    cancelButton.remove();
+                });
+
+                labelEditor.bind({
+                    focusout: function () {
+                        setTimeout(function () {
+                            labelEditor.remove();
+                            saveButton.remove();
+                            cancelButton.remove();
+                        }, 100);
                     }
                 });
             }
@@ -4269,10 +4280,6 @@ EditorRenderer.prototype = {
     }
     ,
     onListRelation: function (data, view) {
-
-    }
-    ,
-    onOwnerChange: function (checkedList) {
 
     }
     ,

@@ -1987,6 +1987,37 @@ DataController.prototype = {
     },
 
     /**
+     * 체크된 리스트에 대해 promote 처리한다.
+     * @param checkedList
+     */
+    updatePromote: function(checkedList){
+        var me = this;
+        var failCount = 0;
+        var successCount = 0;
+        $.each(checkedList, function (i, data) {
+            var params = {
+                edid: me.getCurrentItemId(me.getItemType(data.type), data.id),
+                type: 'promote'
+            };
+            var result = me.applyMethod('DHI_EDB_Batch_Promote', me.createBody(params));
+            if (result.isError()) {
+                toastr.error('Fail : ' + data.name + '\n' + result.getErrorString());
+                failCount++;
+            } else {
+                successCount++;
+            }
+        });
+        //실패가 없을시 성공메세지
+        if (failCount == 0) {
+            toastr.success('Owner changed.');
+        }
+        //성공이 하나라도 있다면 초기화
+        if (successCount > 0) {
+            me.refreshMyWorkFlow();
+        }
+    },
+
+    /**
      * 체크된 리스트에 대하여 담당자를 변경한다.
      * @param checkedList
      * @param identityId

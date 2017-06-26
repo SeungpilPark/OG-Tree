@@ -472,10 +472,43 @@ EditorViewController.prototype = {
             };
 
             /**
-             * 체크박스 선택된 오브젝트의 소유권 바꾸기 클릭시
-             * @param checkedList
+             * 선택된 오브젝트의 이름 변경 시도시
+             * @param data
+             * @param view
+             * @param name
              */
-            me.tree.onOwnerChange = function (checkedList) {
+            me.tree.onNameChange = function (data, view, name) {
+                me.aras.updateName(data, view, name);
+            };
+
+            /**
+             * 프로모트 변경 클릭시
+             */
+            $('#promote').click(function () {
+                var checkedList = me.tree.getCheckedList();
+                //체크 리스트 중 ED 이며 state 가 In active 인 것들을 추린다.
+                var edList = [];
+                $.each(checkedList, function (i, checked) {
+                    if (checked.type == me.tree.Constants.TYPE.ED && checked.extData.state == 'In Active') {
+                        edList.push(checked);
+                    }
+                });
+                if (!edList || !edList.length) {
+                    toastr.error('There are no checked In Active EDB objects to promote.');
+                    return;
+                }
+                me.aras.updatePromote(edList);
+            });
+
+            /**
+             * owner 변경 클릭시
+             */
+            $('#ownerChange').click(function () {
+                var checkedList = me.tree.getCheckedList();
+                if (!checkedList || !checkedList.length) {
+                    toastr.error('There are no checked objects to change ownership.');
+                    return;
+                }
                 var dt;
                 var dataSet = me.aras.getProjectMember();
                 if (!me.memberGrid) {
@@ -532,17 +565,7 @@ EditorViewController.prototype = {
                 modal.modal({
                     show: true
                 });
-            };
-
-            /**
-             * 선택된 오브젝트의 이름 변경 시도시
-             * @param data
-             * @param view
-             * @param name
-             */
-            me.tree.onNameChange = function (data, view, name) {
-                me.aras.updateName(data, view, name);
-            };
+            });
 
         } else {
             me.renderSampleData();

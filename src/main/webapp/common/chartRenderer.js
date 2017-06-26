@@ -727,8 +727,8 @@ ChartRenderer.prototype = {
         var edgeEnd = new Date();
         var drawEdgeTime = edgeEnd.getTime() - edgeStart.getTime();
 
-        //alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
-        console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
+        alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
+        //console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
 
         var boundary = me.canvas.getBoundary(newTableElement);
 

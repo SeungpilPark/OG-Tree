@@ -797,7 +797,7 @@
       "c_type": "",
       "c_team": "EPC)토목기술팀",
       "c_workflow": "000131-E-AE-001I-00",
-      "c_securitylevel": "Secret",
+      "c_securitylevel": "",
       "c_locked_by_id": "a"
     },
     "color": "none",
@@ -906,7 +906,7 @@
       "c_type": "",
       "c_team": "EPC)토목기술팀",
       "c_workflow": "000131-E-AE-001I-00",
-      "c_securitylevel": "Secret",
+      "c_securitylevel": "",
       "c_locked_by_id": ""
     },
     "color": "#b4eabd",
@@ -985,7 +985,7 @@
       "c_type": "",
       "c_team": "EPC)토목기술팀",
       "c_workflow": "000131-E-AE-001I-00",
-      "c_securitylevel": "Secret",
+      "c_securitylevel": "",
       "c_locked_by_id": "a"
     },
     "color": "#b4eabd",
