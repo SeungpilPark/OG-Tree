@@ -2009,7 +2009,7 @@ DataController.prototype = {
         });
         //실패가 없을시 성공메세지
         if (failCount == 0) {
-            toastr.success('Owner changed.');
+            toastr.success('Promoted.');
         }
         //성공이 하나라도 있다면 초기화
         if (successCount > 0) {
