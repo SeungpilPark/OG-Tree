@@ -1186,7 +1186,7 @@ DataController.prototype = {
             body += "<related_id>" + activityId + "</related_id>";
             var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM_WFA", body);
 
-            if (result) {
+            if (result.getResult() == '0000') {
                 relType = me.getRelType(me.TYPE.WORKFLOW, me.TYPE.ACTIVITY, 'out');
                 existRelItem = inn.newItem(relType, 'get');
                 existRelItem.setProperty("source_id", workflowId);
@@ -1990,7 +1990,7 @@ DataController.prototype = {
      * 체크된 리스트에 대해 promote 처리한다.
      * @param checkedList
      */
-    updatePromote: function(checkedList){
+    updatePromote: function (checkedList) {
         var me = this;
         var failCount = 0;
         var successCount = 0;
