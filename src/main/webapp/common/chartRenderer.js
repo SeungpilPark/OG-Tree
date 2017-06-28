@@ -1162,6 +1162,14 @@ ChartRenderer.prototype = {
             this.DELETABLE = false;
             this.LABEL_EDITABLE = false;
             this.RESIZABLE = false;
+            this.GUIDE_BBOX = {
+                stroke: "#ff5b00",
+                'stroke-width': 4,
+                fill: "white",
+                "fill-opacity": 0,
+                "shape-rendering": "crispEdges",
+                cursor: "move"
+            }
         };
         OG.shape.bpmn.A_Task.prototype = new OG.shape.GroupShape();
         OG.shape.bpmn.A_Task.superclass = OG.shape.GroupShape;
@@ -1244,20 +1252,9 @@ ChartRenderer.prototype = {
                 }
             });
             highLightSelectedEdges();
-            setTimeout(function(){
-                me.currentCanvas.setShapeStyle(me.currentElement, {
-                    stroke: '#ff0100'
-                });
-            },200);
         };
         OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
-            var me = this;
             highLightSelectedEdges();
-            setTimeout(function(){
-                me.currentCanvas.setShapeStyle(me.currentElement, {
-                    stroke: '#000'
-                });
-            },200);
         };
         OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
             var me = this;

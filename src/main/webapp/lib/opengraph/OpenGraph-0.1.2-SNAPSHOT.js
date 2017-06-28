@@ -17210,17 +17210,13 @@ OG.shape.component.DataTable = function () {
                 shape.DELETABLE = false;
                 shape.LABEL_EDITABLE = false;
                 shape.RESIZABLE = false;
-                shape.onSelectShape = function () {
-                    var me = this;
-                    me.currentCanvas.setShapeStyle(me.currentElement, {
-                        stroke: '#ff0100'
-                    })
-                }
-                shape.onDeSelectShape = function () {
-                    var me = this;
-                    me.currentCanvas.setShapeStyle(me.currentElement, {
-                        stroke: '#000'
-                    })
+                shape.GUIDE_BBOX = {
+                    stroke: "#ff5b00",
+                    'stroke-width': 4,
+                    fill: "white",
+                    "fill-opacity": 0,
+                    "shape-rendering": "crispEdges",
+                    cursor: "move"
                 }
                 result.contents.push({
                     /**
@@ -17251,6 +17247,8 @@ OG.shape.component.DataTable = function () {
 
     //옵션데이터
     this.options = {
+        selectable: 'column',
+
         //mode: 'view',
         /**
          * 컨텐트 외부 드래그 가능 여부
@@ -18350,6 +18348,18 @@ OG.shape.component.DataTable.prototype.bindCellEvent = function () {
 
 OG.shape.component.DataTable.prototype.createCellGuid = function (cellView) {
     var me = this;
+
+    if(me.options.selectable == 'column'){
+        if(cellView.type != 'column'){
+            return;
+        }
+    }
+    if(me.options.selectable == 'cell'){
+        if(cellView.type != 'cell'){
+            return;
+        }
+    }
+
     //기존 등록된 임시 셀을 모두 삭제토록.
     var childs = me.currentCanvas.getChilds(me.currentElement);
     for (var i = 0, leni = childs.length; i < leni; i++) {
@@ -23622,7 +23632,6 @@ OG.renderer.RaphaelRenderer.prototype.drawDropOverGuide = function (element) {
 };
 
 OG.renderer.RaphaelRenderer.prototype.drawGuide = function (element) {
-
     var me = this, rElement = this._getREleById(OG.Util.isElement(element) ? element.id : element),
         geometry = rElement ? rElement.node.shape.geom : null,
         envelope,
@@ -23636,6 +23645,7 @@ OG.renderer.RaphaelRenderer.prototype.drawGuide = function (element) {
         _trash, isEdge, isEssensia, controllers = [], isLane,
         _qUpper, _qLow, _qBisector, _qThirds;
 
+    var bboxStyle = element.shape.GUIDE_BBOX ? element.shape.GUIDE_BBOX : me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX;
 
     var _isConnectable = rElement && me._CANVAS._HANDLER._isConnectable(element.shape);
     var _isConnectCloneable = rElement && me._CANVAS._HANDLER._isConnectCloneable(element.shape);
@@ -23707,7 +23717,7 @@ OG.renderer.RaphaelRenderer.prototype.drawGuide = function (element) {
         if (isEdge) {
             _bBoxRect = me._PAPER.rect(_upperLeft.x - 10, _upperLeft.y - 10, envelope.getWidth() + 20, envelope.getHeight() + 20);
         }
-        _bBoxRect.attr(me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX);
+        _bBoxRect.attr(bboxStyle);
         me._add(_bBoxRect, rElement.id + OG.Constants.GUIDE_SUFFIX.BBOX);
         guide.bBox = _bBoxRect.node;
     }
@@ -23720,7 +23730,7 @@ OG.renderer.RaphaelRenderer.prototype.drawGuide = function (element) {
         if (isEdge) {
             _bBoxRect = me._PAPER.rect(_upperLeft.x - 10, _upperLeft.y - 10, envelope.getWidth() + 20, envelope.getHeight() + 20);
         }
-        _bBoxRect.attr(me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX);
+        _bBoxRect.attr(bboxStyle);
         me._add(_bBoxRect, rElement.id + OG.Constants.GUIDE_SUFFIX.BBOX);
     }
 
@@ -24297,6 +24307,8 @@ OG.renderer.RaphaelRenderer.prototype.drawEdgeGuide = function (element) {
         _size = me._CONFIG.GUIDE_RECT_SIZE, _hSize = OG.Util.round(_size / 2), _style = {},
         i;
 
+    var bboxStyle = element.shape.GUIDE_BBOX ? element.shape.GUIDE_BBOX : me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX;
+
     if (rElement && geometry) {
         OG.Util.apply(_style, geometry.style.map, me._CONFIG.DEFAULT_STYLE.EDGE);
 
@@ -24330,7 +24342,7 @@ OG.renderer.RaphaelRenderer.prototype.drawEdgeGuide = function (element) {
             }
 
             _bBoxLine = this._PAPER.path(pathStr);
-            _bBoxLine.attr(me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX);
+            _bBoxLine.attr(bboxStyle);
             this._add(_bBoxLine, rElement.id + OG.Constants.GUIDE_SUFFIX.BBOX);
             _bBoxLine.insertBefore(rElement);
 
@@ -24398,7 +24410,7 @@ OG.renderer.RaphaelRenderer.prototype.drawEdgeGuide = function (element) {
             }
         }
         _bBoxLine = this._PAPER.path(pathStr);
-        _bBoxLine.attr(me._CONFIG.DEFAULT_STYLE.GUIDE_BBOX);
+        _bBoxLine.attr(bboxStyle);
 
         // 시작지점 가이드
         _fromRect = this._PAPER.rect(vertices[0].x - _hSize, vertices[0].y - _hSize, _size, _size);
@@ -29058,7 +29070,10 @@ OG.handler.EventHandler.prototype = {
 
                     $(this).css({"position": "", "left": "", "top": ""});
                     $.each(bBoxArray, function (k, item) {
-                        renderer.setAttr(item.box, {transform: "t" + dx + "," + dy});
+                        renderer.setAttr(item.box, {
+                            transform: "t" + dx + "," + dy,
+                            'stroke-width': 1
+                        });
                     });
 
                     setGroupTarget();
