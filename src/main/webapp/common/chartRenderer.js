@@ -1248,19 +1248,22 @@ ChartRenderer.prototype = {
                 me.currentCanvas.setShapeStyle(me.currentElement, {
                     stroke: '#ff0100'
                 });
-            },100);
+            },200);
         };
         OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
             var me = this;
-            me.currentCanvas.setShapeStyle(me.currentElement, {
-                stroke: '#000'
-            });
             highLightSelectedEdges();
+            setTimeout(function(){
+                me.currentCanvas.setShapeStyle(me.currentElement, {
+                    stroke: '#000'
+                });
+            },200);
         };
         OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
             var me = this;
             $(me.currentElement).bind({
                 'dblclick': function () {
+                    console.log('dblclick');
                     if (me.data && me.data['cur_rel_wf']) {
                         if (chartRenderer.viewController.aras) {
                             chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);
