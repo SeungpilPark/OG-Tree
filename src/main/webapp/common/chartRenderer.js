@@ -84,6 +84,7 @@ var ChartRenderer = function (container, viewController, editMode) {
             checkBridgeEdge: true,
             autoHistory: false
         });
+        this.canvas._CONFIG.DELETABLE = false;
     }
     this.canvas._CONFIG.DEFAULT_STYLE.EDGE = {
         stroke: "black",
