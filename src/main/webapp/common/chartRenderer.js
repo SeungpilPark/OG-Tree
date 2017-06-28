@@ -78,7 +78,7 @@ var ChartRenderer = function (container, viewController, editMode) {
             groupDropable: true,
             collapsible: true,
             enableHotKey: false,
-            enableContextMenu: false,
+            enableContextMenu: true,
             useSlider: false,
             stickGuide: true,
             checkBridgeEdge: true,
@@ -1295,6 +1295,9 @@ ChartRenderer.prototype = {
 
         OG.shape.component.Cell.prototype.createContextMenu = function () {
             var me = this;
+            if(!chartRenderer.editMode){
+                return {}
+            }
 
             function guid() {
                 function s4() {
