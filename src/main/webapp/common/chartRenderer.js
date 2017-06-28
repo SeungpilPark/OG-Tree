@@ -1233,9 +1233,6 @@ ChartRenderer.prototype = {
         };
         OG.shape.bpmn.A_Task.prototype.onSelectShape = function () {
             var me = this;
-            me.currentCanvas.setShapeStyle(me.currentElement, {
-                stroke: '#ff0100'
-            });
             //자신의 라인이 아닌 모든 도형은 deselect 한다.
             var allShapes = me.currentCanvas.getAllShapes();
             $.each(allShapes, function (i, element) {
@@ -1247,6 +1244,11 @@ ChartRenderer.prototype = {
                 }
             });
             highLightSelectedEdges();
+            setTimeout(function(){
+                me.currentCanvas.setShapeStyle(me.currentElement, {
+                    stroke: '#ff0100'
+                });
+            },100);
         };
         OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
             var me = this;
@@ -1314,7 +1316,6 @@ ChartRenderer.prototype = {
                     this.contextMenu = {
                         'left': {
                             name: '오른쪽 열 추가', callback: function () {
-                                console.log('cellView.cellIndex', cellView.cellIndex);
                                 var existColumn = table.shape.getColumnByField(cellView.column);
                                 table.shape.addColumn({
                                     data: chartRenderer._CONFIG.CUSTOM_COL_PREFIX + guid(),
@@ -1328,7 +1329,6 @@ ChartRenderer.prototype = {
                         },
                         'right': {
                             name: '왼쪽 열 추가', callback: function () {
-                                console.log('cellView.cellIndex', cellView.cellIndex);
                                 var existColumn = table.shape.getColumnByField(cellView.column);
                                 table.shape.addColumn({
                                     data: chartRenderer._CONFIG.CUSTOM_COL_PREFIX + guid(),
