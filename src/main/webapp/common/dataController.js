@@ -603,10 +603,11 @@ DataController.prototype = {
                     var parentData = me.tree.selectParentById(data.id);
                     var parentView = me.tree.selectViewById(me.tree._VIEWDATA, parentData.id);
                     me.refreshOutFolder(parentData, parentView);
+                } else {
+                    EventBottomSave.handler = function () {
+                        me.refreshOutFolder(data, view)
+                    };
                 }
-                EventBottomSave.handler = function () {
-                    me.refreshOutFolder(data, view)
-                };
                 //afterunlock 이벤트는 처음 한번 반응을 하고 다음부턴 이벤트를 주지 않음.
                 arasWindow.top.commandEventHandlers['afterunlock'] = [];
                 arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
@@ -1954,6 +1955,9 @@ DataController.prototype = {
             nodeList.push(activityStructure.node);
         } else {
             nodeList = activityStructure.nodeList;
+        }
+        if (!nodeList || !nodeList.length) {
+            return;
         }
 
         var refreshData = me.createWorkFlowData(nodeList, 'my', 'out');
