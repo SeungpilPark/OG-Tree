@@ -596,6 +596,14 @@ DataController.prototype = {
             asyncResult.then(function (arasWindow) {
                 var EventBottomSave = {};
                 EventBottomSave.window = window;
+
+                //ed 일 경우는 부모 를 리프레쉬한다.
+                if (data.type == me.TYPE.ED) {
+                    //selectViewById
+                    var parentData = me.tree.selectParentById(data.id);
+                    var parentView = me.tree.selectViewById(parentData.id);
+                    me.refreshOutFolder(parentData, parentView);
+                }
                 EventBottomSave.handler = function () {
                     me.refreshOutFolder(data, view)
                 };
