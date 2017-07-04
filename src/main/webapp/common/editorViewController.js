@@ -518,10 +518,10 @@ EditorViewController.prototype = {
                                 style: 'single'
                             },
                             columns: [
-                                {data: 'name', title: 'Name', defaultContent: '', width: '20%'},
-                                {data: 'team', title: 'Team', defaultContent: '', width: '20%'},
+                                {data: 'name', title: 'Name', defaultContent: ''},
+                                {data: 'team', title: 'Team', defaultContent: ''},
                                 {data: 'part', title: 'Team with Part', defaultContent: '', width: '40%'},
-                                {data: 'email', title: 'Email', defaultContent: '', width: '20%'}
+                                {data: 'email', title: 'Email', defaultContent: ''}
                                 //{data: 'id', title: 'ID', defaultContent: ''}
                             ],
                             pageLength: 10,
