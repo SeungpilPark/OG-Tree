@@ -110,6 +110,35 @@ var ChartRenderer = function (container, viewController, editMode) {
     this.existJson = null;
     this.loadElements = null;
     this.existActivitySize = {};
+
+
+    /**
+     * 최종 데이터 테이블
+     * @type {null}
+     */
+    this.dataTable = null;
+    /**
+     * 최종 로우데이터
+     * @type {Array}
+     */
+    this.finalRowData = [];
+    /**
+     * 재구성될 커넥션 리스트
+     * @type {Array}
+     */
+    this.connections = [];
+    /**
+     * 재구성 된 커넥션 edgeId 리스트
+     * @type {Array}
+     */
+    this.existConnections = [];
+    /**
+     * 뷰 모드일시 그려진 셀 리스트
+     * rowIndex + '-' + column 으로 표현한다.
+     * @type {Array}
+     */
+    this.existCells = [];
+
 };
 ChartRenderer.prototype = {
 
@@ -119,6 +148,24 @@ ChartRenderer.prototype = {
     init: function () {
         var me = this;
         me.bindEvent();
+
+        //스크롤일 경우 렌더링을 재수행한다.
+        me._CONTAINER.scroll(function () {
+            me.renderByContainer();
+        });
+
+        var beforeW = me._CONTAINER.width();
+
+        if (!me.editMode) {
+            //컨테이너 크기를 체크하여 크기 변경시 renderByContainer 를 실행한다.
+            var checkContainerSize = function () {
+                if (beforeW != me._CONTAINER.width()) {
+                    beforeW = me._CONTAINER.width();
+                    me.renderByContainer();
+                }
+            };
+            setInterval(checkContainerSize, 1000);
+        }
     },
     /**
      * Scale 을 반환한다. (리얼 사이즈 : Scale = 1)
@@ -410,14 +457,102 @@ ChartRenderer.prototype = {
     //========================================================================//
     //===========================Render apis==================================//
     //========================================================================//
+    renderByContainer: function () {
+        var me = this;
+
+        if (me.editMode) {
+            return;
+        }
+
+        //1. 컨테이너 가로 사이즈를 구한다.
+        var viewWidth = me._CONTAINER.width() + me._CONTAINER.scrollLeft();
+
+        //2. 컨테이너 가로 안에 속한 셀 리스트를 구한다.
+        if (me.dataTable) {
+            $.each(me.dataTable.data.viewData.rows, function (rowIndex, row) {
+                if (row && row.cells) {
+                    for (var column in row.cells) {
+                        //이미 그려진 셀이면 넘어간다.
+                        if (me.existCells.indexOf(rowIndex + '-' + column) != -1) {
+                            continue;
+                        }
+                        var cellView = row.cells[column];
+
+                        //셀 뷰의 left 값이 컨테이너 가로보다 클 경우 넘어간다.
+                        if (cellView.left > viewWidth) {
+                            continue;
+                        }
+
+                        //셀 뷰의 데이터 값을 구하고, 셀을 재구성한다.
+                        if (me.finalRowData[rowIndex] && me.finalRowData[rowIndex][column]) {
+                            cellView.value = me.finalRowData[rowIndex][column];
+                            me.dataTable.drawCell(cellView);
+                        }
+
+                        //그려진 셀 리스트에 추가한다.
+                        me.existCells.push(rowIndex + '-' + column);
+                    }
+                }
+            });
+        }
+        me.renderEdges();
+    },
+
+    /**
+     * 기존 JSON 맵에 포함된 연결정보를 재구성한다.
+     * 한번 재구성된 연결정보는 다시 구성하지 않는다.
+     */
+    renderEdges: function () {
+        var me = this;
+        //연결 정보를 이어나간다.
+        if (me.existJson && me.connections && me.connections.length) {
+            var defaultStyle = JSON.parse(JSON.stringify(me.canvas._CONFIG.DEFAULT_STYLE.EDGE));
+            defaultStyle['opacity'] = '1';
+            defaultStyle['marker'] = null;
+
+            $.each(me.connections, function (i, connection) {
+                var edgeId = connection.id;
+                if (me.existConnections.indexOf(edgeId) != -1) {
+                    return;
+                }
+
+                var fromTerminal = connection.from;
+                var fromActivity = connection.fromActivity;
+                var toTerminal = connection.to;
+                var toActivity = connection.toActivity;
+
+                var fromShape, toShape;
+                if (fromActivity) {
+                    fromShape = me.getElementByActivityId(fromActivity);
+                }
+                if (toActivity) {
+                    toShape = me.getElementByActivityId(toActivity);
+                }
+
+                //둘 중 하나라도 없다면 무시한다.
+                if (!fromShape || !toShape) {
+                    return;
+                }
+
+                var beforeFromId = fromTerminal.substring(0, fromTerminal.indexOf(OG.Constants.TERMINAL));
+                var fromReplace = fromTerminal.replace(beforeFromId, fromShape.id);
+
+                var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
+                var toReplace = toTerminal.replace(beforeToId, toShape.id);
+                var edge = me.canvas.drawShape(null, connection.shape, null, defaultStyle, edgeId);
+                me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
+                me.existConnections.push(edgeId);
+            });
+            //me.connections = [];
+        }
+    },
+
     /**
      * 데이터를 기반으로 화면에 렌더링한다.
      * @param chartData
      * @param existJson
      */
     render: function (chartData, existJson) {
-        var parseStart = new Date();
-
         var me = this;
         var dataTable;
         var existTableData;
@@ -622,9 +757,9 @@ ChartRenderer.prototype = {
             }
 
             //기존 데이터의 칼럼을 찾지 못했다면, 신규 액티비티이며, cur_proposal_activity 과 header 리스트의 id를 매핑한다.
-            if(!column){
-                $.each(headers, function(h, header){
-                    if(activity['cur_proposal_activity'] && (header.id == activity['cur_proposal_activity'])){
+            if (!column) {
+                $.each(headers, function (h, header) {
+                    if (activity['cur_proposal_activity'] && (header.id == activity['cur_proposal_activity'])) {
                         column = header.label;
                     }
                 })
@@ -686,70 +821,50 @@ ChartRenderer.prototype = {
                 }
             })
         }
-
-
         dataTable.setOptions(options);
-        dataTable.setData(rowData);
-        var newTableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
 
-        var parseEnd = new Date();
-        var parseTime = parseEnd.getTime() - parseStart.getTime();
+        //최종 rowData 를 저장한다.
+        me.finalRowData = rowData;
 
 
-        var start = new Date();
-        dataTable.draw();
-        var end = new Date();
-        var drawTime = end.getTime() - start.getTime();
-
-
-        var edgeStart = new Date();
-        //연결 정보를 이어나간다.
-        if (existJson && me.connections && me.connections.length) {
-            var defaultStyle = JSON.parse(JSON.stringify(me.canvas._CONFIG.DEFAULT_STYLE.EDGE));
-            defaultStyle['opacity'] = '1';
-            defaultStyle['marker'] = null;
-
-            $.each(me.connections, function (i, connection) {
-                //var edgeId = connection.id;
-                var fromTerminal = connection.from;
-                var fromActivity = connection.fromActivity;
-                var toTerminal = connection.to;
-                var toActivity = connection.toActivity;
-
-                var fromShape, toShape;
-                if (fromActivity) {
-                    fromShape = me.getElementByActivityId(fromActivity);
-                }
-                if (toActivity) {
-                    toShape = me.getElementByActivityId(toActivity);
-                }
-
-                //둘 중 하나라도 없다면 무시한다.
-                if (!fromShape || !toShape) {
-                    return;
-                }
-
-                var beforeFromId = fromTerminal.substring(0, fromTerminal.indexOf(OG.Constants.TERMINAL));
-                var fromReplace = fromTerminal.replace(beforeFromId, fromShape.id);
-
-                var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
-                var toReplace = toTerminal.replace(beforeToId, toShape.id);
-                var edge = me.canvas.drawShape(null, connection.shape, null, defaultStyle, connection.id);
-                me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
-            });
-            me.connections = [];
+        //에디터 모드인 경우
+        if (me.editMode) {
+            dataTable.setData(rowData);
+        }
+        //뷰 모드인경우는 func_code 만을 데이터에 추가한다.
+        else {
+            var copyData = [];
+            if (rowData && rowData.length) {
+                copyData = JSON.parse(JSON.stringify(rowData));
+                $.each(copyData, function (c, data) {
+                    copyData[c] = {
+                        func_code: data['func_code']
+                    };
+                    me.existCells.push(c + '-func_code');
+                })
+            }
+            dataTable.setData(copyData);
         }
 
-        var edgeEnd = new Date();
-        var drawEdgeTime = edgeEnd.getTime() - edgeStart.getTime();
+        //데이터 테이블을 그린다.
+        var newTableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
+        dataTable.draw();
 
-        //alert('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
-        //console.log('parseTime : ' + parseTime + ' drawTime: ' + drawTime + ' drawEdgeTime:' + drawEdgeTime);
+        //데이터 테이블을 등록한다.
+        me.dataTable = dataTable;
 
-        var boundary = me.canvas.getBoundary(newTableElement);
+        //뷰모드일 경우 컨테이너 내부의 콘텐트를 그린다.
+        if (!me.editMode) {
+            me.renderByContainer();
+        }
+        //에디터 모드일 경우 선열결을 실행한다.
+        else {
+            me.renderEdges();
+        }
 
 
         //캔버스 사이즈 조정
+        var boundary = me.canvas.getBoundary(newTableElement);
         this.setScale(1);
         this.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
 
@@ -1296,7 +1411,7 @@ ChartRenderer.prototype = {
 
         OG.shape.component.Cell.prototype.createContextMenu = function () {
             var me = this;
-            if(!chartRenderer.editMode){
+            if (!chartRenderer.editMode) {
                 return {}
             }
 

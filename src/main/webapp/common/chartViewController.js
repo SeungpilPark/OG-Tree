@@ -22,7 +22,7 @@ var ChartViewController = function () {
      * Edit 모드
      * @type {string}
      */
-    this.editMode = true;
+    this.editMode = false;
 
 
     this.chartStateJson = null;
