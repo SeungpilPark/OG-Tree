@@ -826,6 +826,20 @@ DataController.prototype = {
             };
             arasWindow.top.commandEventHandlers['aftersave'] = [];
             arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
+
+            var EventBottomRefresh = {};
+            EventBottomRefresh.window = window;
+            EventBottomRefresh.handler = function () {
+                me.refreshOutFolder(data, view)
+            };
+            //afterunlock 이벤트는 처음 한번 반응을 하고 다음부턴 이벤트를 주지 않음.
+            arasWindow.top.commandEventHandlers['afterunlock'] = [];
+            arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomRefresh);
+
+
+            //afterlock 이벤트는 매번 버튼을 누를 때마다 이벤트를 줌.
+            arasWindow.top.commandEventHandlers['afterlock'] = [];
+            arasWindow.top.commandEventHandlers['afterlock'].push(EventBottomRefresh);
         });
     },
     /**
@@ -981,6 +995,20 @@ DataController.prototype = {
                 };
                 arasWindow.top.commandEventHandlers["aftersave"] = [];
                 arasWindow.top.commandEventHandlers["aftersave"].push(EventBottomSave);
+
+                var EventBottomRefresh = {};
+                EventBottomRefresh.window = window;
+                EventBottomRefresh.handler = function () {
+                    me.refreshOutFolder(data, view)
+                };
+                //afterunlock 이벤트는 처음 한번 반응을 하고 다음부턴 이벤트를 주지 않음.
+                arasWindow.top.commandEventHandlers['afterunlock'] = [];
+                arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomRefresh);
+
+
+                //afterlock 이벤트는 매번 버튼을 누를 때마다 이벤트를 줌.
+                arasWindow.top.commandEventHandlers['afterlock'] = [];
+                arasWindow.top.commandEventHandlers['afterlock'].push(EventBottomRefresh);
             },
             function (obj) {
                 toastr.error('Failed to create Edb');
@@ -1182,22 +1210,29 @@ DataController.prototype = {
             }
 
             //관계 삭제 전 상위 상태 재설정
-            var body = "<source_id>" + workflowId + "</source_id>";
-            body += "<related_id>" + activityId + "</related_id>";
-            var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM_WFA", body);
+            try {
+                var body = "<source_id>" + workflowId + "</source_id>";
+                body += "<related_id>" + activityId + "</related_id>";
+                var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM_WFA", body);
 
-            if (result.getResult() == '0000') {
-                relType = me.getRelType(me.TYPE.WORKFLOW, me.TYPE.ACTIVITY, 'out');
-                existRelItem = inn.newItem(relType, 'get');
-                existRelItem.setProperty("source_id", workflowId);
-                existRelItem.setProperty("related_id", activityId);
-                existRelItem = existRelItem.apply();
+                if (result.getResult() == '0000') {
+                    relType = me.getRelType(me.TYPE.WORKFLOW, me.TYPE.ACTIVITY, 'out');
+                    existRelItem = inn.newItem(relType, 'get');
+                    existRelItem.setProperty("source_id", workflowId);
+                    existRelItem.setProperty("related_id", activityId);
+                    existRelItem = existRelItem.apply();
 
-                if (existRelItem.getItemCount() > 0) {
-                    var amlStr = "<AML><Item type=\"" + relType + "\" action=\"delete\" where=\"source_id = '" + workflowId + "' and related_id = '" + activityId + "'\"></Item></AML>"
-                    inn.applyAML(amlStr);
+                    if (existRelItem.getItemCount() > 0) {
+                        var amlStr = "<AML><Item type=\"" + relType + "\" action=\"delete\" where=\"source_id = '" + workflowId + "' and related_id = '" + activityId + "'\"></Item></AML>"
+                        inn.applyAML(amlStr);
+                    }
+                    toastr.success('Selected Item deleted.');
+                } else {
+                    toastr.info('Selected items can not be deleted.');
                 }
                 me.refreshMyWorkFlow();
+            } catch (e) {
+                toastr.error('Failed to delete selected Item.');
             }
         }
         //폴더,ED 삭제일 경우
@@ -1218,25 +1253,32 @@ DataController.prototype = {
                 return;
             }
 
-            var parentId = me.getCurrentItemId(me.getItemType(parentData.type), parentData.id);
-            var delId = me.getCurrentItemId(me.getItemType(data.type), data.id);
+            try {
+                var parentId = me.getCurrentItemId(me.getItemType(parentData.type), parentData.id);
+                var delId = me.getCurrentItemId(me.getItemType(data.type), data.id);
 
-            //관계 삭제 전 상위 상태 재설정
-            var body = "<source_id>" + parentId + "</source_id>";
-            body += "<related_id>" + delId + "</related_id>";
-            var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM", body);
+                //관계 삭제 전 상위 상태 재설정
+                var body = "<source_id>" + parentId + "</source_id>";
+                body += "<related_id>" + delId + "</related_id>";
+                var result = inn.applyMethod("DHI_WF_DEL_RELATION_ITEM", body);
 
-            if (result.getResult() == '0000') {
-                relType = me.getRelType(parentData.type, data.type, 'out');
-                existRelItem = inn.newItem(relType, 'get');
-                existRelItem.setProperty("source_id", parentId);
-                existRelItem.setProperty("related_id", delId);
-                existRelItem = existRelItem.apply();
-                if (existRelItem.getItemCount() > 0) {
-                    var amlStr = "<AML><Item type=\"" + relType + "\" action=\"delete\" where=\"source_id = '" + parentId + "' and related_id = '" + delId + "'\"></Item></AML>"
-                    inn.applyAML(amlStr);
+                if (result.getResult() == '0000') {
+                    relType = me.getRelType(parentData.type, data.type, 'out');
+                    existRelItem = inn.newItem(relType, 'get');
+                    existRelItem.setProperty("source_id", parentId);
+                    existRelItem.setProperty("related_id", delId);
+                    existRelItem = existRelItem.apply();
+                    if (existRelItem.getItemCount() > 0) {
+                        var amlStr = "<AML><Item type=\"" + relType + "\" action=\"delete\" where=\"source_id = '" + parentId + "' and related_id = '" + delId + "'\"></Item></AML>"
+                        inn.applyAML(amlStr);
+                    }
+                    toastr.success('Selected Item deleted.');
+                } else {
+                    toastr.info('Selected items can not be deleted.');
                 }
                 me.refreshMyWorkFlow();
+            } catch (e) {
+                toastr.error('Failed to delete selected Item.');
             }
         }
     },
