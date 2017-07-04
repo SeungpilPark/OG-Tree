@@ -559,8 +559,15 @@ ChartRenderer.prototype = {
         var tableElement;
         var existViewData;
 
-        me.existJson = null;
         me.canvas.clear();
+        me.existJson = null;
+        me.loadElements = null;
+        me.existActivitySize = {};
+        me.dataTable = null;
+        me.finalRowData = [];
+        me.connections = [];
+        me.existConnections = [];
+        me.existCells = [];
 
         //기존 json 정보가 있을 경우 로드 한 후, 데이터 테이블을 얻어온다.
         if (existJson) {
