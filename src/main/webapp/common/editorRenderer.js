@@ -4127,6 +4127,9 @@ EditorRenderer.prototype = {
                     saveButton.remove();
                     cancelButton.remove();
 
+                    if(afterLabel && afterLabel.length){
+                        afterLabel = afterLabel.replace(/(\r\n|\n|\r)/gm," ");
+                    }
                     editorRenderer.onNameChange(data, view, afterLabel);
                 });
 
