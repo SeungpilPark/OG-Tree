@@ -93,6 +93,9 @@ uengineDT.prototype = {
                                     me.bindTdEvent(rowIdx, columnIdx, td, eventKey, column);
                                 }
                             }
+                            if (column['width']) {
+                                td.css('width', column['width']);
+                            }
                         }
                     });
                 });

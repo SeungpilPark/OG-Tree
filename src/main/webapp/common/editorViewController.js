@@ -571,6 +571,105 @@ EditorViewController.prototype = {
             me.renderSampleData();
         }
 
+
+        /**
+         * owner 변경 클릭시
+         */
+        $('#ownerChange').click(function () {
+            var checkedList = me.tree.getCheckedList();
+            if (!checkedList || !checkedList.length) {
+                toastr.error('There are no checked objects to change ownership.');
+                return;
+            }
+            var dt;
+            var dataSet = [
+                {
+                    name: '김우영',
+                    team: '',
+                    part: 'EPC)전력통계기술팀 LV파트',
+                    email: ''
+                },
+                {
+                    name: '김우영',
+                    team: '',
+                    part: 'EPC)전력통계기술팀 LV파트',
+                    email: 'KWANGWOO1.LEE@doosan.com'
+                },
+                {
+                    name: '김우영',
+                    team: '',
+                    part: 'EPC)전력통계기술팀 LV파트',
+                    email: ''
+                },
+                {
+                    name: '김우영',
+                    team: '',
+                    part: 'EPC)전력통계기술팀 LV파트',
+                    email: 'KWANGWOO1.LEE@doosan.com'
+                },
+                {
+                    name: '김우영',
+                    team: '',
+                    part: 'EPC)전력통계기술팀 LV파트',
+                    email: 'KWANGWOO1.LEE@doosan.com'
+                }
+            ];
+            if (!me.memberGrid) {
+                dt = new uengineDT($('#memberGrid'),
+                    {
+                        select: {
+                            style: 'single'
+                        },
+                        columns: [
+                            {data: 'name', title: 'Name', defaultContent: ''},
+                            {data: 'team', title: 'Team', defaultContent: ''},
+                            {data: 'part', title: 'Team with Part', defaultContent: '', width: '40%'},
+                            {data: 'email', title: 'Email', defaultContent: ''}
+                            //{data: 'id', title: 'ID', defaultContent: ''}
+                        ],
+                        pageLength: 10,
+                        info: true,
+                        responsive: true,
+                        dom: '<"html5buttons"B>lTfgitp',
+                        buttons: [
+                            {extend: 'copy'},
+                            {extend: 'csv'},
+                            {extend: 'excel', title: 'ExampleFile'},
+                            {extend: 'pdf', title: 'ExampleFile'},
+                            {
+                                extend: 'print',
+                                customize: function (win) {
+                                    $(win.document.body).addClass('white-bg');
+                                    $(win.document.body).css('font-size', '10px');
+
+                                    $(win.document.body).find('table')
+                                        .addClass('compact')
+                                        .css('font-size', 'inherit');
+                                }
+                            }
+                        ]
+                    });
+                me.memberGrid = dt;
+            }
+
+            me.memberGrid.renderGrid(dataSet);
+
+            var modal = $('#memberModal');
+            modal.find('[name=action]').unbind('click');
+            modal.find('[name=action]').bind('click', function () {
+                var selected = me.memberGrid.getDt().rows({selected: true}).data();
+                if (!selected || !selected.length) {
+                    toastr.error('Please select a project member.');
+                    return true;
+                }
+                modal.find('.close').click();
+                me.aras.updateOwner(checkedList, selected[0]['id']);
+            });
+            modal.modal({
+                show: true
+            });
+        });
+
         me.renderStateBox();
         $('#labelSwitch').click(function () {
             var swich = $(this);
