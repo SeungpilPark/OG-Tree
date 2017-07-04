@@ -207,6 +207,7 @@ ChartRenderer.prototype = {
         me._CONTAINER.scrollLeft(cuScrollLeft + moveX);
         me._CONTAINER.scrollTop(cuScrollTop + moveY);
 
+        me.renderByContainer();
     },
 
     //========================================================================//
