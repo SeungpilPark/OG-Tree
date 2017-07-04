@@ -1201,6 +1201,12 @@ DataController.prototype = {
         var parentView;
         var existRelItem;
 
+        //c_can_change 가 false 일 경우 삭제 불가.
+        if (data.extData && data.extData['c_can_change'] == 'false') {
+            toastr.info('Selected item can not be deleted.');
+            return;
+        }
+
         //관계 삭제 전 삭제 가능 여부 체크
         var checkEnableDelete = function (sourceId, relatedId) {
             var body = "<source_id>" + sourceId + "</source_id>";
@@ -1236,7 +1242,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.info('Selected items can not be deleted.');
+                    toastr.info('Selected item can not be deleted.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {
@@ -1282,7 +1288,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.info('Selected items can not be deleted.');
+                    toastr.info('Selected item can not be deleted.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {
