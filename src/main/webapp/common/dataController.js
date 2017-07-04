@@ -602,7 +602,9 @@ DataController.prototype = {
                     //selectViewById
                     var parentData = me.tree.selectParentById(data.id);
                     var parentView = me.tree.selectViewById(me.tree._VIEWDATA, parentData.id);
-                    me.refreshOutFolder(parentData, parentView);
+                    EventBottomSave.handler = function () {
+                        me.refreshOutFolder(parentData, parentView);
+                    };
                 } else {
                     EventBottomSave.handler = function () {
                         me.refreshOutFolder(data, view)
