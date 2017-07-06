@@ -511,7 +511,6 @@ EditorViewController.prototype = {
                 }
                 var dt;
                 var userTeam = me.aras.getUserTeam();
-                console.log('userTeam', userTeam);
                 var dataSet = me.aras.getProjectMember();
                 if (!me.memberGrid) {
                     dt = new uengineDT($('#memberGrid'),
@@ -555,6 +554,7 @@ EditorViewController.prototype = {
                 }
 
                 me.memberGrid.renderGrid(dataSet);
+                me.memberGrid.dt.search(userTeam).draw();
 
                 var modal = $('#memberModal');
                 modal.find('[name=action]').unbind('click');
