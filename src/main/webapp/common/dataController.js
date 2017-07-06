@@ -337,10 +337,8 @@ DataController.prototype = {
         var me = this;
         var item;
         var result = me.applyMethod('DHI_getLoginUserTeam', null);
-        if (result.getItemCount() == 1) {
-            item = result.node;
-        } else if (result.getItemCount() > 1) {
-            item = result.nodeList[0];
+        if(result){
+            item = result.getItemByIndex(0);
         }
         return item ? item.getProperty('team_name', '') : '';
     },
