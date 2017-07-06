@@ -511,11 +511,14 @@ EditorViewController.prototype = {
                 }
                 var dt;
                 var userTeam = me.aras.getUserTeam();
-                console.log('userTeam' , userTeam);
+                console.log('userTeam', userTeam);
                 var dataSet = me.aras.getProjectMember();
                 if (!me.memberGrid) {
                     dt = new uengineDT($('#memberGrid'),
                         {
+                            search: {
+                                search: userTeam
+                            },
                             select: {
                                 style: 'single'
                             },
