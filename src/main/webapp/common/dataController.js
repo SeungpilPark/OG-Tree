@@ -333,6 +333,18 @@ DataController.prototype = {
         var userId = inn.getUserID();
         return userId;
     },
+    getUserTeam: function () {
+        var me = this;
+        var item;
+        var result = me.applyMethod('DHI_getLoginUserTeam', null);
+        if (result.getItemCount() == 1) {
+            item = result.node;
+        } else if (result.getItemCount() > 1) {
+            item = result.nodeList[0];
+        }
+        return item ? item.getProperty('team_name', '') : '';
+    },
+
     /**
      * WF 하위의 액티비티, 폴더 및 ED 조회
      * @param wf_id
@@ -603,11 +615,15 @@ DataController.prototype = {
                     var parentData = me.tree.selectParentById(data.id);
                     var parentView = me.tree.selectViewById(me.tree._VIEWDATA, parentData.id);
                     EventBottomSave.handler = function () {
-                        me.refreshOutFolder(parentData, parentView);
+                        setTimeout(function () {
+                            me.refreshOutFolder(parentData, parentView);
+                        }, 1000);
                     };
                 } else {
                     EventBottomSave.handler = function () {
-                        me.refreshOutFolder(data, view)
+                        setTimeout(function () {
+                            me.refreshOutFolder(data, view)
+                        }, 1000);
                     };
                 }
 
