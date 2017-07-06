@@ -610,6 +610,11 @@ DataController.prototype = {
                         me.refreshOutFolder(data, view)
                     };
                 }
+
+                //afterunlock 이벤트는 처음 한번 반응을 하고 다음부턴 이벤트를 주지 않음.
+                arasWindow.top.commandEventHandlers['aftersave'] = [];
+                arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
+
                 //afterunlock 이벤트는 처음 한번 반응을 하고 다음부턴 이벤트를 주지 않음.
                 arasWindow.top.commandEventHandlers['afterunlock'] = [];
                 arasWindow.top.commandEventHandlers['afterunlock'].push(EventBottomSave);
