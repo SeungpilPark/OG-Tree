@@ -103,7 +103,6 @@ var ChartRenderer = function (container, viewController, editMode) {
     this.canvas._CONFIG.GUIDE_CONTROL_LINE_NUM = 1;
     this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
     this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
-    //ENABLE_HOTKEY
 
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;

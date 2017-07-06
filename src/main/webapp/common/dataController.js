@@ -1245,7 +1245,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.error('Selected item can not be deleted.');
+                    toastr.success('Completed.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {
@@ -1291,7 +1291,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.error('Selected item can not be deleted.');
+                    toastr.success('Completed.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {
