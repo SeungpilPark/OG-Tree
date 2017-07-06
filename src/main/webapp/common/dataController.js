@@ -833,7 +833,9 @@ DataController.prototype = {
             var EventBottomSave = {};
             EventBottomSave.window = window;
             EventBottomSave.handler = function () {
-                me.addFolderOutRelation(data, view, newItem, parentItem, data.type, parentId);
+                setTimeout(function () {
+                    me.addFolderOutRelation(data, view, newItem, parentItem, data.type, parentId);
+                }, 1000);
             };
             arasWindow.top.commandEventHandlers['aftersave'] = [];
             arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
@@ -1002,7 +1004,9 @@ DataController.prototype = {
                 var EventBottomSave = {}
                 EventBottomSave.window = window;
                 EventBottomSave.handler = function () {
-                    me.addFolderEDOutRelation(edItem, parentItem, data, view);
+                    setTimeout(function () {
+                        me.addFolderEDOutRelation(edItem, parentItem, data, view);
+                    }, 1000)
                 };
                 arasWindow.top.commandEventHandlers["aftersave"] = [];
                 arasWindow.top.commandEventHandlers["aftersave"].push(EventBottomSave);
@@ -1353,7 +1357,9 @@ DataController.prototype = {
             var EventBottomSave = {};
             EventBottomSave.window = window;
             EventBottomSave.handler = function () {
-                me.refreshMyWorkFlow();
+                setTimeout(function () {
+                    me.refreshMyWorkFlow();
+                }, 1000);
             };
             arasWindow.top.commandEventHandlers['aftersave'] = [];
             arasWindow.top.commandEventHandlers['aftersave'].push(EventBottomSave);
