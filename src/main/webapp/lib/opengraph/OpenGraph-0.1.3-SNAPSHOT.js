@@ -18106,8 +18106,9 @@ OG.shape.component.DataTable.prototype.getCellFromTableIndex = function (cellInd
 /**
  * 리사이즈로 인한 draw 여부.
  * @param isResize
+ * @param isAddColumn
  */
-OG.shape.component.DataTable.prototype.draw = function (isResize) {
+OG.shape.component.DataTable.prototype.draw = function (isResize, isAddColumn) {
 
     var startDate = new Date();
     var me = this;
@@ -18135,6 +18136,8 @@ OG.shape.component.DataTable.prototype.draw = function (isResize) {
     var dataToDraw = me.getDataToDraw();
     //칼럼, dataToDraw 영역 밖에 요소 삭제하기.
     if (!isResize) {
+        me.removeOutRangeCells(columns, dataToDraw);
+    } else if (isAddColumn) {
         me.removeOutRangeCells(columns, dataToDraw);
     }
 
@@ -18251,7 +18254,7 @@ OG.shape.component.DataTable.prototype.draw = function (isResize) {
                 me.data.viewData.rows[rowIndex].cells[column.data]['text'] = value;
             }
 
-            if (isResize) {
+            if (isResize || isAddColumn) {
                 me.drawCell(me.data.viewData.rows[rowIndex].cells[column.data], 'saved', false);
             } else {
                 me.drawCell(me.data.viewData.rows[rowIndex].cells[column.data], 'saved', true);
@@ -18349,13 +18352,13 @@ OG.shape.component.DataTable.prototype.bindCellEvent = function () {
 OG.shape.component.DataTable.prototype.createCellGuid = function (cellView) {
     var me = this;
 
-    if(me.options.selectable == 'column'){
-        if(cellView.type != 'column'){
+    if (me.options.selectable == 'column') {
+        if (cellView.type != 'column') {
             return;
         }
     }
-    if(me.options.selectable == 'cell'){
-        if(cellView.type != 'cell'){
+    if (me.options.selectable == 'cell') {
+        if (cellView.type != 'cell') {
             return;
         }
     }
@@ -19191,9 +19194,38 @@ OG.shape.component.DataTable.prototype.removeColumn = function (index) {
             me.currentCanvas.removeShape(childs[i]);
         }
     }
+
+    //잘라내기에 등록된 경우 잘라내기를 없앤다.
+    if (me.cutColumn == me.options.columns[index].data) {
+        me.cutColumn = null;
+    }
+
     me.options.columns.splice(index, 1);
-    me.draw();
+    me.draw(false, true);
 }
+
+OG.shape.component.DataTable.prototype.cutAndPaste = function (beforeColumn, afterColumn) {
+    var me = this;
+    var beforeCell, afterCell, cellInformation;
+    $.each(me.data.viewData.rows, function (i, row) {
+        beforeCell = row.cells[beforeColumn];
+        afterCell = row.cells[afterColumn];
+        if (beforeCell && afterCell) {
+            cellInformation = me.getCellInformation(beforeCell);
+            if(cellInformation.contentElements && cellInformation.contentElements.length){
+                var elementsWithValues = [];
+                $.each(cellInformation.contentElements, function(c, contentElement){
+                    elementsWithValues.push({
+                        element: contentElement,
+                        value: null
+                    })
+                })
+                me.addCellContent(afterCell, elementsWithValues);
+            }
+        }
+    })
+}
+
 
 OG.shape.component.Cell = function (label) {
     OG.shape.component.Cell.superclass.call(this);
@@ -19370,8 +19402,23 @@ OG.shape.component.Cell.prototype.createContextMenu = function () {
                     name: '열 삭제', callback: function () {
                         table.shape.removeColumn(cellView.cellIndex);
                     }
+                },
+                'cut': {
+                    name: '잘라내기', callback: function () {
+                        table.shape.cutColumn = cellView.column;
+                    }
                 }
             };
+            if (table.shape.cutColumn) {
+                this.contextMenu['paste'] = {
+                    name: '붙여넣기', callback: function () {
+                        var cutColumn = table.shape.cutColumn;
+                        table.shape.cutColumn = null;
+                        table.shape.cutAndPaste(cutColumn, cellView.column);
+                    }
+                }
+            }
+
             return this.contextMenu;
         }
     } else {
@@ -32013,6 +32060,11 @@ OG.handler.EventHandler.prototype = {
             //선택상태 설정
             $(element).attr("_selected", "true");
 
+            //Edge 일 경우 상단으로
+            if(element.shape && element.shape instanceof OG.EdgeShape){
+                me._RENDERER._CANVAS.toFront(element);
+            }
+
             //선택요소배열 추가
             me._addSelectedElement(element);
         }
@@ -33642,6 +33694,11 @@ OG.handler.EventHandler.prototype = {
                 }
 
                 if (isEdge) {
+                    //엣지일 경우 선택되었을때만 동작
+                    if(me._CONFIG.SPOT_ON_SELECT && $(element).attr("_selected") != "true"){
+                        return;
+                    }
+
                     eventOffset = me._getOffset(event);
                     var virtualSpot = renderer.createVirtualSpot(eventOffset.x, eventOffset.y, element);
                     if (virtualSpot) {
@@ -33881,6 +33938,11 @@ OG.handler.EventHandler.prototype = {
                 }
 
                 if (isEdge) {
+                    //엣지일 경우 선택되었을때만 동작
+                    if(me._CONFIG.SPOT_ON_SELECT && $(element).attr("_selected") != "true"){
+                        return;
+                    }
+
                     if (isConnectMode) {
                         return;
                     }
@@ -34634,6 +34696,11 @@ OG.RemoteHandler.checkExpiredRemoteCanvas();
 OG.graph.Canvas = function (container, containerSize, backgroundColor, backgroundImage) {
 
     this._CONFIG = {
+
+        /**
+         * 선연결을 클릭하였을때만 변곡점 변경 가능 여부
+         */
+        SPOT_ON_SELECT: false,
 
         /**
          * 백도어
@@ -36091,6 +36158,10 @@ OG.graph.Canvas.prototype = {
 
         $.each(inputs, function (idx, input) {
             textShape = new OG.shape.bpmn.M_Text(input);
+            textShape.MOVABLE = false;
+            textShape.SELECTABLE = false;
+            textShape.CONNECTABLE = false;
+            textShape.DELETABLE = false;
             textElement = me.drawShape([envelope.getUpperLeft().x + 35, envelope.getUpperLeft().y + (idx * 25) + 40], textShape, [50, 20]);
             element.appendChild(textElement);
             toShape = new OG.shape.To();
@@ -36105,6 +36176,10 @@ OG.graph.Canvas.prototype = {
 
         $.each(outputs, function (idx, output) {
             textShape = new OG.shape.bpmn.M_Text(output);
+            textShape.MOVABLE = false;
+            textShape.SELECTABLE = false;
+            textShape.CONNECTABLE = false;
+            textShape.DELETABLE = false;
             textElement = me.drawShape([envelope.getUpperRight().x - 35, envelope.getUpperRight().y + (idx * 25) + 40], textShape, [50, 20]);
             element.appendChild(textElement);
             fromShape = new OG.shape.From();

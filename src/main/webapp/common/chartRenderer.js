@@ -103,6 +103,7 @@ var ChartRenderer = function (container, viewController, editMode) {
     this.canvas._CONFIG.GUIDE_CONTROL_LINE_NUM = 1;
     this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
     this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
+    this.canvas._CONFIG.SPOT_ON_SELECT = true;
 
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
@@ -711,6 +712,7 @@ ChartRenderer.prototype = {
 
         //기존 테이블의 칼럼뷰데이터의 커스텀 칼럼의 인덱스들을, 칼럼 옵션에 인서트한다.
         if (existViewData && existViewData.columns) {
+            var sortedIndex = [];
             for (var key in existViewData.columns) {
                 var columnView = existViewData.columns[key];
                 if (columnView.column.indexOf(me._CONFIG.CUSTOM_COL_PREFIX) != -1) {
@@ -722,7 +724,12 @@ ChartRenderer.prototype = {
                         columnEditable: false
                     };
                     var columnIndex = columnView.cellIndex;
-                    options.columns.splice(columnIndex, 0, column);
+                    sortedIndex[columnIndex] = column;
+                }
+            }
+            for(var s = 0 ; s < sortedIndex.length; s++){
+                if(sortedIndex[s] != null){
+                    options.columns.splice(s, 0, sortedIndex[s]);
                 }
             }
         }
@@ -1476,8 +1483,22 @@ ChartRenderer.prototype = {
                                     toastr.error('This column can not be deleted.');
                                 }
                             }
+                        },
+                        'cut': {
+                            name: '잘라내기', callback: function () {
+                                table.shape.cutColumn = cellView.column;
+                            }
                         }
                     };
+                    if (table.shape.cutColumn) {
+                        this.contextMenu['paste'] = {
+                            name: '붙여넣기', callback: function () {
+                                var cutColumn = table.shape.cutColumn;
+                                table.shape.cutColumn = null;
+                                table.shape.cutAndPaste(cutColumn, cellView.column);
+                            }
+                        }
+                    }
                     return this.contextMenu;
                 }
             } else {
