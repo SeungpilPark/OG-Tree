@@ -15,8 +15,8 @@ var ChartRenderer = function (container, viewController, editMode) {
         /**
          * 캔버스 높이
          */
-        CONTAINER_HEIGHT: 600,
-        CONTAINER_MIN_HEIGHT: 600,
+        CONTAINER_HEIGHT: 800,
+        CONTAINER_MIN_HEIGHT: 800,
         CONTAINER_MAX_HEIGHT: 1800,
 
         ACTIVITY_WIDTH: 80,

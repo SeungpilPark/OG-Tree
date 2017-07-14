@@ -2064,8 +2064,6 @@ EditorRenderer.prototype = {
                 }
             }
             return Math.round(partLength);
-            // var check = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
-            // console.log('check.test(s)' , check.test(s));
         };
         for (var i = 0; i < 3; i++) {
             if (tempStr) {
