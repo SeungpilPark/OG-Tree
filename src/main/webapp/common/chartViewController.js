@@ -81,7 +81,7 @@ ChartViewController.prototype = {
             }
         });
         $('#zoomFit').click(function () {
-            me.renderer.setScale(1);
+            me.renderer.zoomFit();
         });
 
         $('#print').click(function () {

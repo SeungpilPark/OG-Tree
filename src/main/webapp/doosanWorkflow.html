@@ -87,56 +87,46 @@
 
                 <div class="ibox float-e-margins">
                     <div class="ibox-title">
-                        <div name="account-title-info">
-                            <h2 name="pjt_name">PE Center 견적 설계 Workflow Chart </h2>
+                        <h3 class="pull-left" name="pjt_name">PE Center 견적 설계 Workflow Chart </h3>
+                        <div class="pull-right">
+                            <div class="toolbar" style="margin-left: 15px">
+                                <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
+                                        data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="false">
+                                    State Color <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu state-color">
+                                    <li><a href="Javascript:void(0)">Action</a></li>
+                                    <li><a href="#">Another action</a></li>
+                                    <li><a href="#">Something else here</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="#">Separated link</a></li>
+                                </ul>
+                                <button class="btn btn-default btn-xs" id="save" type="button"><i
+                                        class="fa fa-save"></i> Save
+                                </button>
+                                <button class="btn btn-default btn-xs" id="refresh" type="button"><i
+                                        class="fa fa-refresh"></i> Refresh
+                                </button>
+                                <button class="btn btn-default btn-xs" id="zoomIn" type="button"><i
+                                        class="fa fa-search-plus"></i> Zoom | IN
+                                </button>
+                                <button class="btn btn-default btn-xs" id="zoomFit" type="button"><i
+                                        class="fa fa-arrows-h"></i> Zoom | FIT
+                                </button>
+                                <button class="btn btn-default btn-xs" id="zoomOut" type="button"><i
+                                        class="fa fa-search-minus"></i> Zoom | OUT
+                                </button>
+                                <button class="btn btn-default btn-xs" id="alignment" type="button"><i
+                                        class="fa fa-refresh"></i> Line align
+                                </button>
+                                <button class="btn btn-default btn-xs" id="print" type="button"><i
+                                        class="fa fa-save"></i> PrintJson
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="ibox-content">
-                        <div class="row">
-                            <div class="col-lg-4">
-
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="toolbar" style="margin-left: 15px">
-                                    <button type="button" class="btn btn-xs rounded btn-default dropdown-toggle"
-                                            data-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="false">
-                                        State Color <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu state-color">
-                                        <li><a href="Javascript:void(0)">Action</a></li>
-                                        <li><a href="#">Another action</a></li>
-                                        <li><a href="#">Something else here</a></li>
-                                        <li role="separator" class="divider"></li>
-                                        <li><a href="#">Separated link</a></li>
-                                    </ul>
-                                    <button class="btn btn-default btn-xs" id="save" type="button"><i
-                                            class="fa fa-save"></i> Save
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="refresh" type="button"><i
-                                            class="fa fa-refresh"></i> Refresh
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="zoomIn" type="button"><i
-                                            class="fa fa-search-plus"></i> Zoom | IN
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="zoomFit" type="button"><i
-                                            class="fa fa-arrows-h"></i> Zoom | FIT
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="zoomOut" type="button"><i
-                                            class="fa fa-search-minus"></i> Zoom | OUT
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="alignment" type="button"><i
-                                            class="fa fa-refresh"></i> Line align
-                                    </button>
-                                    <button class="btn btn-default btn-xs" id="print" type="button"><i
-                                            class="fa fa-save"></i> PrintJson
-                                    </button>
-                                    <!--<button class="btn btn-default btn-xs" id="labelSwitch" type="button"><i-->
-                                    <!--class="fa fa-caret-square-o-down"></i> Label On|Off-->
-                                    <!--</button>-->
-                                </div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div id="canvas" style="cursor: default;width: 100%;overflow: scroll;"></div>
                         </div>

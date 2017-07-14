@@ -17,6 +17,7 @@ var ChartRenderer = function (container, viewController, editMode) {
          */
         CONTAINER_HEIGHT: 600,
         CONTAINER_MIN_HEIGHT: 600,
+        CONTAINER_MAX_HEIGHT: 1800,
 
         ACTIVITY_WIDTH: 80,
         ACTIVITY_HEIGHT: 38,
@@ -104,6 +105,7 @@ var ChartRenderer = function (container, viewController, editMode) {
     this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
     this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
     this.canvas._CONFIG.SPOT_ON_SELECT = true;
+    this.canvas._CONFIG.STICK_GUIDE = false;
 
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
@@ -175,7 +177,6 @@ ChartRenderer.prototype = {
     getScale: function () {
         return this.canvas.getScale();
     },
-
     /**
      * Scale 을 설정한다. (기본 사이즈 : Scale = 1)
      *
@@ -208,6 +209,25 @@ ChartRenderer.prototype = {
         me._CONTAINER.scrollTop(cuScrollTop + moveY);
 
         me.renderByContainer();
+    },
+
+    zoomFit: function () {
+        var me = this;
+        if (!me.tableElement) {
+            me.setScale(1);
+        } else {
+            me.canvas.setScale(1);
+            var canvasSize = me.canvas.getCanvasSize();
+            var canvasHeight = canvasSize[1];
+            if (canvasHeight < me._CONFIG.CONTAINER_MIN_HEIGHT) {
+                canvasHeight = me._CONFIG.CONTAINER_MIN_HEIGHT;
+            }
+            if (canvasHeight > me._CONFIG.CONTAINER_MAX_HEIGHT) {
+                canvasHeight = me._CONFIG.CONTAINER_MAX_HEIGHT;
+            }
+            var rate = me._CONFIG.CONTAINER_HEIGHT / (canvasHeight + 50);
+            me.setScale(rate);
+        }
     },
 
     //========================================================================//
@@ -480,7 +500,7 @@ ChartRenderer.prototype = {
                         var cellView = row.cells[column];
 
                         //셀 뷰의 left 값이 컨테이너 가로보다 클 경우 넘어간다.
-                        if (cellView.left > viewWidth) {
+                        if ((cellView.left * me.canvas.getScale()) > viewWidth) {
                             continue;
                         }
 
@@ -727,8 +747,8 @@ ChartRenderer.prototype = {
                     sortedIndex[columnIndex] = column;
                 }
             }
-            for(var s = 0 ; s < sortedIndex.length; s++){
-                if(sortedIndex[s] != null){
+            for (var s = 0; s < sortedIndex.length; s++) {
+                if (sortedIndex[s] != null) {
                     options.columns.splice(s, 0, sortedIndex[s]);
                 }
             }
@@ -752,6 +772,10 @@ ChartRenderer.prototype = {
                 return;
             }
             var rowByCode = me.getDataRowByCode(activity['cur_eng_func_code'], rowData, rowIndexMapByCode);
+            if (!rowByCode) {
+                return;
+            }
+
             var column, isExist = false, contentIndex = -1;
 
             //기존 데이터가 있다면, 기존 액티비티가 들어있는 칼럼을 찾는다.
@@ -861,11 +885,13 @@ ChartRenderer.prototype = {
         }
 
         //데이터 테이블을 그린다.
-        var newTableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
+        var tableElement = this.canvas.drawShape([50, 50], dataTable, [100, 100], {});
         dataTable.draw();
 
         //데이터 테이블을 등록한다.
+        dataTable.DELETABLE = false;
         me.dataTable = dataTable;
+        me.tableElement = tableElement;
 
         //뷰모드일 경우 컨테이너 내부의 콘텐트를 그린다.
         if (!me.editMode) {
@@ -876,19 +902,13 @@ ChartRenderer.prototype = {
             me.renderEdges();
         }
 
-
-        //캔버스 사이즈 조정
-        var boundary = me.canvas.getBoundary(newTableElement);
-        this.setScale(1);
-        this.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
-
-        //컨테이너 높이 조정
-        var containerHeight = me._CONFIG.CONTAINER_MIN_HEIGHT;
-        if (boundary.getHeight() + 30 > containerHeight) {
-            containerHeight = boundary.getHeight() + 30;
-        }
-        this._CONTAINER.height(containerHeight);
+        //캔버스 스케일 원복
+        me.canvas.setScale(1);
+        var boundary = me.canvas.getBoundary(me.tableElement);
+        me.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
+        me.zoomFit();
     },
+
     lineAlignment: function () {
         var me = this;
         var allEdges = me.canvas.getAllEdges();
@@ -1367,6 +1387,15 @@ ChartRenderer.prototype = {
                     }
                 }
             };
+            if (me.data && me.data['cur_wfa_config_id']) {
+                this.contextMenu['activity'] = {
+                    name: '액티비티 보기', callback: function () {
+                        if (chartRenderer.viewController.aras) {
+                            chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
+                        }
+                    }
+                }
+            }
             return this.contextMenu;
         };
         OG.shape.bpmn.A_Task.prototype.onSelectShape = function () {
