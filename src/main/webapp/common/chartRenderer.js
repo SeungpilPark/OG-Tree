@@ -106,6 +106,7 @@ var ChartRenderer = function (container, viewController, editMode) {
     this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
     this.canvas._CONFIG.SPOT_ON_SELECT = true;
     this.canvas._CONFIG.STICK_GUIDE = false;
+    this.canvas._CONFIG.AUTOMATIC_GUIDANCE = false;
 
     this._RENDERER = this.canvas._RENDERER;
     this._HANDLER = this.canvas._HANDLER;
@@ -1259,7 +1260,10 @@ ChartRenderer.prototype = {
                 defaultStyle['opacity'] = '1';
                 defaultStyle['marker'] = null;
                 $.each(allEdges, function (d, edge) {
-                    canvas.setShapeStyle(edge, defaultStyle);
+                    if($(edge).data('highLight')){
+                        canvas.setShapeStyle(edge, defaultStyle);
+                        $(edge).data('highLight', false);
+                    }
                 });
                 return;
             }
@@ -1279,14 +1283,19 @@ ChartRenderer.prototype = {
                         }
                     }
                 });
+                $(edge).data('highLight', true);
             });
 
             //도형과 연결된 선분이 아닌경우 흐리게 처리한다.
             defaultStyle['opacity'] = '0.3';
+            defaultStyle['opacity'] = '1';
             defaultStyle['marker'] = null;
             $.each(allEdges, function (c, otherEdge) {
                 if (edgeIds.indexOf(otherEdge.id) == -1) {
-                    canvas.setShapeStyle(otherEdge, defaultStyle);
+                    if($(otherEdge).data('highLight')){
+                        canvas.setShapeStyle(otherEdge, defaultStyle);
+                        $(otherEdge).data('highLight', false);
+                    }
                 }
             })
         };
@@ -1378,7 +1387,7 @@ ChartRenderer.prototype = {
             var me = this;
             this.contextMenu = {
                 'property': {
-                    name: '정보보기', callback: function () {
+                    name: 'Open Workflow', callback: function () {
                         if (me.data && me.data['cur_rel_wf']) {
                             if (chartRenderer.viewController.aras) {
                                 chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);
@@ -1389,7 +1398,7 @@ ChartRenderer.prototype = {
             };
             if (me.data && me.data['cur_wfa_config_id']) {
                 this.contextMenu['activity'] = {
-                    name: '액티비티 보기', callback: function () {
+                    name: 'Open Workflow Activity', callback: function () {
                         if (chartRenderer.viewController.aras) {
                             chartRenderer.viewController.aras.showPropertyWindow('activity', me.data['cur_wfa_config_id']);
                         }

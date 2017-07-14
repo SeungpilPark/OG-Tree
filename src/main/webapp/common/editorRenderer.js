@@ -2048,21 +2048,50 @@ EditorRenderer.prototype = {
     labelSubstring: function (label) {
         var str = '';
         var tempStr = label;
+        var allStr = '';
         var length = this._CONFIG.LABEL_MAX_LENGTH;
+
+        var getHangulLength = function (parts) {
+            var partLength = 0;
+            var check = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+            if (parts && parts.length) {
+                for (var i in parts) {
+                    if (check.test(parts[i])) {
+                        partLength = partLength + 0.7;
+                    } else {
+                        partLength++;
+                    }
+                }
+            }
+            return Math.round(partLength);
+            // var check = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+            // console.log('check.test(s)' , check.test(s));
+        };
         for (var i = 0; i < 3; i++) {
             if (tempStr) {
                 if (i > 0) {
                     str += '\n';
                 }
                 if (tempStr.length > length) {
-                    str += tempStr.substring(0, length);
-                    tempStr = tempStr.substring(length, tempStr.length);
+                    var s = tempStr.substring(0, length);
+                    var hangulLength = getHangulLength(s);
+                    //console.log(length,hangulLength);
+
+
+                    allStr += tempStr.substring(0, hangulLength);
+                    str += tempStr.substring(0, hangulLength);
+
+                    tempStr = tempStr.substring(hangulLength, tempStr.length);
                 } else {
+                    allStr += tempStr;
                     str += tempStr;
+
                     tempStr = undefined;
                 }
                 if (i == 2) {
-                    str += '..';
+                    if (allStr != label) {
+                        str += '...';
+                    }
                 }
             }
         }
@@ -2075,10 +2104,11 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateActivity: function (view, element) {
+        var me = this;
         var customData = element.shape.data;
         var needUpdate = false;
         if (customData.name != view.name) {
-            element.shape.label = view.name;
+            element.shape.label = me._CONFIG.SHOW_LABEL ? me.labelSubstring(view.name) : undefined;
             needUpdate = true;
         }
         if (customData.data && customData.data.extData) {
@@ -2140,6 +2170,7 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateFolder: function (view, element) {
+        var me = this;
         var customData = element.shape.data;
         var needUpdate = false;
         if (customData.blur != view.blur) {
@@ -2147,7 +2178,7 @@ EditorRenderer.prototype = {
             needUpdate = true;
         }
         if (customData.name != view.name) {
-            element.shape.label = view.name;
+            element.shape.label = me._CONFIG.SHOW_LABEL ? me.labelSubstring(view.name) : undefined;
             needUpdate = true;
         }
         if (customData.selected != view.selected) {
@@ -2212,6 +2243,7 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     updateEd: function (view, element) {
+        var me = this;
         var customData = element.shape.data;
         var needUpdate = false;
         if (customData.blur != view.blur) {
@@ -2219,7 +2251,7 @@ EditorRenderer.prototype = {
             needUpdate = true;
         }
         if (customData.name != view.name) {
-            element.shape.label = view.name;
+            element.shape.label = me._CONFIG.SHOW_LABEL ? me.labelSubstring(view.name) : undefined;
             needUpdate = true;
         }
         if (customData.data && customData.data.extData) {
@@ -3377,7 +3409,7 @@ EditorRenderer.prototype = {
 
                 var bodyWidth = $('body').width();
                 var tooltipLeft = event.pageX + 15;
-                if((tooltipLeft + 150) > bodyWidth){
+                if ((tooltipLeft + 150) > bodyWidth) {
                     tooltipLeft = bodyWidth - 150;
                 }
                 tooltip.css({
@@ -4101,7 +4133,7 @@ EditorRenderer.prototype = {
 
                 labelEditor.css(labelEditorCss);
                 labelEditor.focus();
-                labelEditor.val(element.shape.label);
+                labelEditor.val(element.shape.data.name);
 
                 var copyCss = JSON.parse(JSON.stringify(labelEditorCss));
                 saveButton.css(OG.Util.apply(me._CONFIG.DEFAULT_STYLE.LABEL_EDITOR, {
@@ -4127,13 +4159,17 @@ EditorRenderer.prototype = {
                     saveButton.remove();
                     cancelButton.remove();
 
-                    if(afterLabel && afterLabel.length){
-                        afterLabel = afterLabel.replace(/(\r\n|\n|\r)/gm," ");
+                    if (afterLabel && afterLabel.length) {
+                        afterLabel = afterLabel.replace(/(\r\n|\n|\r)/gm, "");
                     }
                     editorRenderer.onNameChange(data, view, afterLabel);
+
+                    // data.name = afterLabel;
+                    // data.extData.fs_name = afterLabel;
+                    // editorRenderer.updateData([data]);
                 });
 
-                cancelButton.click(function(){
+                cancelButton.click(function () {
                     labelEditor.remove();
                     saveButton.remove();
                     cancelButton.remove();
