@@ -43,7 +43,7 @@ OG.shape.Ed.prototype.createSubShape = function () {
         else if (this.data.data.extData['c_type'] == '2D & 3D Drawing') {
             xml = Cad_xml;
         }
-        else if (this.data.data.extData['c_type'] == 'Engineering Data') {
+        else if (this.data.data.extData['c_type'] == 'Data List') {
             xml = DHI_IntelliSheet_Xml;
         }
         if (xml) {

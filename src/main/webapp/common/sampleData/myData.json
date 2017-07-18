@@ -1224,7 +1224,7 @@
       "_user_name": "채승원",
       "c_major_rev": "-",
       "c_c_rev": "A",
-      "c_type": "Engineering Data",
+      "c_type": "Data List",
       "c_team": "EPC)토목기술팀",
       "c_workflow": "000131-E-AE-001I-00",
       "c_securitylevel": "Confidential",
@@ -1233,7 +1233,7 @@
     "color": "none",
     "stroke": "none",
     "modified_date": "20170524",
-    "tooltip": "Engineering Data Mig Test Intellisheet A - 채승원"
+    "tooltip": "Data List Mig Test Intellisheet A - 채승원"
   },
   {
     "type": "ed",

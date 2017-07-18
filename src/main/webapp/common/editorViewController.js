@@ -34,7 +34,7 @@ var EditorViewController = function () {
             name: 'Document'
         },
         {
-            label: 'Engineering Data',
+            label: 'Data List',
             name: 'DHI_IntelliSheet'
         }
     ];

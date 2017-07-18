@@ -456,7 +456,7 @@
       "_user_name": "채승원",
       "c_major_rev": "-",
       "c_c_rev": "A",
-      "c_type": "Engineering Data",
+      "c_type": "Data List",
       "c_team": "EPC)토목기술팀",
       "c_workflow": "0000000000",
       "c_securitylevel": "Confidential",
@@ -465,7 +465,7 @@
     "color": "none",
     "stroke": "none",
     "modified_date": "20170524",
-    "tooltip": "Engineering Data Mig Test Intellisheet A - 채승원"
+    "tooltip": "Data List Mig Test Intellisheet A - 채승원"
   },
   {
     "type": "ed",
@@ -579,12 +579,12 @@
       "_user_name": "김철호",
       "c_major_rev": "-",
       "c_c_rev": "A",
-      "c_type": "Engineering Data"
+      "c_type": "Data List"
     },
     "color": "#b4eabd",
     "stroke": "none",
     "modified_date": "20170529",
-    "tooltip": "Engineering Data folder lv1_3_DHI A - 김철호"
+    "tooltip": "Data List folder lv1_3_DHI A - 김철호"
   },
   {
     "type": "ed",
