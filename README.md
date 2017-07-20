@@ -773,36 +773,37 @@ OG-Tree 모듈은 html 과 js 파일로만 이루어져 있습니다.
 
 | 분류                   | directory      | file name               | extension | desc (파일 설명)                             |
 |------------------------|----------------|-------------------------|-----------|----------------------------------------------|
-| 콘텍스트 메뉴 아이콘   | doosan/icons/  | create-ed.svg           | svg       | 콘텍스트 메뉴 ed 생성 아이콘                 |
+| 콘텍스트 메뉴 아이콘   | common/icons/  | create-ed.svg           | svg       | 콘텍스트 메뉴 ed 생성 아이콘                 |
 |                        |                | create-folder.svg       | svg       | 콘텍스트 메뉴 폴더 생성 아이콘               |
 |                        |                | delete-item.svg         | svg       | 콘텍스트 메뉴 아이템 삭제 아이콘             |
 |                        |                | pick-ed.svg             | svg       | 콘텍스트 메뉴 pick ed 아이콘                 |
-| 개발용 샘플 데이터     | doosan/sample/ | myData.json             | json      | 개발용 샘플 - 마이 워크플로우 데이터         |
+| 개발용 샘플 데이터     | common/sample/ | myData.json             | json      | 개발용 샘플 - 마이 워크플로우 데이터         |
 |                        |                | otherData.json          | json      | 개발용 샘플 - 아더 워크플로우 데이터         |
-| 도형 클래스 및 이미지  | doosan/shape/  | Activity.js             | js        | 액티비티 - 오픈그래프 클래스 파일            |
-|                        |                | activity.svg            | svg       | 액티비티 - svg 이미지 파일                   |
+|                        |                | chartData.json          | json      | 개발용 샘플 - 워크플로우 차트 데이터         |
+|                        |                | chartMap.json           | json      | 개발용 샘플 - 워크플로우 차트 맵 데이터      |
+| 도형 클래스 및 이미지  | common/shape/  | Activity.js             | js        | 액티비티 - 오픈그래프 클래스 파일            |
 |                        |                | Area.js                 | js        | Area - 오픈그래프 클래스 파일                |
 |                        |                | Expander.js             | js        | 폴더 열림/닫힘 버튼 - 오픈그래프 클래스 파일 |
-|                        |                | collapse.svg            | svg       | 폴더 닫힘 버튼 - svg 이미지 파일             |
-|                        |                | expand.svg              | svg       | 폴더 열림 버튼 - svg 이미지 파일             |
 |                        |                | Ed.js                   | js        | ED - 오픈그래프 클래스 파일                  |
-|                        |                | ed.svg                  | svg       | ED - svg 이미지 파일                         |
 |                        |                | Folder.js               | js        | 폴더 - 오픈그래프 클래스 파일                |
-|                        |                | folder.svg              | svg       | 폴더 - svg 이미지 파일                       |
 |                        |                | SLabel.js               | js        | 셀렉티트 표기 - 오픈그래프 클래스 파일       |
 |                        |                | selected.svg            | svg       | 셀렉티트 표기 - svg 이미지 파일              |
+|                        |                | Lock.svg                | svg       | Lock 표현 이미지                             |
+|                        |                | secret.svg              | svg       | Secret 표현 이미지                           |
+|                        |                | check-image.png         | png       | 체크박스 체크시 표현되는 이미지              |
 | 라이브러리             | lib/           | jquery-1.11.1           | directory | Jquery 라이브러리                            |
 |                        |                | jquery-contextMenu      | directory | Jquery 콘텍스트 메뉴 라이브러리              |
 |                        |                | jquery-ui-1.11.0.custom | directory | Jquery UI 라이브러리                         |
 |                        |                | jqueryXML2JSON          | directory | Jquery xml to json 변환 라이브러리           |
 |                        |                | opengraph               | directory | 오픈그래프 라이브러리                        |
-| 부트스트랩 resources   | resources      | assets                  | directory | 부트스트랩 css                               |
-|                        |                | images                  | directory | 부트스트랩 이미지                            |
-|                        |                | js                      | directory | 부트스트랩 js 파일                           |
-|                        |                | plugins                 | directory | 부트스트랩 플러그인                          |
+| 부트스트랩 resources   | resources/     | *                       | directory | 부트스트랩 디렉토리                          |
 | HTML                   | /              | doosanEditor.html       | html      | 에디터 html                                  |
 |                        |                | doosanMonitor.html      | html      | 모니터 html                                  |
-| 비지니스 로직 스크립트 | doosan/        | aras.js                 | js        | 아라스 데이터 통신 담당 클래스               |
-|                        |                | doosan.js               | js        | HTML 컨트롤 담당 클래스                      |
-|                        |                | tree.js                 | js        | 오픈그래프 트리 렌더링 클래스                |
-|                        |                | state.json              | json      | 스테이터스 정의 파일                         |
+|                        |                | doosanWorkflow.html     | html      | 워크플로우 차트 html                         |
+| 비지니스 로직 스크립트 | common/        | dataController.js       | js        | 아라스 데이터 통신 담당 클래스               |
+|                        |                | chartRenderer.js        | js        | 워크플로우 차트 HTML 컨트롤 담당 클래스      |
+|                        |                | chartViewController.js  | js        | 워크플로우 차트 캔버스 렌더링 클래스         |
+|                        |                | chartState.json         | json      | 워크플로우 차트 스테이터스 정의 파일         |
+|                        |                | editorRenderer.js       | js        | 에디터/모니터 캔버스 렌더링 클래스           |
+|                        |                | editorViewController.js | js        | 에디터/모니터 HTML 컨트롤 담당 클래스        |
+|                        |                | state.json              | json      | 에디터/모니터 스테이터스 정의 파일           |
