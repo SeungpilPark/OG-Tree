@@ -31,27 +31,29 @@ $ cp -R OG-Tree/src/main/webapp/*  <Path of uengine in Aras system>/
 
 ## 콘텍스트 메뉴 아이콘 변경
 
-소스코드의 doosan/icons/ 하위의 아이콘들을 변경하도록 합니다.
+소스코드의 common/icons/ 하위의 아이콘들을 변경하도록 합니다.
 
 | directory     | file name         | extension | desc (파일 설명)                 |
 |---------------|-------------------|-----------|----------------------------------|
-| doosan/icons/ | create-ed.svg     | svg       | 콘텍스트 메뉴 ed 생성 아이콘     |
+| common/icons/ | create-ed.svg     | svg       | 콘텍스트 메뉴 ed 생성 아이콘     |
 |               | create-folder.svg | svg       | 콘텍스트 메뉴 폴더 생성 아이콘   |
 |               | delete-item.svg   | svg       | 콘텍스트 메뉴 아이템 삭제 아이콘 |
 |               | pick-ed.svg       | svg       | 콘텍스트 메뉴 pick ed 아이콘     |
 
 ## 액티비티, 폴더, ED 및 기타 도형 이미지
 
-소스코드의 doosan/shape/ 하위의 다음 파일들을 변경하도록 합니다.
+소스코드의 common/shape/ 하위의 다음 파일들을 변경하도록 합니다.
 
-| directory     | file name    | extension | desc (파일 설명)                 |
-|---------------|--------------|-----------|----------------------------------|
-| doosan/shape/ | activity.svg | svg       | 액티비티 - svg 이미지 파일       |
-|               | collapse.svg | svg       | 폴더 닫힘 버튼 - svg 이미지 파일 |
-|               | expand.svg   | svg       | 폴더 열림 버튼 - svg 이미지 파일 |
-|               | ed.svg       | svg       | ED - svg 이미지 파일             |
-|               | folder.svg   | svg       | 폴더 - svg 이미지 파일           |
-|               | selected.svg | svg       | 셀렉티트 표기 - svg 이미지 파일  |
+| directory     | file name       | extension | desc (파일 설명)                |
+|---------------|-----------------|-----------|---------------------------------|
+| common/shape/ | activity.js     | js        | 액티비티 클래스 정의 파일       |
+|               | ed.js           | js        | ED 클래스 정의 파일             |
+|               | folder.js       | js        | 폴더 클래스 정의 파일           |
+|               | Expander.js     | js        | 폴더 여닫음 클래스 정의 파일    |
+|               | Lock.svg        | svg       | Lock 표현 이미지                |
+|               | secret.svg      | svg       | Secret 표현 이미지              |
+|               | selected.svg    | svg       | Selected (s라벨) 이미지         |
+|               | check-image.png | png       | 체크박스 체크시 표현되는 이미지 |
 
 ## HTML 수정
 
@@ -61,27 +63,31 @@ $ cp -R OG-Tree/src/main/webapp/*  <Path of uengine in Aras system>/
 |-----------|--------------------|-----------|------------------|
 | /         | doosanEditor.html  | html      | 에디터 html      |
 |           | doosanMonitor.html | html      | 모니터 html      |
+|           | doosanWorkflow.html | html      | 워크플로우차트 html      |
 
 ## 비지니스 로직 스크립트 수정
 
 비지니스 로직 스크립트는 실제적인 개발 내용이 담긴 스크립트 입니다.
 
-| directory | file name  | extension | desc (파일 설명)               |
-|-----------|------------|-----------|--------------------------------|
-| doosan/   | aras.js    | js        | 아라스 데이터 통신 담당 클래스 |
-|           | doosan.js  | js        | HTML 컨트롤 담당 클래스        |
-|           | tree.js    | js        | 오픈그래프 트리 렌더링 클래스  |
-|           | state.json | json      | 스테이터스 정의 파일           |
+| directory | file name               | extension | desc (파일 설명)                        |
+|-----------|-------------------------|-----------|-----------------------------------------|
+| common/   | dataController.js       | js        | 아라스 데이터 통신 담당 클래스          |
+|           | chartRenderer.js        | js        | 워크플로우 차트 HTML 컨트롤 담당 클래스 |
+|           | chartViewController.js  | js        | 워크플로우 차트 캔버스 렌더링 클래스    |
+|           | chartState.json         | json      | 워크플로우 차트 스테이터스 정의 파일    |
+|           | editorRenderer.js       | js        | 에디터/모니터 캔버스 렌더링 클래스      |
+|           | editorViewController.js | js        | 에디터/모니터 HTML 컨트롤 담당 클래스   |
+|           | state.json              | json      | 에디터/모니터 스테이터스 정의 파일      |
 
-### aras.js
+### dataController.js
 
-aras.js 클래스는 Aras 시스템 데이터 통신 담당 클래스입니다.
+dataController.js 클래스는 Aras 시스템 데이터 통신 담당 클래스입니다.
 
 이 모듈은 스탠드어론 스크립트 모듈이기 때문에, 이 모듈(html) 을 호출한 부모 페이지로부터 aras 객체를 상속받아 데이터 통신에 사용하게 됩니다.
 
-aras.js 클래스에 대한 별로듸 Configuration 은 없습니다.
+dataController.js 클래스에 대한 별로듸 Configuration 은 없습니다.
  
-다음은 aras.js 클래스의 정의 및 프로퍼티 목록입니다.
+다음은 dataController.js 클래스의 정의 및 프로퍼티 목록입니다.
 
 
 ```
@@ -90,16 +96,26 @@ aras.js 클래스에 대한 별로듸 Configuration 은 없습니다.
  *
  * @class
  *
- * @param {Tree} tree 오픈그래프 트리 라이브러리
+ * @param tree 오픈그래프 트리 라이브러리
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var Aras = function (tree) {
+var DataController = function (tree, chartRenderer, viewController) {
 
     /**
-     * OG-Tree 객체
+     * Doosan view controller
+     * @type {Doosan} Doosan
+     */
+    this.viewController = viewController;
+    /**
+     * Renderer 객체
      * @type {Tree} OG-Tree
      */
     this.tree = tree;
+
+    /**
+     * 차트 렌더러
+     */
+    this.chartRenderer = chartRenderer;
 
     /**
      * 부모페이지의 aras 객체
@@ -167,7 +183,7 @@ var Aras = function (tree) {
     var stateJson;
     $.ajax({
         type: 'GET',
-        url: 'doosan/state.json',
+        url: 'common/state.json',
         dataType: 'json',
         async: false,
         success: function (data) {
@@ -176,28 +192,43 @@ var Aras = function (tree) {
     });
     this.stateJson = stateJson;
 
+    /**
+     * 챠트 스테이트 정의가 저장되어 있는 파일을 불러온다.
+     */
+    var chartStateJson;
+    $.ajax({
+        type: 'GET',
+        url: 'common/chartState.json',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            chartStateJson = data;
+        }
+    });
+    this.chartStateJson = chartStateJson;
+
 };
 ```
 
 
-## doosan.js
+## editorViewController.js
 
-doosan.js 클래스는 doosanEditor.html 과 doosanMonitor.html 페이지 로딩시 호출되며, html 구성 및 이벤트처리, 
+editorViewController.js 클래스는 doosanEditor.html 과 doosanMonitor.html 페이지 로딩시 호출되며, html 구성 및 이벤트처리, 
 그리고 OG-Tree 와 aras 데이터간의 연계처리를 수행합니다.
 
 별도의 Configuration 은 없습니다.
 
-다음은 doosan.js 클래스의 정의 및 프로퍼티 목록입니다.
+다음은 editorViewController.js 클래스의 정의 및 프로퍼티 목록입니다.
 
 ```
 /**
- * Doosan html view Handler
+ * EditorViewController html view Handler
  *
  * @class
  *
  * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
  */
-var Doosan = function () {
+var EditorViewController = function () {
     /**
      * OG-Tree 클래스
      * @type {Tree}
@@ -215,16 +246,31 @@ var Doosan = function () {
      * @type {string}
      */
     this.mode = 'sample'; //random,sample
+
+    this.edbTypes = [
+        {
+            label: '2D & 3D Drawing',
+            name: 'CAD'
+        },
+        {
+            label: 'Document',
+            name: 'Document'
+        },
+        {
+            label: 'Data List',
+            name: 'DHI_IntelliSheet'
+        }
+    ];
 };
 ```
 
-## tree.js
+## editorRenderer.js
 
-tree.js(OG-Tree) 클래스는 아라스의 데이터를 화면에 트리 모형의 구조로 렌더링하는 클래스입니다.
+editorRenderer.js(OG-Tree) 클래스는 아라스의 데이터를 화면에 트리 모형의 구조로 렌더링하는 클래스입니다.
 
 아라스 데이터를 렌더링 할 수 있는 데이터 구조로 변환하며, 유엔진의 SVG 렌더링 오픈소스인 오픈그래프의 API 를 이용해 화면에 드로잉합니다.
  
-또한, 드로잉 된 요소에 Dom Event 를 등록하며, 이벤트 발생 시 doosan.js 클래스로 전달하는 역할도 수행합니다.
+또한, 드로잉 된 요소에 Dom Event 를 등록하며, 이벤트 발생 시 editorViewController.js 클래스로 전달하는 역할도 수행합니다.
 
 아래와 같은 렌더링 관련 Configuration 요소들이 있습니다.
 
@@ -491,9 +537,9 @@ var Tree = function (container) {
 };
 ```
 
-Tree.js 의 _CONFIG 이하의 프로퍼티 들은 렌더링 요소에 관련된 설정 값들입니다.
+editorRenderer.js 의 _CONFIG 이하의 프로퍼티 들은 렌더링 요소에 관련된 설정 값들입니다.
 
-이 설정값들을 수정하기 위해서는 직접 소스코드를 수정하는 방법이 있고, 다른 방법으로는 doosan.js 클래스의 init 메소드에서 다음과 같이 호출하는 방법이 있습니다.
+이 설정값들을 수정하기 위해서는 직접 소스코드를 수정하는 방법이 있고, 다른 방법으로는 editorViewController.js 클래스의 init 메소드에서 다음과 같이 호출하는 방법이 있습니다.
 
 ```
 ex)
@@ -512,6 +558,206 @@ init: function () {
      */
     me.tree._CONFIG.DEFAULT_STYLE.BLUR = "0.5"
 
+```
+
+
+## chartViewController.js
+
+chartViewController.js 클래스는 doosanWorkflow.html 페이지 로딩시 호출되며, html 구성 및 이벤트처리, 
+그리고 OG-Datatable 과 aras 데이터간의 연계처리를 수행합니다.
+
+별도의 Configuration 은 없습니다.
+
+다음은 chartViewController.js 클래스의 정의 및 프로퍼티 목록입니다.
+
+```
+/**
+ * ChartViewController html view Handler
+ *
+ * @class
+ *
+ * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
+ */
+var ChartViewController = function () {
+    /**
+     * ChartRenderer 클래스
+     * @type {Tree}
+     */
+    this.renderer = null;
+
+    /**
+     * Aras 클래스
+     * @type {Aras}
+     */
+    this.aras = null;
+
+    /**
+     * Edit 모드
+     * @type {string}
+     */
+    this.editMode = true;
+
+
+    this.chartStateJson = null;
+};
+```
+
+## chartRenderer.js
+
+chartRenderer.js(OG-DataTable) 클래스는 아라스의 데이터를 화면에 트리 모형의 구조로 렌더링하는 클래스입니다.
+
+아라스 데이터를 렌더링 할 수 있는 데이터 구조로 변환하며, 유엔진의 SVG 렌더링 오픈소스인 오픈그래프의 API 를 이용해 화면에 드로잉합니다.
+ 
+또한, 드로잉 된 요소에 Dom Event 를 등록하며, 이벤트 발생 시 chartViewController.js 클래스로 전달하는 역할도 수행합니다.
+
+아래와 같은 렌더링 관련 Configuration 요소들이 있습니다.
+
+```
+/**
+ * Open graph Chart Library (OG-Tree)
+ *
+ * @class
+ * @requires OG.*
+ *
+ * @param {String} container Dom Element Id
+ * @param {ChartViewController} viewController
+ * @author <a href="mailto:sppark@uengine.org">Seungpil Park</a>
+ */
+var ChartRenderer = function (container, viewController, editMode) {
+    this.editMode = editMode;
+    this.viewController = viewController;
+    this._CONFIG = {
+        /**
+         * 캔버스 높이
+         */
+        CONTAINER_HEIGHT: 800,
+        CONTAINER_MIN_HEIGHT: 800,
+        CONTAINER_MAX_HEIGHT: 1800,
+
+        ACTIVITY_WIDTH: 80,
+        ACTIVITY_HEIGHT: 38,
+        ARRANGEMENT: 'horizontal',
+        ARRANGEMENT_MARGIN: 24,
+
+
+        /**
+         * 커스텀 컬럼 식별자
+         */
+        CUSTOM_COL_PREFIX: 'customColPrefix',
+
+        /**
+         * 라벨 최대 글자 크기
+         */
+        LABEL_MAX_LENGTH: 25
+    };
+
+    this._CONTAINER = $('#' + container);
+    this._CONTAINER.css({
+        width: '100%',
+        height: this._CONFIG.CONTAINER_HEIGHT + 'px',
+        border: '1px solid #555'
+    });
+    // Canvas
+    this.canvas = new OG.Canvas(container, [this._CONTAINER.width(), this._CONFIG.CONTAINER_HEIGHT], 'white');
+
+    if (this.editMode) {
+        this.canvas.initConfig({
+            selectable: true,
+            dragSelectable: true,
+            movable: true,
+            resizable: true,
+            connectable: true,
+            selfConnectable: true,
+            connectCloneable: true,
+            connectRequired: true,
+            labelEditable: true,
+            groupDropable: true,
+            collapsible: true,
+            enableHotKey: false,
+            enableContextMenu: true,
+            useSlider: false,
+            stickGuide: true,
+            checkBridgeEdge: true,
+            autoHistory: false
+        });
+    } else {
+        this.canvas.initConfig({
+            selectable: true,
+            dragSelectable: true,
+            movable: false,
+            resizable: false,
+            connectable: false,
+            selfConnectable: false,
+            connectCloneable: true,
+            connectRequired: true,
+            labelEditable: true,
+            groupDropable: true,
+            collapsible: true,
+            enableHotKey: false,
+            enableContextMenu: true,
+            useSlider: false,
+            stickGuide: true,
+            checkBridgeEdge: true,
+            autoHistory: false
+        });
+        this.canvas._CONFIG.DELETABLE = false;
+    }
+    this.canvas._CONFIG.DEFAULT_STYLE.EDGE = {
+        stroke: "black",
+        fill: "none",
+        "fill-opacity": 0,
+        "stroke-width": 1,
+        "stroke-opacity": 1,
+        "edge-type": "plain",
+        "arrow-start": "none",
+        "arrow-end": "block",
+        "stroke-dasharray": "",
+        "label-position": "center",
+        "stroke-linejoin": "round",
+        cursor: "pointer"
+    };
+    this.canvas._CONFIG.GUIDE_CONTROL_LINE_NUM = 1;
+    this.canvas._CONFIG.DRAG_PAGE_MOVABLE = true;
+    this.canvas._CONFIG.FOCUS_CANVAS_ONSELECT = false;
+    this.canvas._CONFIG.SPOT_ON_SELECT = true;
+    this.canvas._CONFIG.STICK_GUIDE = false;
+    this.canvas._CONFIG.AUTOMATIC_GUIDANCE = false;
+
+    this._RENDERER = this.canvas._RENDERER;
+    this._HANDLER = this.canvas._HANDLER;
+    this.existJson = null;
+    this.loadElements = null;
+    this.existActivitySize = {};
+
+
+    /**
+     * 최종 데이터 테이블
+     * @type {null}
+     */
+    this.dataTable = null;
+    /**
+     * 최종 로우데이터
+     * @type {Array}
+     */
+    this.finalRowData = [];
+    /**
+     * 재구성될 커넥션 리스트
+     * @type {Array}
+     */
+    this.connections = [];
+    /**
+     * 재구성 된 커넥션 edgeId 리스트
+     * @type {Array}
+     */
+    this.existConnections = [];
+    /**
+     * 뷰 모드일시 그려진 셀 리스트
+     * rowIndex + '-' + column 으로 표현한다.
+     * @type {Array}
+     */
+    this.existCells = [];
+
+};
 ```
 
 # 디버깅 툴 및 사용법

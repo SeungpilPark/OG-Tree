@@ -333,6 +333,10 @@ DataController.prototype = {
         var userId = inn.getUserID();
         return userId;
     },
+    /**
+     * 로그인한 유저의 팀을 알아온다.
+     * @return {string}
+     */
     getUserTeam: function () {
         var me = this;
         var item;
@@ -370,6 +374,11 @@ DataController.prototype = {
         workflowItem.setProperty('id', wf_id);
         return workflowItem.apply();
     },
+    /**
+     * 워크플로우 헤더정보를 얻어온다.
+     * @param wf_id
+     * @return {*|Object}
+     */
     getWorkflowHeader: function (wf_id) {
         var me = this, params = {
             stype: me.getItemType(me.TYPE.WORKFLOW),

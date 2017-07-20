@@ -1,5 +1,5 @@
 /**
- * Doosan html view Handler
+ * EditorViewController html view Handler
  *
  * @class
  *

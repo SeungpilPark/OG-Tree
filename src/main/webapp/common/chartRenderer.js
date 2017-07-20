@@ -1,5 +1,5 @@
 /**
- * Open graph Tree Library (OG-Tree)
+ * Open graph Chart Library (OG-Tree)
  *
  * @class
  * @requires OG.*
@@ -237,8 +237,8 @@ ChartRenderer.prototype = {
 
     /**
      * 칼럼 이름으로 칼럼 옵션을 얻어온다.
-     * @param columns
-     * @param field
+     * @param columns {Array} 칼럼리스트
+     * @param field {String} 칼럼명
      * @return {*}
      */
     getColumnByField: function (columns, field) {
@@ -251,7 +251,7 @@ ChartRenderer.prototype = {
 
     /**
      * 스테이터스를 컬러로 바꾼다.
-     * @param state
+     * @param state {String} 스테이터스
      * @return {*}
      */
     getColorFromState: function (state) {
@@ -348,9 +348,9 @@ ChartRenderer.prototype = {
 
     /**
      * 팀에 해당하는 data row 를 반환한다.
-     * @param code
-     * @param rows
-     * @param rowIndexMapByCode
+     * @param funcCode {String} cur_eng_func_code
+     * @param rows {Array} rows 데이터
+     * @param rowIndexMapByCode {Map} rowIndexMapByCode
      * @return {*}
      */
     getDataRowByCode: function (funcCode, rows, rowIndexMapByCode) {
@@ -364,9 +364,9 @@ ChartRenderer.prototype = {
 
     /**
      * rows 데이터 를 조회하여, 주어진 액티비티에 해당하는 정보를 반환한다.
-     * @param activity
-     * @param rows
-     * @return {null}
+     * @param activity {Map} activity 정보
+     * @param rows {Array} rows 데이터
+     * @return {*}
      */
     getExistActivityFromRowsData: function (activity, rows) {
         if (!activity || !rows || !rows.length) {
@@ -406,7 +406,7 @@ ChartRenderer.prototype = {
 
     /**
      * 액티비티 아이디로 엘리먼트를 찾는다.
-     * @param activityId
+     * @param activityId {String} 액티비티 아이디
      * @return {*}
      */
     getElementByActivityId: function (activityId) {
@@ -433,6 +433,7 @@ ChartRenderer.prototype = {
 
     /**
      * 화면의 Edge 를 연결 해제하고, 재연결 정보를 저장한다.
+     * @return {Array} connections
      */
     keepEdges: function () {
         var getActivityFromTerminal = function (terminal) {
@@ -479,6 +480,9 @@ ChartRenderer.prototype = {
     //========================================================================//
     //===========================Render apis==================================//
     //========================================================================//
+    /**
+     * 캔버스의 컨테이너 영역(화면상에 나타난 영역) 만큼만 액티비티를 그린다.
+     */
     renderByContainer: function () {
         var me = this;
 
@@ -571,8 +575,8 @@ ChartRenderer.prototype = {
 
     /**
      * 데이터를 기반으로 화면에 렌더링한다.
-     * @param chartData
-     * @param existJson
+     * @param chartData {Map} Aras 에서 가져온 데이터
+     * @param existJson {Map} 기존에 저장된 맵데이터
      */
     render: function (chartData, existJson) {
         var me = this;
@@ -924,7 +928,7 @@ ChartRenderer.prototype = {
     ,
     /**
      * 주어진 라벨이 최대 표기 숫자를 넘길 경우 텍스트를 줄인다.
-     * @param label 라벨
+     * @param label {String} 라벨
      * @returns {String} fixed label
      */
     labelSubstring: function (label) {
@@ -938,7 +942,7 @@ ChartRenderer.prototype = {
     ,
     /**
      * 주어진 스트링이 빈값인지를 확인한다.
-     * @param value String
+     * @param value {String} 판별할 값
      * @returns {boolean} 빈 값 여부
      */
     emptyString: function (value) {
@@ -967,7 +971,7 @@ ChartRenderer.prototype = {
     /**
      * 좌표값을 포함하는 가장 앞단의 엘리먼트를 반환한다.
      * @param point [x,y] 좌표
-     * @returns {Element} OG-Tree Dom Element
+     * @returns {Element} Dom Element
      */
     getElementByPoint: function (point) {
         var me = this;
@@ -997,8 +1001,9 @@ ChartRenderer.prototype = {
     }
     ,
     /**
-     * 데이트를 로컬 스트링으로 yyyymmdd 변환한다.
-     * @param d Date
+     * Date 를 로컬 스트링으로 변환한다.
+     * @param d {Date}
+     * @return {string} Date String
      */
     getLocaleShortDateString: function (d) {
         var formats = {
@@ -1545,6 +1550,11 @@ ChartRenderer.prototype = {
         };
     }
     ,
+    /**
+     * 오픈그래프 맵 데이터를 분석하여 json 형태의 elements 리스트로 반환한다.
+     * @param json {Map} 오픈그래프 맵데이터
+     * @return {Array} elements
+     */
     loadJSON: function (json) {
         var elements = [];
         var canvas = this.canvas;

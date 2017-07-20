@@ -1,5 +1,5 @@
 /**
- * Doosan html view Handler
+ * ChartViewController html view Handler
  *
  * @class
  *
@@ -28,6 +28,10 @@ var ChartViewController = function () {
     this.chartStateJson = null;
 };
 ChartViewController.prototype = {
+    /**
+     * 차트의 스테이터스 컬러 정보를 가져온다.
+     * @return {null|*}
+     */
     getChartStateJson: function () {
         return this.chartStateJson;
     },
@@ -113,6 +117,9 @@ ChartViewController.prototype = {
 
         me.startRender();
     },
+    /**
+     * 챠트 렌더러가 렌더링을 시작하도록 한다.
+     */
     startRender: function () {
         var me = this;
         blockStart();
@@ -130,7 +137,7 @@ ChartViewController.prototype = {
         },100);
     },
     /**
-     * common/state.json 에 저장된 스테이터스 데이터를 불러와 스테이터스 박스를 구성한다.
+     * common/chartState.json 에 저장된 스테이터스 데이터를 불러와 스테이터스 박스를 구성한다.
      */
     renderStateBox: function () {
         var me = this;
@@ -167,14 +174,14 @@ ChartViewController.prototype = {
     },
     /**
      * Html 페이지의 헤더 부분에 프로젝트 정보를 표기한다.
-     * @param headerItem
-     * @param myOther
+     * @param headerItem {String} 프로젝트 이름
      */
     renderHeaders: function (headerItem) {
         $('[name=pjt_name]').html(headerItem);
     },
     /**
      * Dev 모드일시 개발용 샘플 데이터를 오픈그래프 트리에 반영한다.
+     * @param callback
      */
     getSampleData: function (callback) {
         $.getJSON("common/sampleData/chartData.json", function (chartData) {
