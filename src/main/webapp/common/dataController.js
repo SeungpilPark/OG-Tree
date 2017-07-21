@@ -679,7 +679,7 @@ DataController.prototype = {
             }
         }
 
-        // var projectCodeTemp = newDoc.getProperty("_rel_project");
+        var projectCodeTemp = newDoc.getProperty("_rel_project");
         // if (!projectCodeTemp) {
         //     toastr.error('Project information in the selected documents is empty.');
         //     return;
