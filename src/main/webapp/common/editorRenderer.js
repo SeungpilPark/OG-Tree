@@ -3392,6 +3392,7 @@ EditorRenderer.prototype = {
                 //마이 - 인 일 경우 c_team, c_workflow 표시
                 var c_team = '';
                 var c_workflow = '';
+
                 if (view.position == me.Constants.POSITION.MY_IN) {
                     if (view.data.extData['c_team']) {
                         c_team = '<div>' + view.data.extData['c_team'] + '</div>';

@@ -2185,18 +2185,31 @@ DataController.prototype = {
 
     /**
      * 체크된 리스트에 대해 promote 처리한다.
-     * @param checkedList
+     * @param edCheckedList
+     * @param activityCheckedList
      */
-    updatePromote: function (checkedList) {
+    updatePromote: function (edCheckedList, activityCheckedList) {
         var me = this;
         var failCount = 0;
         var successCount = 0;
-        $.each(checkedList, function (i, data) {
+        $.each(edCheckedList, function (i, data) {
             var params = {
                 edid: me.getCurrentItemId(me.getItemType(data.type), data.id),
                 type: 'promote'
             };
             var result = me.applyMethod('DHI_EDB_Batch_Promote', me.createBody(params));
+            if (result.isError()) {
+                toastr.error('Fail : ' + data.name + '\n' + result.getErrorString());
+                failCount++;
+            } else {
+                successCount++;
+            }
+        });
+        $.each(activityCheckedList, function (i, data) {
+            var params = {
+                item_id: me.getCurrentItemId(me.getItemType(data.type), data.id)
+            };
+            var result = me.applyMethod('DHI_WF_WFA_Batch_Promote', me.createBody(params));
             if (result.isError()) {
                 toastr.error('Fail : ' + data.name + '\n' + result.getErrorString());
                 failCount++;

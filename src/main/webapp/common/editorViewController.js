@@ -546,8 +546,7 @@ EditorViewController.prototype = {
                     return;
                 }
 
-                //TODO 여기서 메소드가 추가되면 추가 작업하기.
-                me.aras.updatePromote(edList);
+                me.aras.updatePromote(edList, acList);
             });
 
             /**
