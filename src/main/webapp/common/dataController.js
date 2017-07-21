@@ -601,8 +601,10 @@ DataController.prototype = {
      */
     showDataRequest: function (edType, edId) {
         //대상 Data Request
-        var inn = this.aras.newIOMInnovator();
+        var me = this;
+        var inn = me.aras.newIOMInnovator();
         var myItem = inn.newItem("DHI_DS_DataRequest_DP", "add");
+        edId = me.getCurrentItemId(me.getItemType(me.TYPE.ED), edId);
 
         var newDoc = inn.newItem(edType, "get");
         newDoc.setProperty("id", edId);
