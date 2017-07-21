@@ -4013,7 +4013,7 @@ EditorRenderer.prototype = {
                 }
 
                 //ED 일 경우 data request
-                if (view.type != me.Constants.TYPE.ED) {
+                if (view.type == me.Constants.TYPE.ED) {
                     items.dataRequest = me.makeDataRequest();
                 }
 
