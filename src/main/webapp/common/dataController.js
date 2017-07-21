@@ -633,7 +633,7 @@ DataController.prototype = {
             for (var i = 0; i < fileItems.getItemCount(); i++) {
                 var fileItem = fileItems.getItemByIndex(i);
                 fileRelId[i] = fileItem.getProperty("related_id", "");
-                if (!fileRelId[i] && fileRelId[i].length > 0) {
+                if (fileRelId[i] && fileRelId[i].length > 0) {
 
                     // EDB에 FIle이 연결되어 있는 경우에만 File 갯수만큼 Relationship(Attached File of ED) 추가
                     var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
@@ -661,7 +661,7 @@ DataController.prototype = {
             for (var i = 0; i < fileItems.getItemCount(); i++) {
                 var fileItem = fileItems.getItemByIndex(i);
                 fileRelId[i] = fileItem.getProperty("attached_file", "");
-                if (!fileRelId[i] && fileRelId[i].length > 0) {
+                if (fileRelId[i] && fileRelId[i].length > 0) {
                     var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
                     newRelItem.setProperty("related_id", fileRelId[i]);
                     myItem.addRelationship(newRelItem);
@@ -671,7 +671,7 @@ DataController.prototype = {
         else if (edType === "DHI_IntelliSheet") {
             // Native File 연결
             var native_file = newDoc.getProperty("_attach_file");
-            if (!native_file && native_file.length > 0) {
+            if (native_file && native_file.length > 0) {
                 // EDB에 FIle이 연결되어 있는 경우에만 File 갯수만큼 Relationship(Attached File of ED) 추가
                 var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
                 newRelItem.setProperty("related_id", native_file);
