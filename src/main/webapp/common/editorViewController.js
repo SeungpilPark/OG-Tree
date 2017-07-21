@@ -201,6 +201,24 @@ EditorViewController.prototype = {
             };
 
             /**
+             * 데이터 리퀘스트 보기 콘텍스트 클릭시
+             * @param data
+             * @param view
+             */
+            me.tree.onDataRequest = function (data, view) {
+                var edType;
+                $.each(me.edbTypes, function (i, edbType) {
+                    if (data.extData['c_type'] == edbType.label) {
+                        edType = edbType.name;
+                    }
+                });
+                if (!edType) {
+                    return;
+                }
+                me.aras.showDataRequest(edType, data.id);
+            };
+
+            /**
              * 프로퍼티 보기 콘텍스트 클릭시
              * @param data
              * @param view
@@ -365,13 +383,15 @@ EditorViewController.prototype = {
                     return;
                 }
 
-                //Root 액티비티의 상태가 Active 가 아닌 경우는 Pick ED 금지
+                //Root 액티비티의 상태가 Active 거나 Waiting 가 아닌 경우는 Pick ED 금지
                 var currentActivityItem = me.aras.getItemById(
                     'activity',
                     me.aras.getCurrentItemId(me.aras.getItemType('activity'), view.root)
                 );
-                if (currentActivityItem.getProperty('state') != 'Active') {
-                    toastr.error('Pick ed is possible only in active state activity. ' +
+
+                var state = currentActivityItem.getProperty('state');
+                if (state != 'Active' && state != 'Waiting') {
+                    toastr.error('Pick ed is possible only in Active/Waiting state activity. ' +
                         'Current state is ' + currentActivityItem.getProperty('state') + '.');
                     return;
                 }
@@ -461,6 +481,11 @@ EditorViewController.prototype = {
                     }
                     if (edItems.length) {
                         me.aras.addPickEDOutRelation(edItems, folderItem, data, view);
+
+                        //TODO waiting 일때는 pick ed 하고나서 액티비티 상태를 active 로 바꾼다.
+                        if (state == 'Waiting') {
+
+                        }
                     }
                 });
                 modal.find('[name=search]').bind('click', function () {
@@ -493,10 +518,35 @@ EditorViewController.prototype = {
                         edList.push(checked);
                     }
                 });
-                if (!edList || !edList.length) {
+
+                //체크 리스트 중 하위에 체크된 리스트가 없으며, Activity 인 것을 추린다.
+                var acList = [];
+                $.each(checkedList, function (i, checked) {
+                    if (checked.type == me.tree.Constants.TYPE.ACTIVITY) {
+                        //액티비티의 자식 일람.
+                        var childList = me.tree.selectRecursiveChildById(checked.id);
+
+                        //액티비티의 자식 중 edList 에 포함된 자식이 하나라도 있다면 false
+                        var isPromote = true;
+                        $.each(childList, function (c, child) {
+                            $.each(edList, function (e, ed) {
+                                if (ed.id == child.id) {
+                                    isPromote = false;
+                                }
+                            })
+                        });
+                        if (isPromote) {
+                            acList.push(checked);
+                        }
+                    }
+                });
+
+                if (!edList.length && !acList.length) {
                     toastr.error('There are no checked Inactive EDB objects to promote.');
                     return;
                 }
+
+                //TODO 여기서 메소드가 추가되면 추가 작업하기.
                 me.aras.updatePromote(edList);
             });
 

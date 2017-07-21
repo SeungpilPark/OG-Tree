@@ -4012,6 +4012,9 @@ EditorRenderer.prototype = {
                     items.makeDeleteRelation = me.makeDeleteRelation();
                 }
 
+                //ED 일 경우 data request
+                items.dataRequest = me.makeDataRequest();
+
                 //공통
                 items.showProperties = me.makeShowProperties();
                 return {
@@ -4187,6 +4190,21 @@ EditorRenderer.prototype = {
     },
 
     /**
+     * 데이터 리퀘스트 콘텍스트 메뉴를 생성한다.
+     * @return {{name: string, icon: string, callback: callback}}
+     */
+    makeDataRequest: function () {
+        var me = this;
+        return {
+            name: 'data request',
+            icon: 'pick-ed',
+            callback: function () {
+                me.onDataRequest(me.selectedData, me.selectedView);
+            }
+        }
+    },
+
+    /**
      * 프로퍼티 보기 콘텍스트 메뉴를 생성한다.
      * @returns {{name: string, icon: string, callback: Function}}
      */
@@ -4298,6 +4316,9 @@ EditorRenderer.prototype = {
                 me.deleteMapping(me.selectedData, me.selectedView);
             }
         }
+    },
+    onDataRequest: function (data, view) {
+
     }
     ,
     onShowProperties: function (data, view) {

@@ -341,7 +341,7 @@ DataController.prototype = {
         var me = this;
         var item;
         var result = me.applyMethod('DHI_getLoginUserTeam', null);
-        if(result){
+        if (result) {
             item = result.getItemByIndex(0);
         }
         return item ? item.getProperty('team_name', '') : '';
@@ -594,6 +594,105 @@ DataController.prototype = {
         }
         return relType;
     },
+    /**
+     * ED 의 data Request 팝업을 호출한다.
+     * @param edType
+     * @param edId
+     */
+    showDataRequest: function (edType, edId) {
+        //대상 Data Request
+        var inn = this.aras.newIOMInnovator();
+        var myItem = inn.newItem("DHI_DS_DataRequest_DP", "add");
+
+        var newDoc = inn.newItem(edType, "get");
+        newDoc.setProperty("id", edId);
+        newDoc = newDoc.apply();
+
+        //Relationship(ED List) 추가
+        var newRelItem = inn.newItem("DHI_DS_DOC_DP_DR", "add");
+        newRelItem.setRelatedItem(newDoc);
+        myItem.addRelationship(newRelItem);
+
+        var userItm = this.newItem("user", "get");
+        userItm.setProperty("owned_by_id", newDoc.getProperty("owned_by_id", ""));
+        userItm = userItm.apply();
+
+        //Relationship (Receiver) 추가
+        var newRelItem = inn.newItem("DHI_DS_RECEIVER_DP_DR", "add");
+        newRelItem.setRelatedItem(userItm);
+        myItem.addRelationship(newRelItem);
+
+
+        // 문서에 연결되있는 파일 연결
+        var fileItems = "";
+        if (edType === "Document") {
+            fileItems = inn.newItem("Document File", "get");
+            var fileRelId = [];
+            fileItems.setProperty("source_id", edId);
+            fileItems = fileItems.apply();
+            for (var i = 0; i < fileItems.getItemCount(); i++) {
+                var fileItem = fileItems.getItemByIndex(i);
+                fileRelId[i] = fileItem.getProperty("related_id", "");
+                if (!fileRelId[i] && fileRelId[i].length > 0) {
+
+                    // EDB에 FIle이 연결되어 있는 경우에만 File 갯수만큼 Relationship(Attached File of ED) 추가
+                    var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
+                    newRelItem.setProperty("related_id", fileRelId[i]);
+                    myItem.addRelationship(newRelItem);
+                }
+            }
+        }
+        else if (edType === "CAD") {
+            var native_file = newDoc.getProperty("native_file", "");
+            if (native_file !== "") {
+
+                // EDB에 FIle이 연결되어 있는 경우에만 File 갯수만큼 Relationship(Attached File of ED) 추가
+                var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
+                newRelItem.setProperty("related_id", native_file);
+                myItem.addRelationship(newRelItem);
+            }// end if
+            fileItems = inn.newItem("CADFiles", "get");
+
+            var fileRelId = [];
+
+            fileItems.setProperty("source_id", edId);
+            fileItems = fileItems.apply();
+
+            for (var i = 0; i < fileItems.getItemCount(); i++) {
+                var fileItem = fileItems.getItemByIndex(i);
+                fileRelId[i] = fileItem.getProperty("attached_file", "");
+                if (!fileRelId[i] && fileRelId[i].length > 0) {
+                    var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
+                    newRelItem.setProperty("related_id", fileRelId[i]);
+                    myItem.addRelationship(newRelItem);
+                }
+            }// end for
+        }
+        else if (edType === "DHI_IntelliSheet") {
+            // Native File 연결
+            var native_file = newDoc.getProperty("_attach_file");
+            if (!native_file && native_file.length > 0) {
+                // EDB에 FIle이 연결되어 있는 경우에만 File 갯수만큼 Relationship(Attached File of ED) 추가
+                var newRelItem = inn.newItem("DHI_DS_RD_DP_DR", "add");
+                newRelItem.setProperty("related_id", native_file);
+                myItem.addRelationship(newRelItem);
+            }
+        }
+
+        // var projectCodeTemp = newDoc.getProperty("_rel_project");
+        // if (!projectCodeTemp) {
+        //     toastr.error('Project information in the selected documents is empty.');
+        //     return;
+        // }
+
+        //EDB의 project 정보 반영
+        myItem.setProperty("_projectname", projectCodeTemp);
+        myItem.setProperty("_defdate", "3");
+        myItem.setProperty("_replydeadline", "Day");
+        myItem.setProperty("_importance", "Low");
+        this.aras.uiShowItemEx(myItem.node);
+    },
+
     /**
      * 주어진 타입과 아이디로 아라스의 아이템 상세정보창을 띄운다
      * @param type "workflow","activity","folder","ed"
@@ -1029,7 +1128,7 @@ DataController.prototype = {
 
         var asyncResult = me.aras.uiShowItemEx(edItem.node, undefined, true);
         asyncResult.then(function (arasWindow) {
-                var EventBottomSave = {}
+                var EventBottomSave = {};
                 EventBottomSave.window = window;
                 EventBottomSave.handler = function () {
                     setTimeout(function () {
@@ -2239,7 +2338,7 @@ DataController.prototype = {
         }
     },
     /**
-     * 챠크 맵데이터를 가져온다.
+     * 챠트 맵데이터를 가져온다.
      */
     getProjectMapData: function () {
         var inn = this.aras.newIOMInnovator();
