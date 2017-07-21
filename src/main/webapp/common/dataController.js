@@ -613,7 +613,7 @@ DataController.prototype = {
         newRelItem.setRelatedItem(newDoc);
         myItem.addRelationship(newRelItem);
 
-        var userItm = this.newItem("user", "get");
+        var userItm = inn.newItem("user", "get");
         userItm.setProperty("owned_by_id", newDoc.getProperty("owned_by_id", ""));
         userItm = userItm.apply();
 
