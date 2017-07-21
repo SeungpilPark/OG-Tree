@@ -2381,7 +2381,20 @@ EditorRenderer.prototype = {
             var me = this;
             var edgeShape = new OG.EdgeShape([0, 0], [0, 0]);
             edgeShape.geom = new OG.PolyLine(view.vertieces);
-            var element = me.canvas.drawShape(null, edgeShape, null, null, view.id);
+            var element = me.canvas.drawShape(null, edgeShape, null,
+                {
+                    "arrow-end": "none",
+                    'marker': {
+                        'end': {
+                            'id': 'OG.marker.ArrowMarker',
+                            'size': [6, 6],
+                            'style':{
+                                'stroke-width': '0'
+                            }
+                        }
+                    }
+                },
+                view.id);
             me.canvas.setCustomData(element, JSON.parse(JSON.stringify(view)));
             element.shape.CONNECTABLE = false;
             element.shape.DELETABLE = false;

@@ -1216,113 +1216,28 @@ DataController.prototype = {
      */
     addPickEDOutRelation: function (edItems, parentItem, data, view) {
         var me = this;
-        var inn = this.aras.newIOMInnovator();
+        try {
+            var edList = [];
+            $.each(edItems, function (i, edItem) {
+                edList.push(edItem.getID());
+            });
 
-        var DDCLEds = [];
-        //선택한 ED 들의 _class Property 값이 DDCL 인 것들을 추린다.
-        for (var i = 0, leni = edItems.length; i < leni; i++) {
-            if (edItems[i].getProperty("_class") == 'DDCL') {
-                DDCLEds.push(edItems[i]);
+            var params = {
+                parent_id: parentItem.getID(),
+                ed_list: edList.join()
+            };
+
+            var result = me.applyMethod('DHI_WF_AddPickEdOutRelation', me.createBody(params));
+            if (result.isError()) {
+                toastr.error(result.getErrorString());
+            } else {
+                toastr.success('Successfully ED connected');
             }
+        } catch (e) {
+            toastr.error('Failed to Pick ED.');
+        } finally {
+            this.refreshOutFolder(data, view);
         }
-
-        var parentId = me.getCurrentItemId(parentItem.getType(), parentItem.getID());
-        var activityId = me.getCurrentItemId(me.getItemType(me.TYPE.ACTIVITY), view.root);
-
-        //기존 폴더의 DDCL ITEM 의 수를 체크한다.
-        var existDDCLItemCount = 0;
-        var body = "<_parent_type>" + parentItem.getType() + "</_parent_type>";
-        body += "<_parent_id>" + parentItem.getID() + "</_parent_id>";
-        var result = inn.applyMethod("DHI_getDDCL_Item", body);
-        if (!result) {
-            toastr.error('No result from DHI_getDDCL_Item');
-            return;
-        } else {
-            existDDCLItemCount = result.getItemCount();
-        }
-
-        //기존 폴더의 DDCL이 존재하고 선택한 ED 중 DDCL 인 것이 있을 경우
-        if (existDDCLItemCount > 0 && DDCLEds.length > 0) {
-            toastr.error('DDCL ED is exists.');
-            return;
-        }
-
-        //연결할 ED 중 DDCL 인 것이 두개 이상일 경우
-        if (DDCLEds.length > 1) {
-            toastr.error('Two or more DDCL are exist in selected ED.');
-            return;
-        }
-
-        //edItems 들에 대한 릴레이션을 생성한다.
-        for (var i = 0, leni = edItems.length; i < leni; i++) {
-            var edItem = edItems[i];
-            var edType = edItem.getType();
-            var edId = me.getCurrentItemId(edType, edItem.getID());
-            var relType = me.getRelType(me.TYPE.FOLDER, me.TYPE.ED, 'out');
-            var existRelItem;
-            var relItem;
-
-            var path = parentItem.getProperty("_path") + '||' + edItem.getProperty("_ed_number", "");
-            body = "<class>" + edItem.CLASS + "</class>";
-            body += "<edtype>" + edType + "</edtype>";
-            body += "<path>" + path + "</path>";
-            body += "<_p_id>" + data.extData['fs_id'] + "</_p_id>";
-            body += "<_rel_project>" + parentItem.getProperty('_rel_project', '') + "</_rel_project>";
-
-            body += "<_rel_ownedteam>" + parentItem.getProperty('_rel_ownedteam', '') + "</_rel_ownedteam>";
-            body += "<_rel_wfa>" + activityId + "</_rel_wfa>";
-            body += "<_rel_wf>" + parentItem.getProperty('_rel_wf', '') + "</_rel_wf>";
-            body += "<_first_p6_act>" + parentItem.getProperty('_first_p6_act', '') + "</_first_p6_act>";
-            body += "<_first_pims_act>" + parentItem.getProperty('_first_pims_act', '') + "</_first_pims_act>";
-
-            body += "<_first_start_date>" + parentItem.getProperty('_first_start_date', '') + "</_first_start_date>";
-            body += "<_first_end_date>" + parentItem.getProperty('_first_end_date', '') + "</_first_end_date>";
-            body += "<_first_act_name>" + parentItem.getProperty('_first_act_name', '') + "</_first_act_name>";
-            body += "<_final_p6_act>" + parentItem.getProperty('_final_p6_act', '') + "</_final_p6_act>";
-            body += "<_final_pims_act>" + parentItem.getProperty('_final_pims_act', '') + "</_final_pims_act>";
-
-            body += "<_final_act_name>" + parentItem.getProperty('_final_act_name', '') + "</_final_act_name>";
-            body += "<_final_start_date>" + parentItem.getProperty('_final_start_date', '') + "</_final_start_date>";
-            body += "<_final_end_date>" + parentItem.getProperty('_final_end_date', '') + "</_final_end_date>";
-            body += "<edid>" + edId + "</edid>";
-
-
-            inn.applyMethod("DHI_WF_SetUpdateEDData", body);
-
-            existRelItem = inn.newItem(relType, "get");
-            existRelItem.setProperty("source_id", parentId);
-            existRelItem.setProperty("related_id", edId);
-            existRelItem = existRelItem.apply();
-            if (existRelItem.getItemCount() < 1) {
-                try {
-                    relItem = inn.newItem(relType, "add");
-                    relItem.setProperty("source_id", parentId);
-                    relItem.setProperty("related_id", edId);
-                    relItem.setProperty("owned_by_id", me.getUserIdentity());
-                    relItem.apply();
-
-                    //스테이터스를 업데이트한다.
-                    var body = "<source_id>" + parentId + "</source_id>";
-                    body += "<related_id>" + edId + "</related_id>";
-                    inn.applyMethod("DHI_WF_RESET_STATE_ITEM", body);
-
-                    //DDCL 인 경우 _doc_no 를 상속받는다.
-                    if (edItem.getProperty("_class") == 'DDCL') {
-                        var body = "<_ed_id>" + edId + "</_ed_id>";
-                        body += "<_ed_type>" + edType + "</_ed_type>";
-                        body += "<_doc_no>" + parentItem.getProperty('_doc_no', '') + "</_doc_no>";
-                        inn.applyMethod("DHI_WF_setDocNo", body);
-                    }
-                }
-                catch (e) {
-                    toastr.error('Failed to create ' + relType + ' Relation : ' + parentId + ' to ' + edId);
-                }
-            }
-        }
-
-        toastr.success('Successfully ED connected');
-
-        this.refreshOutFolder(data, view);
     },
     /**
      * 지정된 아웃데이터 아이템(액티비티, 폴더, ED) 과 그 부모간의 릴레이션을 삭제한다.
