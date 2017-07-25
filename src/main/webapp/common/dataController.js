@@ -1293,7 +1293,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.success('Completed.');
+                    toastr.error('Failed to delete selected Item.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {
@@ -1339,7 +1339,7 @@ DataController.prototype = {
                     }
                     toastr.success('Selected Item deleted.');
                 } else {
-                    toastr.success('Completed.');
+                    toastr.error('Failed to delete selected Item.');
                 }
                 me.refreshMyWorkFlow();
             } catch (e) {

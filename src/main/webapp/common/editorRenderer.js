@@ -2125,6 +2125,9 @@ EditorRenderer.prototype = {
             if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
                 needUpdate = true;
             }
+            if (customData.data.extData['state'] != view.data.extData['state']) {
+                needUpdate = true;
+            }
         }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
@@ -2198,6 +2201,9 @@ EditorRenderer.prototype = {
             if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
                 needUpdate = true;
             }
+            if (customData.data.extData['state'] != view.data.extData['state']) {
+                needUpdate = true;
+            }
         }
         if (needUpdate) {
             element.shape.data = JSON.parse(JSON.stringify(view));
@@ -2269,6 +2275,9 @@ EditorRenderer.prototype = {
                 needUpdate = true;
             }
             if (customData.data.extData['c_can_change'] != view.data.extData['c_can_change']) {
+                needUpdate = true;
+            }
+            if (customData.data.extData['state'] != view.data.extData['state']) {
                 needUpdate = true;
             }
         }
