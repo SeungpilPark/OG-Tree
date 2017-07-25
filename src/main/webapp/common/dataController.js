@@ -1236,7 +1236,8 @@ DataController.prototype = {
         } catch (e) {
             toastr.error('Failed to Pick ED.');
         } finally {
-            this.refreshOutFolder(data, view);
+            //this.refreshOutFolder(data, view);
+            me.refreshMyWorkFlow();
         }
     },
     /**
