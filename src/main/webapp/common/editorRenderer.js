@@ -56,6 +56,8 @@ var EditorRenderer = function (container, viewController) {
             ACTIVITY_REL: "-activity-rel"
         }
     };
+
+    //TODO 에디터 모니터 프로퍼티 관련.
     this._CONFIG = {
         /**
          * 체크박스 생성 여부
@@ -97,6 +99,7 @@ var EditorRenderer = function (container, viewController) {
          * 라벨 표기 가능 여부
          */
         SHOW_LABEL: true,
+
         /**
          * 캔버스의 마진
          */
@@ -105,6 +108,8 @@ var EditorRenderer = function (container, viewController) {
          * 캔버스 높이
          */
         CONTAINER_HEIGHT: 600,
+
+        //TODO 여기서부터 라벨 크기에 관련된 설정값.
         /**
          * 라벨 최소 크기(IE)
          */
@@ -183,6 +188,7 @@ var EditorRenderer = function (container, viewController) {
         /**
          * Area 의 스타일 관련 Configuration
          */
+        //TODO 여기서부터 Area 스타일 관련된 설정값.
         AREA_STYLE: {
             /**
              * 아더 - 액티비티 Area Style
@@ -226,12 +232,13 @@ var EditorRenderer = function (container, viewController) {
                 'fill-opacity': '1'
             }
         },
+        //TODO 여기서부터 아이템의 스타일 관련된 설정값.
         /**
          * 아이템의 사이즈 관련 Configuration
          */
         SHAPE_SIZE: {
             /**
-             * 아이템의 너비 (공통)
+             * 아이템의 너비 (아이템이 차지하는 너비 공간)
              */
             COL_SIZE: 50,
             /**
@@ -300,7 +307,7 @@ var EditorRenderer = function (container, viewController) {
          */
         DEFAULT_STYLE: {
             /**
-             * Blur 처리하는 아이템의 opacity
+             * Blur 처리하는 아이템의 opacity  0 ~ 1
              */
             BLUR: "0.3",
             /**

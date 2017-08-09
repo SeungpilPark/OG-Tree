@@ -330,10 +330,13 @@ ChartRenderer.prototype = {
                 contentData['color'] = color;
                 shape.data = JSON.parse(JSON.stringify(contentData));
 
+
                 result.contents.push({
                     shape: shape,
                     width: contentData.width ? contentData.width + 'px' : me._CONFIG.ACTIVITY_WIDTH + 'px',
                     height: contentData.height ? contentData.height + 'px' : me._CONFIG.ACTIVITY_HEIGHT + 'px',
+
+                    //TODO 액티비티의 스타일을 주려면 여기의 스타일을 변경하면 될 것 같음.
                     style: {
                         'fill': color,
                         'fill-opacity': 1,
@@ -532,6 +535,7 @@ ChartRenderer.prototype = {
         var me = this;
         //연결 정보를 이어나간다.
         if (me.existJson && me.connections && me.connections.length) {
+
             var defaultStyle = JSON.parse(JSON.stringify(me.canvas._CONFIG.DEFAULT_STYLE.EDGE));
             defaultStyle['opacity'] = '1';
             defaultStyle['marker'] = null;
@@ -565,6 +569,23 @@ ChartRenderer.prototype = {
 
                 var beforeToId = toTerminal.substring(0, toTerminal.indexOf(OG.Constants.TERMINAL));
                 var toReplace = toTerminal.replace(beforeToId, toShape.id);
+
+                //TODO 선 그릴떄, defaultStyle 의 값을 변경하면 선 스타일이 바뀜.
+                //defaultStyle
+                // me.canvas._CONFIG.DEFAULT_STYLE.EDGE = {
+                //     stroke: "black",
+                //     fill: "none",
+                //     "fill-opacity": 0,
+                //     "stroke-width": 1.5,
+                //     "stroke-opacity": 1,
+                //     "edge-type": "plain",
+                //     "arrow-start": "none",
+                //     "arrow-end": "block",
+                //     "stroke-dasharray": "-",
+                //     "label-position": "center",
+                //     "stroke-linejoin": "round",
+                //     cursor: "pointer"
+                // };
                 var edge = me.canvas.drawShape(null, connection.shape, null, defaultStyle, edgeId);
                 me.canvas.getRenderer().connect(fromReplace, toReplace, edge, null, null, true);
                 me.existConnections.push(edgeId);
@@ -636,6 +657,9 @@ ChartRenderer.prototype = {
         }
         dataTable.MOVABLE = false;
 
+
+        //TODO 움직일 수 있는 방향 : moveAxis(마우스 드랍했을때 도형이 셀에 적용되는 방향), axis(움직일 수 있는 방향) ,
+        //프로퍼티: X = 가로  Y = 세로  '' = 전방향
         //옵션데이터
         var options = {
             moveAxis: 'X',
