@@ -64,17 +64,6 @@
 //prototype,superclass,constructor  => 클래스를 이루는 항목. (Java,Ruby,Javascript.....모든 객채 지향 언어를 만들 때 필요한 것.)
 
 
-//        @param {Number[]} position 드로잉할 위치 좌표(중앙 기준)
-//        @param {OG.shape.IShape} shape Shape
-//        @param {Number[]} size Shape Width, Height
-//        @param {OG.geometry.Style|Object} style 스타일 (Optional)
-//        @param {String} id Element ID 지정 (Optional)
-//        @param {String} parentId 부모 Element ID 지정 (Optional)
-//        @param {Boolean} preventDrop Lane, Pool 생성 drop 모드 수행 방지
-//        @return {Element} Group DOM Element with geometry
-        var circleShape = canvas.drawShape([100, 100], new OG.MyShape("my"), [100, 100]);
-
-
         //클래스 선언.
         var AAA = function () {
         };
@@ -131,6 +120,78 @@
         // CURD (릴레이션 검색 API)  ==> AAA
         // ==> 프로젝트 화면에서 변경해야 할 사항  ==> BBB extends AAA
         // ==> 워크플로우 화면에서 변경해야 할 사항, 추가해야 할 사항.  ==> CCC extends AAA
+
+
+
+        //오브젝트를 선언함.
+        OG.shape.Area = function (lable) {
+            OG.shape.Area.superclass.call(this, lable);
+
+            this.SHAPE_ID = 'OG.shape.Area';
+
+            //라벨 고칠 수 없음.
+            this.LABEL_EDITABLE = false;
+
+            //리사이즈 안됨.
+            this.RESIZABLE = true;
+
+            //못움직임.
+            this.MOVABLE = false;
+
+            //선택할 수 있는 여부.
+            this.SELECTABLE = true;
+
+            this.CONNECT_CLONEABLE = false;
+
+            //연결 가능 여부.
+            this.CONNECTABLE = false;
+
+            //삭제 가능여부
+            this.DELETABLE = false;
+        };
+        //VerticalLaneShape 란 것을 상속하였음.
+        OG.shape.Area.prototype = new OG.shape.VerticalLaneShape();
+        OG.shape.Area.superclass = OG.shape.VerticalLaneShape;
+        OG.shape.Area.prototype.constructor = OG.shape.Area;
+        OG.Area = OG.shape.Area;
+
+
+        var area1 = canvas.drawShape([300, 300], new OG.Area("Other Workflow"), [300, 600]);
+
+
+
+        //두개의 사각형을 그렸음.
+        var rectangleShape = canvas.drawShape([100, 100], new OG.RectangleShape('Other Workflow'), [100, 100],{
+            'font-family': 'fantasy',
+            'font-size': '6'
+        });
+        var circleShape = canvas.drawShape([300, 100], new OG.RectangleShape('Other Workflow'), [80, 80]);
+
+        /**
+         * connect at default center position
+         */
+
+        //1. from
+        //2. to
+        //3. style
+        canvas.connect(rectangleShape, circleShape, {
+            stroke: 'red',
+            'arrow-start': 'none',
+            'arrow-end': 'block'
+        }, '1-2');
+
+        /**
+         * connect at custom position
+         */
+        //1. from
+        //2. to
+        //3. style
+        canvas.connect(circleShape,rectangleShape, {
+            stroke: 'red',
+            'arrow-start': 'diamond',
+            'arrow-end': 'block'
+        }, '1-2');
+
 
 
 

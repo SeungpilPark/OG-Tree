@@ -48,6 +48,7 @@ OG.shape.DIDS.prototype.addSelectLabel = function () {
     }
 };
 
+//TODO 체크박스 붙이는 제약조건 관련한 로직.
 OG.shape.DIDS.prototype.addCheckBox = function () {
     //CHECKBOX 허용 안될 경우 리턴.
     if (!this.CHECKBOX) {
