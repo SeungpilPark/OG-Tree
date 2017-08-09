@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BPMN Modeler Example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- jquery -->
+    <script type="text/javascript" src="../lib/jquery-1.11.1/jquery-1.11.1.min.js"></script>
+
+    <!-- jquery ui -->
+    <script type="text/javascript" src="../lib/jquery-ui-1.11.0.custom/jquery-ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/jquery-ui-1.11.0.custom/jquery-ui.css"/>
+
+    <!-- jquery Context Menu -->
+    <link rel="stylesheet" type="text/css" href="../lib/jquery-contextMenu/jquery.contextMenu.css"/>
+    <script type="text/javascript" src="../lib/jquery-contextMenu/jquery.contextMenu.js"></script>
+
+    <!-- Opengraph -->
+    <script type="text/javascript" src="../lib/opengraph/OpenGraph-0.1.3-SNAPSHOT.js"></script>
+</head>
+<body>
+
+<div id="canvas" style="cursor: default;border: 1px solid black; width:1000px;overflow: scroll"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var canvas = new OG.Canvas('canvas', [1200, 800], 'white', 'url(../resources/images/symbol/grid.gif)');
+
+
+        //동그라미를 그리는 도형.
+//        OG.shape.CircleShape = function (label) {
+//            OG.shape.CircleShape.superclass.call(this);
+//
+//            this.SHAPE_ID = 'OG.shape.CircleShape';
+//            this.label = label;
+//        };
+//        OG.shape.CircleShape.prototype = new OG.shape.GeomShape();
+//        OG.shape.CircleShape.superclass = OG.shape.GeomShape;
+//        OG.shape.CircleShape.prototype.constructor = OG.shape.CircleShape;
+//        OG.CircleShape = OG.shape.CircleShape;
+
+
+        //extend 클래스
+        OG.shape.MyShape = function (label) {
+            OG.shape.MyShape.superclass.call(this);
+
+            this.SHAPE_ID = 'OG.shape.MyShape';
+            this.label = label;
+        };
+        //prototype => 클래스 안의 메소드들을 그대로 상속받는다.
+        OG.shape.MyShape.prototype = new OG.shape.CircleShape();
+
+        //superclass => 클래스의 부모 클래스를 지정한다.
+        OG.shape.MyShape.superclass = OG.shape.CircleShape;
+
+        //constructor => get, set 프로퍼티 등의, 클래스 구조를 constructor 라 부른다.
+        OG.shape.MyShape.prototype.constructor = OG.shape.MyShape;
+
+        //OG.MyShape 로 불러 쓸 수 있도록 지정한다.
+        OG.MyShape = OG.shape.MyShape;
+
+
+//prototype,superclass,constructor  => 클래스를 이루는 항목. (Java,Ruby,Javascript.....모든 객채 지향 언어를 만들 때 필요한 것.)
+
+
+//        @param {Number[]} position 드로잉할 위치 좌표(중앙 기준)
+//        @param {OG.shape.IShape} shape Shape
+//        @param {Number[]} size Shape Width, Height
+//        @param {OG.geometry.Style|Object} style 스타일 (Optional)
+//        @param {String} id Element ID 지정 (Optional)
+//        @param {String} parentId 부모 Element ID 지정 (Optional)
+//        @param {Boolean} preventDrop Lane, Pool 생성 drop 모드 수행 방지
+//        @return {Element} Group DOM Element with geometry
+        var circleShape = canvas.drawShape([100, 100], new OG.MyShape("my"), [100, 100]);
+
+
+        //클래스 선언.
+        var AAA = function () {
+        };
+
+        //메소드 선언.
+        AAA.prototype = {
+            sayYes: function () {
+                alert('sayYes');
+            }
+        };
+        //셀프 선언.
+        AAA.prototype.constructor = AAA;
+
+
+        //사용하기
+        var aaa = new AAA();
+
+        //메소드 사용.
+        //aaa.sayYes();
+
+
+
+        //확장해서 BBB 만들기.
+
+        //상속 클래스
+        var BBB = function () {
+            BBB.superclass.call(this);
+        };
+        //prototype => 클래스 안의 메소드들을 그대로 상속받는다.
+        BBB.prototype = new AAA();
+
+        //superclass => 클래스의 부모 클래스를 지정한다.
+        BBB.superclass = AAA;
+
+        //constructor => get, set 프로퍼티 등의, 클래스 구조를 constructor 라 부른다.
+        BBB.prototype.constructor = BBB;
+
+        //메소드를 추가한것.
+        BBB.prototype.sayHello = function(){
+            alert('sayHello');
+        };
+
+
+        var bbb = new BBB();
+        //bbb.sayYes();
+        //bbb.sayHello();
+
+
+        //클래스 상속하기
+        //Aras 기존 메소드를 너무 잘 만든게 있다. 또는 화면페이지나, 클래스를, 공들여서 만듬. => AAA
+        //BBB 클래스의 목적은, AAA 의 기능을 똑같이 쓰면서, 나만의 추가기능이 필요하거나 할떄. 확장해서 만듬.
+
+
+        // CURD (릴레이션 검색 API)  ==> AAA
+        // ==> 프로젝트 화면에서 변경해야 할 사항  ==> BBB extends AAA
+        // ==> 워크플로우 화면에서 변경해야 할 사항, 추가해야 할 사항.  ==> CCC extends AAA
+
+
+
+
+    });
+</script>
+
+</body>
+</html>
+
