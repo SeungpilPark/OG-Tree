@@ -3,7 +3,7 @@
 <head>
     <title>BPMN Modeler Example</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <!-- jquery -->
     <script type="text/javascript" src="../lib/jquery-1.11.1/jquery-1.11.1.min.js"></script>
@@ -27,7 +27,7 @@
     $(document).ready(function () {
         var canvas = new OG.Canvas('canvas', [1200, 800], 'white', 'url(../resources/images/symbol/grid.gif)');
 
-        var circleShape = canvas.drawShape([100, 100], new OG.CircleShape(), [100, 100]);
+        var circleShape = canvas.drawShape([100, 100], new OG.CircleShape("test"), [100, 100]);
 
     });
 </script>
