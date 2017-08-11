@@ -152,7 +152,7 @@ EditorViewController.prototype = {
              * @param activities
              */
             me.tree.onActivityMove = function (activities) {
-                console.log(activities);
+
             };
             /**
              * GUI 상에서 매핑이 되기 전의 핸들러

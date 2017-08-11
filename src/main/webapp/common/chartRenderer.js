@@ -1457,7 +1457,6 @@ ChartRenderer.prototype = {
             var me = this;
             $(me.currentElement).bind({
                 'dblclick': function () {
-                    console.log('dblclick');
                     if (me.data && me.data['cur_rel_wf']) {
                         if (chartRenderer.viewController.aras) {
                             chartRenderer.viewController.aras.showPropertyWindow('workflow', me.data['cur_rel_wf']);

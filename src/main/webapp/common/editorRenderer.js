@@ -2080,7 +2080,6 @@ EditorRenderer.prototype = {
                 if (tempStr.length > length) {
                     var s = tempStr.substring(0, length);
                     var hangulLength = getHangulLength(s);
-                    //console.log(length,hangulLength);
 
 
                     allStr += tempStr.substring(0, hangulLength);
@@ -2882,7 +2881,7 @@ EditorRenderer.prototype = {
     //========================================================================//
     //=========================Start Storage Query============================//
     //========================================================================//
-
+    //TODO 데이터 찾기.
     /**
      * 주어진 에어리어에 해당하는 액티비티 정보를 반환한다.
      * @param position Area position
@@ -3411,8 +3410,13 @@ EditorRenderer.prototype = {
      */
     bindTooltip: function (element) {
         var me = this;
+
+        //TODO 툴팁이벤트 수정할 경우 보실 곳.
         $(element).bind('mouseover', function (event) {
+
+            //기존 걸 지움.
             $('.og-tooltip').remove();
+
             var view = me.selectViewById(me._VIEWDATA, element.id);
             if (view) {
                 var text = view.tooltip ? view.tooltip : view.name;
@@ -3430,6 +3434,9 @@ EditorRenderer.prototype = {
                         c_workflow = '<div>' + view.data.extData['c_workflow'] + '</div>';
                     }
                 }
+
+                //최종 툴팁 완성본.
+                //TODO 툴팁 내용을 바꾸고 싶을 경우
                 var tooltip =
                     $('<div class="og-tooltip ui-tooltip ui-widget ui-corner-all" id="' + element.id + '-tooltip">' +
                         '<div class="ui-tooltip-content">' + c_team + c_workflow + text + '</div>' +
@@ -3440,6 +3447,8 @@ EditorRenderer.prototype = {
                 if ((tooltipLeft + 150) > bodyWidth) {
                     tooltipLeft = bodyWidth - 150;
                 }
+
+                //TODO 툴팁 스타일을 바꾸고 싶을 경우
                 tooltip.css({
                     position: 'absolute',
                     'top': event.pageY + 15,
@@ -3518,6 +3527,8 @@ EditorRenderer.prototype = {
      * @param element OG-Tree Dom Element
      */
     bindDblClickEvent: function (element) {
+
+        //TODO 이벤트 - 더블클릭 - 프로퍼티 창 열기
         var me = this;
         $(element).unbind('dblclick');
         $(element).bind({
@@ -3553,10 +3564,13 @@ EditorRenderer.prototype = {
         var edge;
         var allEdges;
         var mappings;
+
+        //내 자식들중 매핑이 된 연결선을 찾는다. (highLightEdgeIds)
         var getChildMapping = function (elementId) {
             var childMapping = [];
             var highLightEdgeIds = [];
             var view = me.selectViewById(me._VIEWDATA, elementId);
+
             //미러가 아니고, 매핑요소인 것
             if (view && view.data && view.data.type == me.Constants.TYPE.MAPPING) {
                 childMapping = me.selectRecursiveChildMapping(view.data['source'], view.data['target']);
@@ -3587,11 +3601,17 @@ EditorRenderer.prototype = {
             }
             return highLightEdgeIds;
         };
+
+        //TODO 하이라이트 매핑 이벤트 스타일 수정하실 경우.
         $(element).bind('mouseover', function (event) {
             var edgeIds = getChildMapping(element.id);
             for (var c = 0, lenc = edgeIds.length; c < lenc; c++) {
+
+                //아이디로 실제 도형을 찾는다.
                 edge = me.canvas.getElementById(edgeIds[c]);
+
                 if (edge) {
+                    //엘리먼트는 그대로 있으면서 스타일이 변경됨.
                     me.canvas.setShapeStyle(edge, {
                         "stroke": "RGB(66,139,202)",
                         "stroke-width": "3",
@@ -3601,6 +3621,8 @@ EditorRenderer.prototype = {
                 }
             }
         });
+
+        //TODO 하이라이트 매핑 이벤트 스타일 수정하실 경우.
         $(element).bind('mouseout', function () {
             allEdges = me._RENDERER.getAllEdges();
             for (var c = 0, lenc = allEdges.length; c < lenc; c++) {
@@ -3719,16 +3741,25 @@ EditorRenderer.prototype = {
      * 매핑이 이루어졌을 떄의 이벤트를 처리한다.
      */
     bindMappingEvent: function () {
+        //TODO 드래그 앤 드랍 이벤트를 수정하실 경우
         var me = this;
         var eventX, eventY, targetEle, targetView, source, target;
+
+        //onMoveShape: 도형이 이동되었을 경우 이벤트 리스너 입니다.
         me.canvas.onMoveShape(function (event, shapeElement, offset) {
             var view = me.selectViewById(me._VIEWDATA, shapeElement.id);
             if (view.position == me.Constants.POSITION.OTHER_OUT) {
+
+                //드랍된 좌표값 계산.
+                //shapeElement => 이동시킨 도형.
                 eventX = shapeElement.shape.geom.getBoundary().getCentroid().x;
                 eventY = shapeElement.shape.geom.getBoundary().getCentroid().y;
 
                 //원래 상태로 원복
+                //다시 그리지는 않지만 도형이 가지고있는 좌표정보는 바뀜.
                 shapeElement.shape.geom.move(-(offset[0]), -(offset[1]));
+
+                //바뀐 자표정보로 다시그림.
                 me._RENDERER.redrawShape(shapeElement);
 
                 if (shapeElement.shape instanceof OG.Folder) {
@@ -3737,14 +3768,18 @@ EditorRenderer.prototype = {
                     me.updateEd(view, shapeElement);
                 }
 
+                //targetEle 는 드랍한 중심 좌표에 어떤 도형이 위치해 있나?
                 targetEle = me.getElementByPoint([eventX, eventY]);
                 if (!targetEle) {
                     return;
                 }
+
+                //MY (액티비티)  영역에만 작동함.
                 targetView = me.selectViewById(me._VIEWDATA, targetEle.id);
                 if (!targetView || targetView.position != me.Constants.POSITION.MY) {
                     return;
                 }
+
                 target = me.selectById(targetView.data.id);
                 source = me.selectById(shapeElement.id);
                 if (!target || !source) {
@@ -4263,7 +4298,6 @@ EditorRenderer.prototype = {
                 //TODO 아라스 데이터 불러오기
                 me.viewController.doCustomLogic(me.selectedData, me.selectedView);
 
-                console.log(me.selectedData, me.selectedView);
                 //me.onShowProperties(me.selectedData, me.selectedView);
 
                 //TODO 뷰데이터와 데이터 관계 표시 예제

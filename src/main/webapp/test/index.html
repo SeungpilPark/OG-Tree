@@ -108,7 +108,6 @@
 
         var bbb = new BBB();
         //bbb.sayYes();
-        //bbb.sayHello();
 
 
         //클래스 상속하기
@@ -295,6 +294,7 @@
             //shape 선언.
         var sampleShape = new OG.SampleShape();
 
+
         var data = {
             "f_id": "DADBAE15EB104059A1138A2C1A2040BD",
             "fs_id": "000131-E-AE-001I-00-001-0003",
@@ -323,11 +323,25 @@
             "c_locked_by_id": "a"
         };
 
+
+        //TODO Object 형 데이터의 동기화 문제를 해결하는 방법.
         //shape 에 데이터를 집어넣음.
-        sampleShape.data = data;
+        sampleShape.data = JSON.parse(JSON.stringify(data));
+
+        var sampleShape2 = new OG.SampleShape();
+        sampleShape2.data = JSON.parse(JSON.stringify(data));
+
+        sampleShape2.data.kind = 'E';
+
+        console.log(sampleShape.data.kind, sampleShape2.data.kind);
+
+        //객체가 공유가 되지 않는 경우.  => string, number, boolean 값일 경우.
+        //객체가 공유가 되는 경우 => Object 를 상속받는 모든 클래스.
+
 
         //shape 을 그림.
-        canvas.drawShape([300, 200], sampleShape, [200, 200]);
+        var element = canvas.drawShape([300, 200], sampleShape, [200, 200]);
+        canvas.drawShape([600, 200], sampleShape2, [200, 200]);
 
 
         //Typeof 는 string, number, object, boolean 인지만 알 수 있음.
@@ -348,19 +362,12 @@
          */
         // Shape 이 처음 Draw 되었을 때의 이벤트 리스너
         canvas.onDrawShape(function (event, shapeElement) {
-
-        });
-
-        // Undo 되었을 때의 이벤트 리스너
-        canvas.onUndo(function (event) {
-        });
-
-        // Redo 되었을 때의 이벤트 리스너
-        canvas.onRedo(function (event) {
+            //alert('onDrawShape');
         });
 
         // Shape 이 Redraw 되었을 때의 이벤트 리스너
         canvas.onRedrawShape(function (event, shapeElement) {
+            //alert('onReDrawShape');
         });
 
         // Shape 이 Remove 될 때의 이벤트 리스너
@@ -375,8 +382,28 @@
         canvas.onResizeShape(function (event, shapeElement, offset) {
         });
 
+
+        //도형이 연결되기 전 리스너이며, false 리턴을 주게 되면 연결이 취소됩니다.
+
+        /**
+         * Shape 이 Connect 되기전 이벤트 리스너
+         *
+         * @param {Function} callbackFunc 콜백함수(event, edgeElement, fromElement, toElement)
+         */
+        canvas.onBeforeConnectShape(function (event, edgeElement, fromElement, toElement) {
+            console.log(edgeElement, fromElement, toElement);
+
+            var shape = fromElement.shape;
+            console.log(shape.data);
+            if (shape.data.kind == 'F') {
+                return false;
+            }
+        });
+
+
         // Shape 이 Connect 되었을 때의 이벤트 리스너
         canvas.onConnectShape(function (event, edgeElement, fromElement, toElement) {
+
         });
 
         // Shape 이 Disconnect 되었을 때의 이벤트 리스너
@@ -384,9 +411,30 @@
 
         });
 
-        canvas.onLoading(function (event, progress) {
 
+        //TODO 도형에 이벤트 먹이기.
+        var element2 = canvas.drawShape([300, 400], new OG.RectangleShape(), [200, 200], null, 'DADBAE15EB104059A1138A2C1A2040BD');
+
+        $(element).bind('click', function (event) {
+            console.log(element.id); //DIDS 에서는 엘리먼트 아이디가 데이터 아이디이다.
         });
+        $(element).bind('dblclick', function (event) {
+            console.log('dblclick')
+        });
+        $(element).bind('mouseover', function (event) {
+            console.log('mouseover');
+        });
+        $(element).bind('mouseout', function () {
+            console.log('mouseout');
+        });
+
+        //캔버스 데이터 export
+//        var mapData = canvas.toJSON();
+//
+//        canvas.clear();
+//
+//        //캔버스 다시 불러오기 import
+//        canvas.loadJSON(mapData);
 
 
     });
