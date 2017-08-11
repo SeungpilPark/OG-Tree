@@ -275,6 +275,8 @@ ChartRenderer.prototype = {
      * @return {tableRenderer}
      */
     getDataTableRenderer: function () {
+
+        //TODO 테이블에 렌더링 되는 도형을 변경하고싶을때 여기를 수정하면 됨.
         var me = this;
         var tableRenderer = function (value) {
             var result = {
@@ -619,6 +621,8 @@ ChartRenderer.prototype = {
         //기존 json 정보가 있을 경우 로드 한 후, 데이터 테이블을 얻어온다.
         if (existJson) {
             me.existJson = existJson;
+
+            //기존의 액티비티 정보들을 뽑아옴.
             me.loadElements = me.loadJSON(existJson);
 
             $.each(me.loadElements, function (i, element) {
@@ -647,6 +651,7 @@ ChartRenderer.prototype = {
                 });
 
                 //Edge 들의 from,to 액티비티 연결정보를 저장하고있는다.
+                //기존의 연결선 정보들을 뽑아옴.
                 me.connections = me.keepEdges();
 
             } else {
@@ -671,6 +676,10 @@ ChartRenderer.prototype = {
             columnHeight: 50,
             columnWidth: 160,
             columnMinWidth: 100,
+
+            //TODO 테이블 스타일 변경은 여기서...
+
+            //디폴트 칼럼 스타일 => 전체 적용.
             columnStyle: {
                 'font-color': '#fff',
                 'fill': '#abaaad',
@@ -696,13 +705,22 @@ ChartRenderer.prototype = {
                     'stroke-width': '1'
                 }
             },
+
+            //데이터의 헤더 수만 큼 여기다가 칼럼들을 푸시를 할 것이다.
             columns: [
+
+                //TODO 개별적인 칼럼이나 셀 스타일은 여기서...
+
+                //첫 번째 칼럼.
                 {
                     data: 'func_code',
                     title: '주요 Activity\n일정(D day)',
                     defaultContent: '',
                     columnWidth: 100,
+
+                    //개별적인 칼럼 스타일 적용. 여기는 fill 등을 적용 가능.
                     columnStyle: {
+                        'fill': 'red',
                         'border-left': {
                             'stroke': '#abaaad',
                             'stroke-width': '1'
@@ -712,6 +730,8 @@ ChartRenderer.prototype = {
                             'stroke-width': '3'
                         }
                     },
+
+                    //개별적인 셀 스타일. 여기는 border 스타일만 가능.
                     cellStyle: {
                         'border-right': {
                             'stroke': '#616063',
@@ -723,6 +743,11 @@ ChartRenderer.prototype = {
                         },
                         'font-size': '11px'
                     }
+
+                    //만일 여기에 렌더러가 있다면, 이 칼럼에 종속된 셀들은 그려질 때 렌더러가 명령하는대로 그려진다.
+                    // ,renderer: unction(){
+                    //
+                    // }
                 }
             ]
         };
@@ -936,6 +961,8 @@ ChartRenderer.prototype = {
         var boundary = me.canvas.getBoundary(me.tableElement);
         me.canvas.setCanvasSize([boundary.getWidth() + 5, boundary.getHeight() + 5]);
         me.zoomFit();
+
+        console.log(me.dataTable.data);
     },
 
     lineAlignment: function () {
@@ -1390,6 +1417,8 @@ ChartRenderer.prototype = {
             return this.geom;
         };
 
+
+        //TODO 알람 말고, 더 특별한 모양을 더 달고 싶다면 여기서 추가로 작성하면 됩니다.
         OG.shape.bpmn.A_Task.prototype.createSubShape = function () {
             this.sub = [];
             if (this.data && (this.data['cur_check_alarm'] == "1" || this.data['cur_check_alarm'] == 1)) {
@@ -1412,6 +1441,7 @@ ChartRenderer.prototype = {
             return this.sub;
         };
 
+        //TODO 액티비티 컨넥스트 메뉴 추가는 여기서...
         OG.shape.bpmn.A_Task.prototype.createContextMenu = function () {
             var me = this;
             this.contextMenu = {
@@ -1436,6 +1466,7 @@ ChartRenderer.prototype = {
             }
             return this.contextMenu;
         };
+
         OG.shape.bpmn.A_Task.prototype.onSelectShape = function () {
             var me = this;
             //자신의 라인이 아닌 모든 도형은 deselect 한다.
@@ -1453,8 +1484,13 @@ ChartRenderer.prototype = {
         OG.shape.bpmn.A_Task.prototype.onDeSelectShape = function () {
             highLightSelectedEdges();
         };
+
+
+        //TODO 액티비티 도형이 그려진 후에 처리하는 내용입니다.
         OG.shape.bpmn.A_Task.prototype.onDrawShape = function () {
             var me = this;
+
+            //액티비티 더블 클릭시
             $(me.currentElement).bind({
                 'dblclick': function () {
                     if (me.data && me.data['cur_rel_wf']) {
@@ -1465,6 +1501,7 @@ ChartRenderer.prototype = {
                 }
             });
 
+            //액티비티 마우스 오버시
             $(me.currentElement).bind('mouseover', function (event) {
                 $('.og-tooltip').remove();
                 if (me.data && me.data['cur_wfa_name']) {
@@ -1489,6 +1526,7 @@ ChartRenderer.prototype = {
             });
         };
 
+        //TODO 셀은 칼럼 클릭시 나타나는 투명한 모양의 사각형 기능툴입니다.
         OG.shape.component.Cell.prototype.createContextMenu = function () {
             var me = this;
             if (!chartRenderer.editMode) {

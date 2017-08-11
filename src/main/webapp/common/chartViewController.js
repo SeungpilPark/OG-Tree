@@ -120,6 +120,7 @@ ChartViewController.prototype = {
     /**
      * 챠트 렌더러가 렌더링을 시작하도록 한다.
      */
+    //TODO 차트 렌더링은 여기서부터 시작합니다.
     startRender: function () {
         var me = this;
         blockStart();

@@ -399,6 +399,8 @@ EditorRenderer.prototype = {
 
         //세로 방향 스크롤일 경우 렌더링을 재수행한다.
         var prevLeft = 0;
+
+        //TODO 캔버스 화면에 스크롤 이벤트 먹이는 부분.
         me._CONTAINER.scroll(function () {
             var currentLeft = $(this).scrollLeft();
             if (prevLeft != currentLeft) {
@@ -761,6 +763,8 @@ EditorRenderer.prototype = {
             var firstChild = false;
             if (childFromParent && childFromParent.length) {
                 for (var i = 0, leni = childFromParent.length; i < leni; i++) {
+
+                    //자신과 같은 부모를 가지는 데이터의 첫번째와 내 아이디가 같다면, firstChild 가 true 가 된다.
                     if (childFromParent[0]['id'] == object['id']) {
                         view.index = i;
                         if (i == 0) {
