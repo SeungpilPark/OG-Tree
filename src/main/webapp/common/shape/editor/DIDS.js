@@ -76,7 +76,12 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
     }
 
     this.hasCheckBox = true;
+    //TODO 아래는 체크박스를 그리는데, ED 일 경우와 나머지 경우의 위치가 조금 틀리다.
+
+    //ED 일 경우.
     if (this instanceof OG.shape.Ed) {
+
+        //체크박스 사각형
         this.sub.push({
             shape: new OG.RectangleShape(),
             width: '12px',
@@ -91,6 +96,8 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
                 'r': '2'
             }
         });
+
+        //체크 표시
         if (this.data.data.CHECKED) {
             this.sub.push({
                 shape: new OG.ImageShape('common/shape/editor/check-image.png'),
@@ -100,7 +107,10 @@ OG.shape.DIDS.prototype.addCheckBox = function () {
                 bottom: '3px'
             });
         }
-    } else {
+    }
+
+    //폴더, 액티비티 일 경우
+    else {
         this.sub.push({
             shape: new OG.RectangleShape(),
             width: '12px',

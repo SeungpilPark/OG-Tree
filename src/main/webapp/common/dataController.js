@@ -2212,6 +2212,24 @@ DataController.prototype = {
         }
     },
 
+    //TODO contextMenu example  => editorRenderer 에 makeCustomMenu 안의 데이터구조 참고하기. (data, view)
+    deleteEDITEM: function (data, view) {
+        var me = this;
+        var id = data.extData.id;
+
+        //.....
+
+        var success = true;
+        if (success) {
+            //성공 알림창.
+            toastr.success('Name changed.');
+        } else {
+
+            //실패 알림창.
+            toastr.error('Fail!!');
+        }
+    },
+
 
     //================================================
     //================================================

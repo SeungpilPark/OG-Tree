@@ -2404,7 +2404,7 @@ EditorRenderer.prototype = {
                         'end': {
                             'id': 'OG.marker.ArrowMarker',
                             'size': [6, 6],
-                            'style':{
+                            'style': {
                                 'stroke-width': '0'
                             }
                         }
@@ -3935,6 +3935,8 @@ EditorRenderer.prototype = {
      */
     enableShapeContextMenu: function () {
         var me = this;
+
+        //도큐먼트 참조: http://swisnl.github.io/jQuery-contextMenu/index.html
         $.contextMenu({
             position: function (opt, x, y) {
                 var containerRight = me._CONTAINER.offset().left + me._CONTAINER.width();
@@ -3945,6 +3947,9 @@ EditorRenderer.prototype = {
                 opt.$menu.css({top: y + 10, left: x + 10});
             },
             selector: '#' + me._RENDERER.getRootElement().id + ' [_type=SHAPE]',
+
+
+            //TODO 콘텐스트 메뉴 제약 조건 설정하는 부분.
             build: function ($trigger, event) {
                 var items = {};
                 $(me._RENDERER.getContainer()).focus();
@@ -3976,6 +3981,7 @@ EditorRenderer.prototype = {
                     me._HANDLER.selectShape(element);
                 }
 
+                //TODO 아래 에서부터 make~ 로 시작하는 부분을 타고 들어가면 해당하는 콘텍스트 각 메뉴이다.
                 //이름 바꾸기. 에디터 모드에서만 가능.
                 if (me._CONFIG.CHANGE_NAME) {
                     if (view.position == me.Constants.POSITION.MY_OUT ||
@@ -4047,8 +4053,13 @@ EditorRenderer.prototype = {
                     items.dataRequest = me.makeDataRequest();
                 }
 
+                //TODO example 컨텍스트 메뉴 추가하기.
+                items.customMenu = me.makeCustomMenu();
+
                 //공통
                 items.showProperties = me.makeShowProperties();
+
+                //최종적으로 메뉴 구성을 리턴.
                 return {
                     items: items
                 };
@@ -4101,8 +4112,14 @@ EditorRenderer.prototype = {
     makeNameChange: function (element, data, view) {
         var editorRenderer = this;
         return {
+            //메뉴 라벨
             name: 'change name',
+
+            //메뉴 아이콘
+            //TODO 메뉴 아이콘 설정은, resources/css/custom.css 파일에서 설정할 수 있다. (.context-menu-item.icon-name-change)
             icon: 'name-change',
+
+            //클릭했을 때 이벤트
             callback: function () {
                 //Lock 인 경우는 수정이 불가.
                 if (data.extData['c_locked_by_id'] && data.extData['c_locked_by_id'].length > 0) {
@@ -4232,6 +4249,92 @@ EditorRenderer.prototype = {
             icon: 'pick-ed',
             callback: function () {
                 me.onDataRequest(me.selectedData, me.selectedView);
+            }
+        }
+    },
+
+    makeCustomMenu: function () {
+        var me = this;
+        return {
+            name: 'new custom menu',
+            icon: 'pick-ed',
+            callback: function () {
+
+                //TODO 아라스 데이터 불러오기
+                me.viewController.doCustomLogic(me.selectedData, me.selectedView);
+
+                console.log(me.selectedData, me.selectedView);
+                //me.onShowProperties(me.selectedData, me.selectedView);
+
+                //TODO 뷰데이터와 데이터 관계 표시 예제
+                // 뷰데이터는 DB 데이터를 가져와서, 배치를 끝내고, 어떻게 배치되어있는가를 가지고 있는(VIEW) 데이터이다.
+
+                // {
+                //     "data": {
+                //         "type": "mapping",
+                //         "id": "5C30A52E80DD4BFBA66683AD621EDDDF-95733D3101B7482383C1787FFC566F2B",
+                //         "sourceType": "ed",
+                //         "source": "5C30A52E80DD4BFBA66683AD621EDDDF",
+                //         "target": "95733D3101B7482383C1787FFC566F2B",
+                //         "selected": false,
+                //         "position": "my-in",
+                //         "extData": {
+                //             "id": "5C30A52E80DD4BFBA66683AD621EDDDF",
+                //             "item_number": "000131-E-AE-001I-CC08-U0090000-00002",
+                //             "name": "folder lv1_3_cad",
+                //             "fs_parent_id": "95733D3101B7482383C1787FFC566F2B",
+                //             "state": "In Planning",
+                //             "class": "PRD",
+                //             "bg": "EPC BG",
+                //             "eng_func_structure": "",
+                //             "eng_mat_structure": "",
+                //             "doc_structure": "",
+                //             "kind": "E",
+                //             "selected": "",
+                //             "_path": "000131-E-AE-001I-01-001||000131-E-AE-001I-01-001-0001||000131-E-AE-001I-01-001-0004||000131-E-AE-001I-CC08-U0090000-00002",
+                //             "first_start_date": "5/30/2017",
+                //             "final_end_date": "5/30/2017",
+                //             "modified_date": "5/30/2017",
+                //             "c_major_rev": "-",
+                //             "c_c_rev": "A",
+                //             "c_type": "2D & 3D Drawing",
+                //             "c_team": "EPC)토목기술팀",
+                //             "c_workflow": "000131-E-AE-001I-00",
+                //             "c_securitylevel": "Confidential",
+                //             "c_locked_by_id": "a"
+                //     },
+                //         "parentId": "32D6A8F1ECCE42899BFBDA7CDCBD0D9F",
+                //         "name": "folder lv1_3_cad",
+                //         "expand": true,
+                //         "color": "none",
+                //         "stroke": "none",
+                //         "first_start_date": "20170530",
+                //         "final_end_date": "20170530",
+                //         "modified_date": "20170530",
+                //         "tooltip": "2D & 3D Drawing folder lv1_3_cad A -"
+                //     },
+                //     "depth": 3,
+                //     "index": 1,
+                //     "y": 159,
+                //     "width": 30,
+                //     "height": 40,
+                //     "bottom": 233,
+                //     "root": "95733D3101B7482383C1787FFC566F2B",
+                //     "position": "my-in",
+                //     "id": "5C30A52E80DD4BFBA66683AD621EDDDF-95733D3101B7482383C1787FFC566F2B",
+                //     "expand": true,
+                //     "type": "ed",
+                //     "name": "folder lv1_3_cad",
+                //     "color": "#d0aff2",
+                //     "stroke": "none",
+                //     "tooltip": "2D & 3D Drawing folder lv1_3_cad A - 김철호",
+                //     "source": "5C30A52E80DD4BFBA66683AD621EDDDF",
+                //     "target": "95733D3101B7482383C1787FFC566F2B",
+                //     "blur": false,
+                //     "mapping": true,
+                //     "selected": false,
+                //     "x": 1028
+                // }
             }
         }
     },

@@ -85,7 +85,6 @@
         //aaa.sayYes();
 
 
-
         //확장해서 BBB 만들기.
 
         //상속 클래스
@@ -102,7 +101,7 @@
         BBB.prototype.constructor = BBB;
 
         //메소드를 추가한것.
-        BBB.prototype.sayHello = function(){
+        BBB.prototype.sayHello = function () {
             alert('sayHello');
         };
 
@@ -120,7 +119,6 @@
         // CURD (릴레이션 검색 API)  ==> AAA
         // ==> 프로젝트 화면에서 변경해야 할 사항  ==> BBB extends AAA
         // ==> 워크플로우 화면에서 변경해야 할 사항, 추가해야 할 사항.  ==> CCC extends AAA
-
 
 
         //오브젝트를 선언함.
@@ -156,44 +154,239 @@
         OG.Area = OG.shape.Area;
 
 
-        var area1 = canvas.drawShape([300, 300], new OG.Area("Other Workflow"), [300, 600]);
-
+        //var area1 = canvas.drawShape([300, 300], new OG.Area("Other Workflow"), [300, 600]);
 
 
         //두개의 사각형을 그렸음.
-        var rectangleShape = canvas.drawShape([100, 100], new OG.RectangleShape('Other Workflow'), [100, 100],{
-            'font-family': 'fantasy',
-            'font-size': '6'
+//        var rectangleShape = canvas.drawShape([100, 100], new OG.RectangleShape('Other Workflow'), [100, 100],{
+//            'font-family': 'fantasy',
+//            'font-size': '6'
+//        });
+//        var circleShape = canvas.drawShape([300, 100], new OG.RectangleShape('Other Workflow'), [80, 80]);
+//
+//        /**
+//         * connect at default center position
+//         */
+//
+//        //1. from
+//        //2. to
+//        //3. style
+//        canvas.connect(rectangleShape, circleShape, {
+//            stroke: 'red',
+//            'arrow-start': 'none',
+//            'arrow-end': 'block'
+//        }, '1-2');
+//
+//        /**
+//         * connect at custom position
+//         */
+//        //1. from
+//        //2. to
+//        //3. style
+//        canvas.connect(circleShape,rectangleShape, {
+//            stroke: 'red',
+//            'arrow-start': 'diamond',
+//            'arrow-end': 'block'
+//        }, '1-2');
+
+
+        OG.shape.SampleShape = function (label) {
+            OG.shape.SampleShape.superclass.call(this);
+
+            this.GROUP_DROPABLE = false;
+            this.SHAPE_ID = 'OG.shape.SampleShape';
+            this.label = label;
+            this.CONNECTABLE = true;
+            this.GROUP_COLLAPSIBLE = false;
+            this.LoopType = "None";
+            this.TaskType = "None";
+            this.status = "None";
+            this.Events = [];
+
+        };
+        OG.shape.SampleShape.prototype = new OG.shape.GeomShape();
+        OG.shape.SampleShape.superclass = OG.shape.GeomShape;
+        OG.shape.SampleShape.prototype.constructor = OG.shape.SampleShape;
+        OG.SampleShape = OG.shape.SampleShape;
+
+        /**
+         * 드로잉할 Shape 을 생성하여 반환한다.
+         *
+         * @return {OG.geometry.Geometry} Shape 정보
+         * @override
+         */
+        OG.shape.SampleShape.prototype.createShape = function () {
+            if (this.geom) {
+                return this.geom;
+            }
+
+            this.geom = new OG.geometry.Rectangle([0, 0], 100, 100);
+            this.geom.style = new OG.geometry.Style({
+                'fill-r': 1,
+                'fill-cx': .1,
+                'fill-cy': .1,
+                "stroke-width": 1.2,
+                //fill: 'r(.1, .1)#FFFFFF-#FFFFCC',
+                'fill-opacity': 0,  //0~1 까지가 투명도.
+                r: '10',
+                stroke: 'none'
+            });
+            return this.geom;
+        };
+
+
+        /**
+         * 서브도형 추가법.
+         * @return {Array|[*]}
+         */
+        OG.shape.SampleShape.prototype.createSubShape = function () {
+
+            console.log('This is data!!', this.data);
+
+            this.sub = [
+                {
+                    shape: new OG.RectangleShape('Sub shape'),
+                    width: '50%',  //가로 (퍼센테이지는 부모의 길이 대비.) (픽셀 또는 숫자는 고정값.)
+                    height: '50%',  //세로
+                    align: 'center',  //가로 방향 정렬 (left,center,right)
+                    'vertical-align': 'middle', //세로 방향 정렬 (top,middle,botoom)
+                    style: {
+                        fill: 'gray',  //채움 색상
+                        'fill-opacity': 1  //채움 투명도
+                    }
+                },
+
+                //자물쇠 위치라고 생각하고...
+                {
+                    shape: new OG.RectangleShape('Sub shape'),
+                    width: '40px',  //가로 (퍼센테이지는 부모의 길이 대비.) (픽셀 또는 숫자는 고정값.)
+                    height: '40px',  //세로
+                    top: '-20px', //부모 도형의 위에서부터 몇 퍼센트? 또는 몇픽셀?
+                    left: '-20px', //부모 도형의 좌측에서부터 몇 퍼센트? 또는 몇픽셀?
+                    style: {
+                        fill: 'gray',  //채움 색상
+                        'fill-opacity': 1  //채움 투명도
+                    }
+                }
+            ];
+
+            if (this.data.c_team) {
+                this.sub.push({
+                    shape: new OG.TextShape(this.data.c_team),
+                    width: '100%',
+                    height: '40px',
+                    top: '-30px',
+                    align: 'center',
+                    style: {
+                        fill: 'gray',  //채움 색상
+                        'fill-opacity': 1  //채움 투명도
+                    }
+                });
+            }
+
+            return this.sub;
+        };
+
+
+        /**
+         * Shape 에는 데이터가 들어갈 수 있음.
+         * @type {*}
+         */
+            //shape 선언.
+        var sampleShape = new OG.SampleShape();
+
+        var data = {
+            "f_id": "DADBAE15EB104059A1138A2C1A2040BD",
+            "fs_id": "000131-E-AE-001I-00-001-0003",
+            "fs_parent_id": "95733D3101B7482383C1787FFC566F2B",
+            "fs_name": "Boiler Duct Support Foundation Drawing",
+            "lv": "1",
+            "id": "2",
+            "parentid": "0",
+            "kind": "F",
+            "sct": "",
+            "foldersave": "",
+            "ebd_type_name": "",
+            "state": "Open",
+            "class": "PRD",
+            "bg": "EPC BG",
+            "eng_func_structure": "Plant BOP Engineering/Electrical/BOP Building/CSA_Elec_ Cable Raceway_BOP Building",
+            "sort_order": "0",
+            "modified_date": "5/29/2017",
+            "_user_name": "김철호",
+            "c_major_rev": "",
+            "c_c_rev": "",
+            "c_type": "",
+            "c_team": "EPC)토목기술팀",
+            "c_workflow": "000131-E-AE-001I-00",
+            "c_securitylevel": "",
+            "c_locked_by_id": "a"
+        };
+
+        //shape 에 데이터를 집어넣음.
+        sampleShape.data = data;
+
+        //shape 을 그림.
+        canvas.drawShape([300, 200], sampleShape, [200, 200]);
+
+
+        //Typeof 는 string, number, object, boolean 인지만 알 수 있음.
+        var a1 = 'bbb';
+        var a2 = 3;
+        var a3 = {};
+        var a4 = [];
+        console.log(typeof a1, typeof a2, typeof a3, typeof a4, typeof sampleShape);
+
+
+        //변수 instanceof 클래스  ==> 참, 거짓
+        //최상위 클래스까지 모두 참으로 나온다.
+        console.log(sampleShape instanceof OG.GeomShape);
+
+
+        /**
+         * 캔버스 이벤트 리스너
+         */
+        // Shape 이 처음 Draw 되었을 때의 이벤트 리스너
+        canvas.onDrawShape(function (event, shapeElement) {
+
         });
-        var circleShape = canvas.drawShape([300, 100], new OG.RectangleShape('Other Workflow'), [80, 80]);
 
-        /**
-         * connect at default center position
-         */
+        // Undo 되었을 때의 이벤트 리스너
+        canvas.onUndo(function (event) {
+        });
 
-        //1. from
-        //2. to
-        //3. style
-        canvas.connect(rectangleShape, circleShape, {
-            stroke: 'red',
-            'arrow-start': 'none',
-            'arrow-end': 'block'
-        }, '1-2');
+        // Redo 되었을 때의 이벤트 리스너
+        canvas.onRedo(function (event) {
+        });
 
-        /**
-         * connect at custom position
-         */
-        //1. from
-        //2. to
-        //3. style
-        canvas.connect(circleShape,rectangleShape, {
-            stroke: 'red',
-            'arrow-start': 'diamond',
-            'arrow-end': 'block'
-        }, '1-2');
+        // Shape 이 Redraw 되었을 때의 이벤트 리스너
+        canvas.onRedrawShape(function (event, shapeElement) {
+        });
 
+        // Shape 이 Remove 될 때의 이벤트 리스너
+        canvas.onRemoveShape(function (event, shapeElement) {
+        });
 
+        // Shape 이 Move 되었을 때의 이벤트 리스너
+        canvas.onMoveShape(function (event, shapeElement, offset) {
+        });
 
+        // Shape 이 Resize 되었을 때의 이벤트 리스너
+        canvas.onResizeShape(function (event, shapeElement, offset) {
+        });
+
+        // Shape 이 Connect 되었을 때의 이벤트 리스너
+        canvas.onConnectShape(function (event, edgeElement, fromElement, toElement) {
+        });
+
+        // Shape 이 Disconnect 되었을 때의 이벤트 리스너
+        canvas.onDisconnectShape(function (event, edgeElement, fromElement, toElement) {
+
+        });
+
+        canvas.onLoading(function (event, progress) {
+
+        });
 
 
     });

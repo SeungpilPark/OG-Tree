@@ -41,11 +41,25 @@ var EditorViewController = function () {
 };
 EditorViewController.prototype = {
     /**
+     * //TODO 컨텍스트 메뉴 example
+     * @param data
+     * @param view
+     */
+    doCustomLogic: function(data, view){
+        var me = this;
+
+        //서버에 올라가야 실행이 됨. 서버에 올라가있지 않으면 aras 가 없어서 실행이 안됨.
+        me.aras.checkPM();
+    },
+
+    /**
      * Html 페이지가 처음 로딩되었을 때 오픈그래프 트리를 활성화하고, 필요한 데이터를 인티그레이션 한다.
      */
     init: function () {
         var me = this;
         me.tree = new EditorRenderer('canvas', me);
+
+        //TODO EditorViewController 컨트롤러는 Html 페이지 이벤트를 담당하는데, Html 이 처음 로딩될 떄 데이터를 불러와서 렌더링 하게 명령을 하거나, 버튼 이벤트가 있을 시, 렌더러 클래스에서 명령을 전달한다.
         if (editorMode) {
             me.tree._CONFIG.CEHCKBOX = true;
             me.tree._CONFIG.CHANGE_NAME = true;
